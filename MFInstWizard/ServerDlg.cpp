@@ -213,6 +213,6 @@ void ServerDlg::OnLbnSelChangeServerList()
 	unsigned int mj; unsigned int mi; unsigned int rev;
 	api.GetServerVersion(mj,mi,rev);
 	CString szVersion;
-	szVersion.Format("Version %d.%d.%d",mj,mi,rev);
+	szVersion.Format("Version %d.%d with Support Pack %d",mj,mi,rev);
 	this->SetDlgItemText(IDC_SERVERVERSION,szVersion);
 }

@@ -10,7 +10,6 @@
 #define IDS_ABOUTBOX                    101
 #define IDS_EXITWITHOUTSAVE             102
 #define IDP_SOCKETS_INIT_FAILED         103
-#define IDD_WIZ_EXPORT                  106
 #define IDD_FILTEREDIT                  107
 #define IDR_MAINFRAME                   128
 #define IDR_RULEMENU                    136
@@ -20,7 +19,6 @@
 #define ID_LIST_IMPORT                  140
 #define ID_LIST_CLOSE                   142
 #define ID_Menu                         143
-#define IDD_WIZ_IMPORT                  144
 #define ID_DYNAMICTEXTS_ORIGINALSENDER  148
 #define ID_DYNAMICTEXTS_ORIGINALSUBJECT 149
 #define ID_DYNAMICTEXTS_ORIGINALRECIPIENT 150
@@ -64,7 +62,6 @@
 #define IDC_TEMPLATETYPE                1036
 #define IDC_VERSION                     1037
 #define IDC_TYPE_TAB                    1039
-#define IDC_BUTTON1                     1041
 #define IDC_TYPE_BIN                    1042
 #define ID_LIST_OPEN                    32771
 #define ID_LIST_SAVE                    32772

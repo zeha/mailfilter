@@ -3482,8 +3482,6 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 	// Tell NLM that we've exited...
 	--MFT_NLM_ThreadCount;
 
-	MF_DisplayCriticalError("%d %d %d\n",shallTerminate,tlc,lc);
-
 	if (shallTerminate > 200)
 		raise(SIGTERM);
 

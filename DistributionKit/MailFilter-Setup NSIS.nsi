@@ -29,7 +29,7 @@
   SetDatablockOptimize on
   ShowInstDetails hide
   InstType "${PROD_NAME} ${PROD_VERSION}"
-  OutFile "MailFilter-Setup-${PROD_VERSION}.exe"
+  OutFile "MailFilter-Setup-${PROD_VERSION_MAJOR}${PROD_VERSION_MINOR}${PROD_VERSION_REVISION}.exe"
   InstallDir "$PROGRAMFILES\MailFilter professional ${PROD_VERSION}"
 ;  InstallDirRegKey HKLM "SOFTWARE\MailFilter\${PROD_VERSION}" "AdminInstallDir"
 
@@ -138,7 +138,7 @@ Section All
   File "..\MailFilter\out\MFConfig.nlm"
 
   File "..\MailFilter\out\EicarTst.nlm"
-  File "..\MailFilter\out\MFBUG.NLM"
+;  File "..\MailFilter\out\MFBUG.NLM"
 ;  File "..\MailFilter\out\MFPACK.NLM"
 
 

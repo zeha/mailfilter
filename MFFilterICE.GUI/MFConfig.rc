@@ -97,45 +97,6 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,138,162,66,12
 END
 
-IDD_WIZ_EXPORT DIALOGEX 0, 0, 307, 154
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
-CAPTION "Export Settings"
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
-BEGIN
-    EDITTEXT        IDC_EXPORTPATH,29,33,208,12,ES_AUTOHSCROLL
-    LTEXT           "Export to File:",IDC_STATIC,6,18,154,11
-    LTEXT           "Export File Type:",IDC_STATIC,6,54,154,11
-    CONTROL         "Tabulator Delimited (TAB)",IDC_TYPE_TAB,"Button",
-                    BS_AUTORADIOBUTTON,30,78,164,8
-    CONTROL         "Comma Seperated (CSV)",IDC_TYPE_CSV,"Button",
-                    BS_AUTORADIOBUTTON | WS_DISABLED,30,90,164,8
-    PUSHBUTTON      "...",IDC_SELECTPATH,240,32,14,13,WS_DISABLED
-    CONTROL         "MailFilter Binary Rule Package (BIN)",IDC_TYPE_BIN,
-                    "Button",BS_AUTORADIOBUTTON,30,66,261,8
-END
-
-IDD_WIZ_IMPORT DIALOGEX 0, 0, 307, 154
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
-CAPTION "Import Settings"
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
-BEGIN
-    EDITTEXT        IDC_IMPORTPATH,29,33,208,12,ES_AUTOHSCROLL
-    LTEXT           "Import from File:",IDC_STATIC,6,18,154,11
-    LTEXT           "Input File Type:",IDC_STATIC,6,54,154,11
-    CONTROL         "Tabulator Delimited (TAB)",IDC_TYPE_TAB,"Button",
-                    BS_AUTORADIOBUTTON,30,78,164,8
-    CONTROL         "Comma Seperated (CSV)",IDC_TYPE_CSV,"Button",
-                    BS_AUTORADIOBUTTON | WS_DISABLED,30,90,255,8
-    CONTROL         "Delete all rules before import.",IDC_DELETEALL,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,30,102,184,9
-    CONTROL         "Ignore notification settings in the import file.",
-                    IDC_IGNORENOTIFY,"Button",BS_AUTOCHECKBOX | WS_DISABLED | 
-                    WS_TABSTOP,30,115,184,9
-    PUSHBUTTON      "...",IDC_SELECTPATH,240,32,14,13,WS_DISABLED
-    CONTROL         "MailFilter Binary Rule Package (BIN)",IDC_TYPE_BIN,
-                    "Button",BS_AUTORADIOBUTTON,30,66,261,8
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -204,22 +165,6 @@ BEGIN
         RIGHTMARGIN, 321
         TOPMARGIN, 7
         BOTTOMMARGIN, 186
-    END
-
-    IDD_WIZ_EXPORT, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 300
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 147
-    END
-
-    IDD_WIZ_IMPORT, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 300
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 147
     END
 END
 #endif    // APSTUDIO_INVOKED

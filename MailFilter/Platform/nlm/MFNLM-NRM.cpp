@@ -734,8 +734,6 @@ int MailFilter_Main_RunAppNRM(bool bStandalone)
 		printf ("Portal Startup Failed.\n");
 		return -1;
 	}
-//	// Pretend that we've already exited.
-//	--MFT_NLM_ThreadCount;
 
 	
 	if (cond_init ( &condMainThread , USYNC_THREAD, NULL ) != 0)

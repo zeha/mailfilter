@@ -1320,6 +1320,7 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 			goto MF_MAIN_TERMINATE;
 		}
 
+		--MFT_NLM_ThreadCount;
 		rc = MailFilter_Main_RunAppNRM(true);
 
 		#else

@@ -5,11 +5,9 @@
 #include "MFConfig.h"
 #include "FilterlistDlg.h"
 #include "FilterPropertyDlg.h"
-#include "WizardExport.h"
-#include "WizardImport.h"
 
 #include "filterice.hxx"
-#include ".\filterlistdlg.h"
+#include "filterlistdlg.h"
 
 
 // CAboutDlg dialog used for App About
@@ -298,24 +296,94 @@ void CFilterlistDlg::OnEntryDelete()
 
 void CFilterlistDlg::OnListExport()
 {
-	CPropertySheet wizard("Export Wizard",this);
+/*	CPropertySheet wizard("Export Wizard",this);
 	wizard.SetWizardMode();
 	wizard.AddPage(new CWizardExport);
 	wizard.m_psh.dwFlags |= PSH_WIZARD97|PSH_WATERMARK|PSH_HEADER;
 	wizard.m_psh.hInstance = AfxGetInstanceHandle();
 	wizard.DoModal();
+*/
+	CFileDialog fileDlg(FALSE, NULL, NULL, OFN_HIDEREADONLY, "MailFilter Binary Filter Files (*.bin)|*.bin|TAB Seperated Text Files (*.tab)|*.tab|");
+	if (fileDlg.DoModal() != IDOK)
+		return;
+
+	CString szFile;
+	szFile = fileDlg.GetPathName();
+
+	int iMode = 0;	//BIN
+
+	int rc = ExecuteWrite(szFile,iMode);
+
+	if (rc == -1)
+	{
+		AfxMessageBox("The specified file could not be opened. Please select another file.",MB_OK,0);
+		return;
+	}
+	if (rc == -2)
+	{
+		AfxMessageBox("The file data could not be exported. File in use?",MB_OK,0);
+		return;
+	}
+	if (rc != 0)
+		AfxMessageBox("Generic Error - file not accessible?",MB_OK,0);
 
 	this->FillIn();
 }
 
 void CFilterlistDlg::OnListImport()
 {
-	CPropertySheet wizard("Import Wizard",this);
+/*	CPropertySheet wizard("Import Wizard",this);
 	wizard.SetWizardMode();
 	wizard.AddPage(new CWizardImport);
 	wizard.m_psh.dwFlags |= PSH_WIZARD97|PSH_WATERMARK|PSH_HEADER;
 	wizard.m_psh.hInstance = AfxGetInstanceHandle();
 	wizard.DoModal();
+*/
+
+	CFileDialog fileDlg(TRUE, NULL, NULL, OFN_HIDEREADONLY, "MailFilter Binary Filter Files (*.bin)|*.bin|TAB Seperated Text Files (*.tab)|*.tab|");
+	if (fileDlg.DoModal() != IDOK)
+		return;
+
+	CString szFile;
+	szFile = fileDlg.GetPathName();
+
+	int iMode = 0;	//BIN
+/*
+	if (this->IsDlgButtonChecked(IDC_TYPE_TAB))
+		iImportMode = 1;	//TAB
+	if (this->IsDlgButtonChecked(IDC_TYPE_CSV))
+		iImportMode = 2;	//CSV
+
+*/	
+	if (szFile.Right(3).MakeLower() == "bin")
+		iMode = 0;	//BIN
+	if (szFile.Right(3).MakeLower() == "tab")
+		iMode = 1;	//TAB
+	if (szFile.Right(3).MakeLower() == "csv")
+		iMode = 2;	//CSV
+
+	int rc = ExecuteRead(szFile,iMode);
+
+	if (rc == -1)
+	{
+		AfxMessageBox("The specified file could not be opened. Please select another file.",MB_OK,0);
+		return;
+	}
+	if (rc == -2)
+	{
+		AfxMessageBox("The file data could not be imported. File corrupt?",MB_OK,0);
+		return;
+	}
+	if (rc == -3)
+	{
+		AfxMessageBox("The file is not in the specified format. File corrupt?",MB_OK,0);
+		return;
+	}
+	if (rc == -4)
+	{
+		AfxMessageBox("The file contains data in a previous format. Please export your filter data from a recent MailFilter NLM version.",MB_OK,0);
+		return;
+	}
 
 	this->FillIn();
 }

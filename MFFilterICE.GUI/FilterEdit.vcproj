@@ -165,12 +165,6 @@
 						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath="WizardExport.cpp">
-			</File>
-			<File
-				RelativePath="WizardImport.cpp">
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
