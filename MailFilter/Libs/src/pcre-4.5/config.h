@@ -103,6 +103,8 @@ match() function. On Unix systems, "configure" can be used to set this in the
 Makefile (use --disable-recursion). */
 
 // would be nice for netware, but we dont have longjmp and the like
-#undef NO_RECURSE
+//#undef NO_RECURSE
+
+#define SUPPORT_UTF8
 
 /* End */

@@ -3,20 +3,7 @@
 #include <MailFilter.h>
 #include "MFVersion.h"
 
-//#include <stdio.h>
 #include "modmimee.h"
-
-
-//#include <ix.h>
-//#include <string.h>
-//#include <malloc.h>
-/*#include "mimei.h"
-#include "nsCRT.h"
-#include "prmem.h"
-#include "plstr.h"
-#include "prlog.h"
-#include "prprf.h"
-*/
 
 typedef enum mime_encoding {
   mime_Base64, mime_QuotedPrintable, mime_uuencode

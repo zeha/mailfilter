@@ -150,6 +150,8 @@ int DisposeAppData(void	*data_area)
 		Free(app);
 	}
 
+	set_app_data(gLibId, NULL);
+
 	return 0;
 }
 
@@ -178,6 +180,10 @@ static int MFAVA_Init(int iVirusScanner, int iDebug, MFAVA_HANDLE &hReturn)
 		case 1:
 			iError = eTrust7_Init(hReturn);
 			break;
+			
+		case 2:
+			iError = Sophos_Init(hReturn);
+			break;
 	}
 
 	return iError;
@@ -193,6 +199,9 @@ static int MFAVA_DeInit(MFAVA_HANDLE hAVA)
 	iError = eTrust7_DeInit(hAVA);
 	if (iError)		goto FinishIt;
 	
+	iError = Sophos_DeInit(hAVA);
+	if (iError)		goto FinishIt;
+
 FinishIt:
 	
 	DisposeAppData(GetOrSetAppData());
@@ -211,6 +220,9 @@ static int MFAVA_ScanFile(MFAVA_HANDLE hAVA, const char* szFileName, char* szVir
 			break;
 		case ETRUST7_MAGIC:
 			iError = eTrust7_ScanFile(hAVA,szFileName,szVirusName,iVirusNameLength,iVirusType);
+			break;
+		case SOPHOS_MAGIC:
+			iError = Sophos_ScanFile(hAVA,szFileName,szVirusName,iVirusNameLength,iVirusType);
 			break;
 	}
 	return iError;

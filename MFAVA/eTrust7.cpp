@@ -312,10 +312,16 @@ int eTrust7_DeInit(MFAVA_HANDLE hAVA)
 	if ((app = GetOrSetAppData()) == NULL)
 		return ENOMEM;
 
+	if (app->eTrust_InitComplete != 1)
+		return ENOENT;
+
 	app->eTrust_InitComplete = 0;
 
 	if (hAVA != NULL)
+	{
+		if (gDebugSetCmd) printf("MFAVA Error: AVA Handle NULL!\n");
 		return ENOMEM;
+	}
 
 	if (hAVA != (MFAVA_HANDLE)ETRUST7_MAGIC)
 	{
@@ -327,9 +333,6 @@ int eTrust7_DeInit(MFAVA_HANDLE hAVA)
 	if (eTrust7_Check())
 		return ENOTSUP;
 	
-	if (app->eTrust_InitComplete != 1)
-		return ENOENT;
-
 	rc = InoScanDeInit_sym(app->eTrust_hInoScan);
 	
 	if (app->Debug)
@@ -391,7 +394,7 @@ int eTrust7_Init(MFAVA_HANDLE &hAVA)
 							value = "";
 						
 						if (app->Debug)
-							printf("MFAVADebug: CAENV: '%s'='%s'\n",param.c_str(),value.c_str());
+							printf("MFAVADebug: CAENV: ('%s') '%s'='%s'\n",line.at(0),param.c_str(),value.c_str());
 
 						if (param == "AVENGINE_LOC")
 							strncpy(szAvEnginePath,value.c_str(),260);

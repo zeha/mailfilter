@@ -200,7 +200,7 @@ void MF_StatusLog( const char *newText )
 	if ( tmp_sLen != 0 )
 	{
 		//  >> Get Current Time 
-		time( &tmp_ltime );
+		tmp_ltime = time(NULL); // &tmp_ltime );
 		//  >> Build log string
 		sprintf(tmp_MF_LogText , "%.24s ", ctime( &tmp_ltime ) );
 		strncat(tmp_MF_LogText , newText , (unsigned int)tmp_sLen );

@@ -93,6 +93,25 @@ static bool outputMailList(HINTERNET hndl, int startPage)
 
 //	int pos = szHttpPath.find(":");
 	unsigned int pos;
+	
+	/* strip off servername from path,
+		fixing bug */
+	{
+		pos = szHttpPath.find(":");
+		if (pos != -1)
+		{
+			unsigned int pos2;
+			
+			pos2 = szHttpPath.find("\\");
+			if ((pos2 != -1) && (pos2 < pos))
+				szHttpPath.erase(0,pos2+1);
+			
+			pos2 = szHttpPath.find("/");
+			if ((pos2 != -1) && (pos2 < pos))
+				szHttpPath.erase(0,pos2+1);
+		}
+	}
+	
 	while ((pos = szHttpPath.find(":")) != -1)
 		szHttpPath.replace(pos, 1, "/");
 

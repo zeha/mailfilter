@@ -245,7 +245,7 @@ int MFRestore_ShowDetails(const char* fileName, int enableRestoreField)
 
 	MailFilter_MailDestroy(m);
 
-	MFRestore_UI_ShowKeys(MFUI_KEYS_EXIT|MFUI_KEYS_SELECT|MFUI_KEYS_SHOW);
+	MFRestore_UI_ShowKeys(MFUI_KEYS_EXIT|MFUI_KEYS_SELECT|MFUI_KEYS_DELETE|MFUI_KEYS_SHOW);
 
 	if (rc)
 	{
@@ -272,6 +272,28 @@ int MFRestore_ShowDetails(const char* fileName, int enableRestoreField)
 
 }
 
+int MFRestore_AskDelete(const char* fileName)
+{
+	std::string szFileName;
+
+	if (MFT_NLM_Exiting)
+		return -2;
+
+	szFileName = MF_GlobalConfiguration->MFLTRoot + "\\MFPROB\\DROP\\";
+	szFileName += fileName;
+
+	if (NWSConfirm(
+			MSG_CONFIRM_DELETE,
+			5, 0, 0, NULL, MF_NutInfo, NULL) == 1)
+			{
+				// yes, delete
+				unlink(szFileName.c_str());
+			}
+				
+
+	return -1;
+}
+
 /****************************************************************************
 ** Show Mail File (4k max)
 */
@@ -295,16 +317,16 @@ int MFRestore_ShowFile(const char* fileName)
 	fp = fopen(szFileName.c_str(),"rt");
 	if (fp == NULL)
 	{
-			NWSDisplayInformation (
-				NULL,
-				5,
-				0,
-				0,
-				ERROR_PALETTE,
-				VREVERSE,
-				(_MF_NUTCHAR)"Unable to open specified file!",
-				MF_NutInfo
-				);
+		NWSDisplayInformation (
+			NULL,
+			5,
+			0,
+			0,
+			ERROR_PALETTE,
+			VREVERSE,
+			(_MF_NUTCHAR)"Unable to open the specified file!",
+			MF_NutInfo
+			);
 		
 		return -2;	
 	}
@@ -333,7 +355,7 @@ int MFRestore_ShowFile(const char* fileName)
 	
 	NWSPopList	(MF_NutInfo);
 
-	MFRestore_UI_ShowKeys(MFUI_KEYS_EXIT|MFUI_KEYS_SELECT|MFUI_KEYS_SHOW);
+	MFRestore_UI_ShowKeys(MFUI_KEYS_EXIT|MFUI_KEYS_SELECT|MFUI_KEYS_DELETE|MFUI_KEYS_SHOW);
 
 	return (-1);
 }
@@ -351,7 +373,7 @@ int MFRestore_RstList_Act(LONG keyPressed, LIST **elementSelected,
 	if (keyPressed == M_ESCAPE)
 		return 0;
 		
-	MFRestore_UI_ShowKeys(MFUI_KEYS_EXIT|MFUI_KEYS_SELECT|MFUI_KEYS_SHOW);
+	MFRestore_UI_ShowKeys(MFUI_KEYS_EXIT|MFUI_KEYS_SELECT|MFUI_KEYS_DELETE|MFUI_KEYS_SHOW);
 
 	itemLineNumber=itemLineNumber;			/* Rid compiler warning */
 	actionParameter=actionParameter;		/* Rid compiler warning */
@@ -371,6 +393,12 @@ int MFRestore_RstList_Act(LONG keyPressed, LIST **elementSelected,
 			if (*elementSelected != NULL)
 				return MFRestore_ShowDetails((char *)((*elementSelected)->otherInfo),true);
 			break;
+
+		case M_DELETE:
+			if (*elementSelected != NULL)
+				return MFRestore_AskDelete((char *)((*elementSelected)->otherInfo));
+			break;
+
 		default:
 			return(-1);
 		}
@@ -382,6 +410,57 @@ int MFRestore_RstList_Act(LONG keyPressed, LIST **elementSelected,
 static void _mfr_free(void* foo)
 {
 	_mfd_free(foo,"mfrfree");
+}
+
+class ListItem {
+	public:
+	 std::string filename;
+	 time_t mtime;
+	 long long size;
+};
+class CompareItems {
+public:
+	bool operator() 
+			(const ListItem& f1, 
+			 const ListItem& f2)
+	{
+		if (f1.mtime > f2.mtime)
+			return true;
+		return false;
+	}
+};
+
+void listAddItem (const ListItem item)
+{
+	
+	char*						cI = NULL;
+	char						szFile[80+1];
+	char						szDate[80+1];
+	char						szList[80+1];
+	struct tm* time;
+
+	cI = (char*)_mfd_malloc(strlen(item.filename.c_str())+1,"addEntry");
+	strcpy(cI,(item.filename.c_str()));
+
+	strncpy (szFile,item.filename.c_str(),13);
+	szFile[13] = 0;
+		
+	if (item.mtime == -1)
+	{
+		sprintf ( szDate, "% 12s","- no datetime -");
+	} else {
+
+		time = localtime(&item.mtime);
+
+		sprintf ( szDate, "%04d/%02d/%02d %02d:%02d", time->tm_year+1900 , time->tm_mon+1 , time->tm_mday ,
+														time->tm_hour , time->tm_min );
+	}
+	
+	sprintf ( szList, " %s | %s | %s | %6d kB ", (szFile[0] == 'S') ? "Out" : " In",
+									szDate, szFile, ((item.size)/1024)+1 );
+	
+	NWSAppendToList ( (_MF_NUTCHAR)szList, cI, MF_NutInfo ); 
+		
 }
 
 /****************************************************************************
@@ -402,14 +481,8 @@ void NLM_Main(void)
 	**	initialized (set head and tail to NULL) by calling InitMenu().
 	**	Note that Lists use NWInitList() and Menus use NWInitMenu().
 	*/
-	char						szFile[80+1];
-	char						szDate[80+1];
-	char						szList[80+1];
 	long						rc = 0;
-	char*						cI = NULL;
 	
-
-//	char scanDir[MAX_PATH];
 	char scanPath[MAX_PATH];
 	
 	ThreadSwitch();
@@ -419,7 +492,7 @@ void NLM_Main(void)
 	NWSInitList(MF_NutInfo, _mfr_free);
 
 	// init function keys ...
-	MFRestore_UI_ShowKeys(MFUI_KEYS_EXIT|MFUI_KEYS_SELECT|MFUI_KEYS_SHOW);
+	MFRestore_UI_ShowKeys(MFUI_KEYS_EXIT|MFUI_KEYS_SELECT|MFUI_KEYS_DELETE|MFUI_KEYS_SHOW);
 	
 	/*------------------------------------------------------------------------
 	** Look for dropped mails and put them in the list.
@@ -428,46 +501,28 @@ void NLM_Main(void)
 	sprintf(scanPath,"%s\\MFPROB\\DROP",MF_GlobalConfiguration->MFLTRoot.c_str());
 	chdir(scanPath);
 	
-	struct tm* time;
-	time_t lTime;
+	std::vector<ListItem> list;
+	list.clear();
 	
 	iXDir dir(scanPath);
-	const char* e;
 	int i=0;
 	while ( dir.ReadNextEntry() )
 	{
 		if (MFT_NLM_Exiting > 0)	break;
-
-		e = dir.GetCurrentEntryName();
-		lTime = dir.GetCurrentEntryModificationTime();
-
-		cI = (char*)_mfd_malloc(strlen(e)+1,"addEntry");
-		strcpy(cI,(e));
 		
-		strcpy (szFile,e);
-		szFile[13] = 0;
-		
-//		strftime (szDate, 60, "%04d/%02d/%02d %02d:%02d",  );   
+		ListItem item;
 
-		if (lTime == -1)
-		{
-			sprintf ( szDate, "% 12s","- no datetime -");
-		} else {
-
-			time = localtime(&lTime);
-
-			sprintf ( szDate, "%04d/%02d/%02d %02d:%02d", time->tm_year+1900 , time->tm_mon+1 , time->tm_mday ,
-															time->tm_hour , time->tm_min );
-		}
+		item.filename = dir.GetCurrentEntryName();
+		item.mtime = dir.GetCurrentEntryModificationTime();
+		item.size = dir.GetCurrentEntrySize();
 		
-		sprintf ( szList, " %s | %s | %s | %6d kB ", (szFile[0] == 'S') ? "Out" : " In", szDate, szFile, ((dir.GetCurrentEntrySize())/1024)+1 );
-		
-		NWSAppendToList ( (_MF_NUTCHAR)szList, cI, MF_NutInfo );
+		list.push_back(item);
 
 		ThreadSwitch();
-		MFD_Out(MFD_SOURCE_MAIL,"%d:%s ",++i,e);
+		MFD_Out(MFD_SOURCE_MAIL,"%d:%s ",++i,item.filename.c_str());	
 	}
-	
+	sort(list.begin(),list.end(),CompareItems());
+	for_each(list.begin(),list.end(),listAddItem);
 
 	if (MFT_NLM_Exiting > 0)
 		return;
@@ -479,7 +534,7 @@ void NLM_Main(void)
 		/* I-	centerColumn	*/	1,
 		/* I-	height			*/	16,
 		/* I-	width			*/  80,
-		/* I-	validKeyFlags	*/	M_ESCAPE|M_SELECT|M_CYCLE,//|M_NO_SORT,
+		/* I-	validKeyFlags	*/	M_ESCAPE|M_SELECT|M_CYCLE|M_DELETE|M_NO_SORT,
 		/* IO	element			*/	0,
 		/* I-	handle			*/  MF_NutInfo,
 		/* I-	formatProcedure	*/	NULL,

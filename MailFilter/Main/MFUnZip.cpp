@@ -54,6 +54,18 @@ long MFUnZip::ExtractCurrentFile(const char* localFilename)
 		return err;
 	}
 
+	{
+		if (
+			((zi.compressed_size*100) < zi.uncompressed_size) ||	/* uncompressed size is 100 times bigger than compressed */
+			(zi.uncompressed_size > 512*1024*1024)					/* max. 512 mb */
+		)
+		{
+			/* abort */
+			MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: compressed file is way too big.\n");
+			return MFUnZip_TOOBIG;
+		}
+	}
+
 	unsigned int sizeBuf;
 	void* Buf;
 	ThreadSwitch();

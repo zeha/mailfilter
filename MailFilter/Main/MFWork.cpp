@@ -290,7 +290,7 @@ int MFAPI_FilterCheck( char *szScan , int mailSource, int matchfield )
 
 			re = pcre_compile(
 			  MF_GlobalConfiguration->filterList[curItem].expression.c_str(), /* the pattern */
-			  0,                    /* default options */
+			  PCRE_UTF8,            /* default options + UTF8 */
 			  &error,               /* for error message */
 			  &erroffset,           /* for error offset */
 			  NULL);                /* use default character tables */
@@ -430,10 +430,10 @@ int MF_FilterCheck( MailFilter_MailData* m, char *szScan , int matchfield )
 			
 		) {
 
-/*#ifdef _MAILFILTER_WITH_REGEXP_H*/
+
 			re = pcre_compile(
 			  MF_GlobalConfiguration->filterList[curItem].expression.c_str(), /* the pattern */
-			  0,                    /* default options */
+			  PCRE_UTF8,            /* default options + UTF( */
 			  &error,               /* for error message */
 			  &erroffset,           /* for error offset */
 			  NULL);                /* use default character tables */
@@ -497,26 +497,6 @@ int MF_FilterCheck( MailFilter_MailData* m, char *szScan , int matchfield )
 				}
 
 			}
-/*			
-#else
-#ifdef _MAILFILTER_WITH_POSIX_REGEXP_H
-			if (regcomp(&myRegExp,MFC_Filters[curItem].expression) == 0)
-			{
-				if ( regexec(&myRegExp, toScan, scanLen, myRegMatch, 0) == 0 )
-				{
-					rc=curItem+1;
-					regfree(&myRegExp);
-					if (NULL != myRegMatch) _mfd_free(myRegMatch,"FilterCheck");
-					myRegMatch = NULL;
-					break;
-				}
-				regfree(&myRegExp);
-			} else {
-				MF_StatusText("Filter corrupt!");
-			}
-#endif //_MAILFILTER_WITH_POSIX_REGEXP_H [ELSE]
-#endif //_MAILFILTER_WITH_REGEXP_H [ELSE]
-*/
 		}
 		
 #ifdef N_PLAT_NLM
@@ -571,11 +551,11 @@ int MF_RuleExec_RE(const char* expression, char* scan)
 	rc = -99;
 	re = pcre_compile(
 	  expression, /* the pattern */
-	  0,                    /* default options */
+	  PCRE_UTF8,            /* default options + UTF8 */
 	  &error,               /* for error message */
 	  &erroffset,           /* for error offset */
 	  NULL);                /* use default character tables */
-
+	  
 	if (re == NULL)
 	{
 		
@@ -2275,6 +2255,7 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 				}
 				if ( memicmp(szScanBuffer,"return-path:",12) == 0 )
 				{
+					/* Multi2One stuff */
 					if ((m->iMailSource == 0) && (bModifiedReturnPathAddress == false) && (MF_GlobalConfiguration->Multi2One != ""))
 					{
 						szTemp[0]=0;
@@ -2316,6 +2297,7 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 				{
 					_POSTSCANMOD_WRITEXSIEVE()
 					
+					/* Multi2One stuff */
 					if ((m->iMailSource == 0) && (bModifiedFromAddress == false) && (MF_GlobalConfiguration->Multi2One != ""))
 					{
 						szTemp[0]=0;
@@ -2915,7 +2897,7 @@ MFD_Out(MFD_SOURCE_VSCAN,"  VSCAN FAIL\n");
 #endif
 	}		
 }
-
+/*
 //
 // * Checks the Problem Directory for its Size and the Age of the contained files
 //
@@ -3022,11 +3004,6 @@ MFD_Out(MFD_SOURCE_GENERIC,"prb: %s\n",probDir);
 		mailDir = opendir(probDir);
 		while ( mailDir != NULL )
 		{
-/*			mailDir = readdir(mailDir);
-			if (mailDir == NULL) 		break;
-			
-			sprintf(thisFile,"%s%s",MFT_MF_ProbDir,mailDir->d_nameDOS);
-*/
 #ifdef N_PLAT_NLM
 #ifdef __NOVELL_LIBC__
 			mailDir = readdir(mailDir);
@@ -3094,7 +3071,7 @@ MFD_Out(MFD_SOURCE_GENERIC,"prb: %s\n",probDir);
 		MF_EMailPostmasterGeneric("Problem Directory Cleanup",messageText,"","");
 	}
 }
-
+*/
 static void MFBW_CheckQueue(const char* szFile,const char* szIn,const char* szOut)
 {
 #pragma unused(szFile)
@@ -3449,14 +3426,13 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 							break;
 						}
 						putc(1,fEv);putc(0,fEv);putc(0,fEv);
-						time_t ctime;
-						time(&ctime);
+						time_t ctime = time(NULL);
 						fprintf(fEv,"%d\n",ctime);
 						fclose(fEv);
 					} else {
 						char ev[31];
-						time_t etime; time_t ctime;
-						time(&ctime);
+						time_t etime; 
+						time_t ctime = time(NULL);
 						fread(ev,1,30,fEv);
 						ev[0]=' ';ev[1]=' ';ev[2]=' ';
 						ev[25]=0;

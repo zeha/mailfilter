@@ -27,6 +27,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 /*
 long MailFilter_API_GetStats(int statID, int statSubID)
 {

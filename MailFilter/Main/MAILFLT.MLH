@@ -125,4 +125,4 @@
 #define EDIT_FILTERS_MATCHFIELD_VIRUS            0x0079
 #define MSG_CONFIGAPP_EDITCONFIG_HDR             0x007a
 #define MSG_MAIL_RESTORE                         0x007b
-
+#define MSG_CONFIRM_DELETE						 0x007c

@@ -1156,7 +1156,7 @@ MF_MAIN_RUNLOOP:
 
 						re = pcre_compile(
 						  MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(), /* the pattern */
-						  0,                    /* default options */
+						  PCRE_UTF8,            /* default options + UTF8 */
 						  &error,               /* for error message */
 						  &erroffset,           /* for error offset */
 						  NULL);                /* use default character tables */
@@ -1236,6 +1236,7 @@ MF_MAIN_RUNLOOP:
 			} else {
 				if (mf_nlmisloadedprotected())
 				{
+					MF_DisplayCriticalError("MAILFILTER: Unloading NRM/OS agent [%s].\n",szProgramName);
 					char szCmdLine[MAX_PATH];
 					sprintf(szCmdLine,"UNLOAD ADDRESS SPACE = OS %s",szProgramName);
 					system(szCmdLine);

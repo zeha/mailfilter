@@ -713,7 +713,7 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 
 		re = pcre_compile(
 		  flt->expression.c_str(), /* the pattern */
-		  0,                    /* default options */
+		  PCRE_UTF8,            /* default options + UTF8 */
 		  &error,               /* for error message */
 		  &erroffset,           /* for error offset */
 		  NULL);                /* use default character tables */

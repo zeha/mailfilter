@@ -27,6 +27,8 @@ typedef void* unzFile;
 #define MFUnZip_FILENOTFOUND        (-2002)
 #define MFUnZip_OUTOFMEMORY         (-2003)
 
+#define MFUnZip_TOOBIG         (-3000)
+
 /* tm_unz contain date/time info */
 typedef struct tm_unz_s 
 {
