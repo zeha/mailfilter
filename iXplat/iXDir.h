@@ -9,7 +9,7 @@ class iXDir
 {
 public:
 	iXDir(const char* DirectoryName);
-	~iXDir();
+	virtual ~iXDir();
 	
 	bool ReadNextEntry();
 	const char* GetCurrentEntryName();
