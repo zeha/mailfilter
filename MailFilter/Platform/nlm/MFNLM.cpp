@@ -74,6 +74,11 @@ static int MF_NutMutexQueryUser = 0;
 
 extern void MFWorker_SetupPaths();
 
+extern "C" {
+	int __init_malloc();
+	int __deinit_malloc();
+}
+
 
 //
 //
@@ -118,6 +123,11 @@ void MF_ExitProc(void)
 #else
 		DestroyScreen ( MFD_ScreenID );
 #endif
+
+	if (MF_GlobalConfiguration != NULL)
+		delete(MF_GlobalConfiguration);
+		
+	__deinit_malloc();
 }
 
 //	"   F6-Restart  F7-Exit                   F9-Show Configuration  F10 Configure  ",
@@ -199,6 +209,28 @@ void MF_NutHandlerKeyF2 (void *handle)		// debug stuff
 	MF_StatusUI_UpdateLog(buf);
 
 	MFUtil_CheckCurrentVersion();
+
+	MFZip *z = new MFZip("SYS:SYSTEM\\MAILFLT.ZIP",9,0);
+	z->AddFile("MAILFLT.NLM","SYS:SYSTEM\\MAILFLT.NLM");
+	delete(z);
+	
+			char* szEmail = (char*)_mfd_malloc(5000,"szEmail");
+			sprintf(szEmail,"Dear PostMaster!\r\n\r\n"
+						"You got this mail because someone requested it by pressing F2 on the\r\n"
+						"MailFilter Main Screen.\r\n"
+						"\r\n"
+						"Yours,\r\nMailFilter Version %s on %s.\r\n\r\n",
+						MAILFILTERVERNUM,
+						MF_GlobalConfiguration->ServerName.c_str()
+						);
+
+			MF_EMailPostmasterGeneric(
+						"Debug Mail Requested",szEmail,
+						"SYS:SYSTEM\\MAILFLT.NLM","MAILFLT.NLM");
+			_mfd_free(szEmail,"szEmail");
+	
+	extern void __mfd_symbols_worker();
+	__mfd_symbols_worker();
 
 //	MF_LoginUser();
 }
@@ -495,7 +527,7 @@ void MF_StatusUI_Update(const char* newText)
 	
 	
 #ifdef __NOVELL_LIBC__
-		if ( MF_GlobalConfiguration.RequireAVA && (MailFilter_AV_Check() != 0) && MFT_bTriedAVInit)
+		if ( MF_GlobalConfiguration->RequireAVA && (MailFilter_AV_Check() != 0) && MFT_bTriedAVInit)
 		{
 //
 //			for (i=0;i<81;i++)
@@ -531,15 +563,15 @@ void MF_StatusUI_Update(const char* newText)
 			unsigned long minutes = clck - (days * 24 * 60) - (hours * 60);
 			
 			sprintf(szTemp,MF_Msg(MSG_INFOPORTAL_LINE1), days,hours,minutes);
-			chk = MF_GlobalConfiguration.DomainHostname.length(); if (chk>55) chk=55;
-			memcpy(szTemp+2,MF_GlobalConfiguration.DomainHostname.c_str(),chk);
+			chk = MF_GlobalConfiguration->DomainHostname.length(); if (chk>55) chk=55;
+			memcpy(szTemp+2,MF_GlobalConfiguration->DomainHostname.c_str(),chk);
 			NWSShowLineAttribute( 1, 0, (_MF_NUTCHAR) szTemp, VNORMAL, strlen(szTemp), (struct ScreenStruct*)MF_NutInfo->screenID);
 
 
 
 			sprintf(szTemp,MF_Msg(MSG_INFOPORTAL_LINE2),MFS_MF_MailsInputTotal,MFS_MF_MailsInputFailed);
 
-			if ( MF_GlobalConfiguration.RequireAVA && !MFT_bTriedAVInit && MFL_GetFlag(MAILFILTER_MC_M_VIRUSSCAN) )
+			if ( MF_GlobalConfiguration->RequireAVA && !MFT_bTriedAVInit && MFL_GetFlag(MAILFILTER_MC_M_VIRUSSCAN) )
 			{
 				szDynamic = "Waiting for AntiVirus NLM";
 			} else {
@@ -575,7 +607,7 @@ void MF_StatusUI_Update(const char* newText)
 				szDynamic += "AV ";
 				bHaveFeatures = true;
 			}
-			if (MF_GlobalConfiguration.NRMInitialized == true)
+			if (MF_GlobalConfiguration->NRMInitialized == true)
 			{
 				szDynamic += "NRM ";
 				bHaveFeatures = true;
@@ -761,7 +793,7 @@ void NLM_SignalHandler(int sig)
 #else
 				ungetcharacter(27);
 
-				if ( (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::NRM) || (MF_GlobalConfiguration.NRMInitialized == true) )
+				if ( (MF_GlobalConfiguration->ApplicationMode == MailFilter_Configuration::NRM) || (MF_GlobalConfiguration->NRMInitialized == true) )
 				{
 					MailFilter_NRM_sigterm();
 				}
@@ -823,6 +855,7 @@ static void MF_Cleanup_Startup(void *dummy)
 	}
 
 	MFT_NLM_ThreadCount--;
+	MF_DisplayCriticalError("MAILFILTER: CleanerThread: Terminated.\n");
 }
 
 
@@ -830,7 +863,7 @@ static void LoadNRMThreadStartup(void *dummy)
 {
 #pragma unused(dummy)
 
-	MF_GlobalConfiguration.NRMInitialized = true;
+	MF_GlobalConfiguration->NRMInitialized = true;
 	MailFilter_Main_RunAppNRM(false);
 }
 
@@ -918,7 +951,7 @@ MF_MAIN_RUNLOOP:
 		
 		MFWorker_SetupPaths();
 		
-		strncpy(MFL_LicenseKey,MF_GlobalConfiguration.LicenseKey.c_str(),MF_GlobalConfiguration.LicenseKey.size() > MAX_PATH ? MAX_PATH : MF_GlobalConfiguration.LicenseKey.size() );
+		strncpy(MFL_LicenseKey,MF_GlobalConfiguration->LicenseKey.c_str(),MF_GlobalConfiguration->LicenseKey.size() > MAX_PATH ? MAX_PATH : MF_GlobalConfiguration->LicenseKey.size() );
 	    
 		// Start Thread: ** WORK **
 	#ifdef __NOVELL_LIBC__
@@ -959,7 +992,7 @@ MF_MAIN_RUNLOOP:
 		}
 
 		
-		if (MF_GlobalConfiguration.EnableNRMThread == true)
+		if (MF_GlobalConfiguration->EnableNRMThread == true)
 		{
 		#ifdef __NOVELL_LIBC__
 			if (!mf_nlmisloadedprotected())
@@ -990,7 +1023,7 @@ MF_MAIN_RUNLOOP:
 				std::string loadCmd = "LOAD ";
 				loadCmd += szProgramName;
 				loadCmd += " -t nrm ";
-				loadCmd += MF_GlobalConfiguration.config_directory;
+				loadCmd += MF_GlobalConfiguration->config_directory;
 				system(loadCmd.c_str());
 			}
 		#else
@@ -1073,7 +1106,7 @@ MF_MAIN_RUNLOOP:
 			if (MF_Thread_SMTP > 0)
 				NXThreadContinue (MF_Thread_SMTP);
 
-			if ( MF_GlobalConfiguration.NRMInitialized == true )
+			if ( MF_GlobalConfiguration->NRMInitialized == true )
 			{
 				MFD_Out(MFD_SOURCE_CONFIG,"shutting down NRM thread\n");
 				MailFilter_NRM_sigterm();
@@ -1107,7 +1140,7 @@ MF_MAIN_RUNLOOP:
 			
 			// * reinit config
 			// Read Configuration from File
-			if (!MF_GlobalConfiguration.ReadFromFile(""))
+			if (!MF_GlobalConfiguration->ReadFromFile(""))
 			{
 				MF_DisplayCriticalError("MAILFILTER: Restart failed\n");
 				MF_DisplayCriticalError("\tConfiguration Module reported an unrecoverable error.\n");
@@ -1121,7 +1154,7 @@ MF_MAIN_RUNLOOP:
 
 				// * reinit config
 				// Read Configuration from File
-				if (!MF_GlobalConfiguration.ReadFromFile(""))
+				if (!MF_GlobalConfiguration->ReadFromFile(""))
 				{
 					MF_DisplayCriticalError("MAILFILTER: Restart failed\n");
 					MF_DisplayCriticalError("\tConfiguration Module reported an unrecoverable error.\n");
@@ -1169,6 +1202,13 @@ int main( int argc, char *argv[ ])
 	++MFT_NLM_ThreadCount;
 	MF_NutInfo = NULL;
 	MF_ScreenID = NULL;
+	
+	__init_malloc();
+	
+	printf("MailFilter is starting...\n");
+	
+	MF_GlobalConfiguration = NULL;
+	MF_GlobalConfiguration = new MailFilter_Configuration::Configuration();
 
 #ifdef _MF_MEMTRACE
 	atexit(_mfd_tellallocccountonexit);
@@ -1221,11 +1261,15 @@ int main( int argc, char *argv[ ])
 	}
 #endif
 
+	ThreadSwitch();
+
 extern int MF_ParseCommandLine( int argc, char **argv );
 
 	// Parse Command Line and build some vars...
 	if (!MF_ParseCommandLine(argc,argv))
 		goto MF_MAIN_TERMINATE;
+
+	ThreadSwitch();
 
 	// Get NLM and Screen Handles
 #ifdef __NOVELL_LIBC__
@@ -1259,6 +1303,8 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 	signal(	SIGINT	, NLM_SignalHandler	);
 
 
+	ThreadSwitch();
+
 	int rc = 0;
 	
 	unlink("SYS:\\SYSTEM\\MFINST.NLM");
@@ -1266,7 +1312,9 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 	unlink("SYS:\\SYSTEM\\MFNRM.NLM");
 	unlink("SYS:\\SYSTEM\\MFUPGR.NLM");
 
-	switch (MF_GlobalConfiguration.ApplicationMode)
+	printf("startup...\n");
+
+	switch (MF_GlobalConfiguration->ApplicationMode)
 	{
 	case MailFilter_Configuration::SERVER:
 	
@@ -1276,8 +1324,8 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 
 		// Read Configuration from File
 		printf(MF_Msg(MSG_BOOT_CONFIGURATION));
-		MF_GlobalConfiguration.config_mode_strict = true;
-		if (!MF_GlobalConfiguration.ReadFromFile(""))
+		MF_GlobalConfiguration->config_mode_strict = true;
+		if (!MF_GlobalConfiguration->ReadFromFile(""))
 		{
 			MF_DisplayCriticalError("MAILFILTER: Could not read configuration. Terminating!\n");
 			goto MF_MAIN_TERMINATE;
@@ -1294,8 +1342,8 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 
 		// Read Configuration from File
 		printf(MF_Msg(MSG_BOOT_CONFIGURATION));
-		MF_GlobalConfiguration.config_mode_strict = false;
-		if (!MF_GlobalConfiguration.ReadFromFile(""))
+		MF_GlobalConfiguration->config_mode_strict = false;
+		if (!MF_GlobalConfiguration->ReadFromFile(""))
 		{
 			MF_DisplayCriticalError("MAILFILTER: Could not read configuration. Terminating!\n");
 			goto MF_MAIN_TERMINATE;
@@ -1314,8 +1362,8 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 
 		// Read Configuration from File
 		printf(MF_Msg(MSG_BOOT_CONFIGURATION));
-		MF_GlobalConfiguration.config_mode_strict = true;
-		if (!MF_GlobalConfiguration.ReadFromFile(""))
+		MF_GlobalConfiguration->config_mode_strict = true;
+		if (!MF_GlobalConfiguration->ReadFromFile(""))
 		{
 			MF_DisplayCriticalError("MAILFILTER: Could not read configuration. Terminating!\n");
 			goto MF_MAIN_TERMINATE;
@@ -1335,8 +1383,8 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 
 		// Read Configuration from File
 		printf(MF_Msg(MSG_BOOT_CONFIGURATION));
-		MF_GlobalConfiguration.config_mode_strict = true;
-		if (!MF_GlobalConfiguration.ReadFromFile(""))
+		MF_GlobalConfiguration->config_mode_strict = true;
+		if (!MF_GlobalConfiguration->ReadFromFile(""))
 		{
 			MF_DisplayCriticalError("MAILFILTER: Could not read configuration. Terminating!\n");
 			goto MF_MAIN_TERMINATE;
@@ -1356,9 +1404,9 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		MFD_UseMainScreen();
 		printf("  MailFilter_Configuration::INSTALL kick off!\n");
 		
-		MF_GlobalConfiguration.CreateFromInstallFile(MF_GlobalConfiguration.config_directory + "\\INSTALL.CFG");
+		MF_GlobalConfiguration->CreateFromInstallFile(MF_GlobalConfiguration->config_directory + "\\INSTALL.CFG");
 		printf("    Saving new configuration to file...\n");
-		MF_GlobalConfiguration.WriteToFile("");
+		MF_GlobalConfiguration->WriteToFile("");
 		printf("  MailFilter_Configuration::INSTALL complete!\n");
 #ifdef __NOVELL_LIBC__
 		if (MFT_Debug)
@@ -1371,10 +1419,10 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		MFD_UseMainScreen();
 		printf("  MailFilter_Configuration::UPGRADE kick off!\n");
 		
-		MF_GlobalConfiguration.config_mode_strict = false;
-		MF_GlobalConfiguration.ReadFromFile("");
+		MF_GlobalConfiguration->config_mode_strict = false;
+		MF_GlobalConfiguration->ReadFromFile("");
 		printf("    Saving new configuration to file...\n");
-		MF_GlobalConfiguration.WriteToFile("");
+		MF_GlobalConfiguration->WriteToFile("");
 		printf("  MailFilter_Configuration::UPGRADE complete!\n");
 #ifdef __NOVELL_LIBC__
 		if (MFT_Debug)

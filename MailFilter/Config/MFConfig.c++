@@ -51,10 +51,10 @@ std::string MF_ConfigReadString2(std::string ConfigFile, const int startByte)
 	
 	return Value;
 }
-std::string MF_ConfigReadString(std::string ConfigFile, const int Entry)
+/*std::string MF_ConfigReadString(std::string ConfigFile, const int Entry)
 {
 	return MF_ConfigReadString2(ConfigFile,Entry*(MAILFILTER_CONFIGURATION_LENGTH+1));
-}
+}*/
 
 int MF_ConfigReadInt(std::string ConfigFile, const int Entry)
 {
@@ -914,14 +914,14 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 			// License Key || Licensing reads this itself.
 			this->LicenseKey = MF_ConfigReadString2(pConfigFile, 240);
 
-	 		this->GWIARoot = MF_MakeValidPath(MF_ConfigReadString(pConfigFile, 1));
-	 		this->MFLTRoot = MF_MakeValidPath(MF_ConfigReadString(pConfigFile, 2));
-	 		this->DomainName = MF_ConfigReadString(pConfigFile, 3);
-	 		this->DomainEmailMailFilter = MF_ConfigReadString(pConfigFile, 4);
-	 		this->DomainEmailPostmaster = MF_ConfigReadString(pConfigFile, 5);
-	 		this->DomainHostname = MF_ConfigReadString(pConfigFile, 6);
-	 		this->Multi2One = MF_ConfigReadString(pConfigFile, 7);
-	 		this->BWLScheduleTime = MF_ConfigReadString(pConfigFile, 8);
+	 		this->GWIARoot = MF_MakeValidPath(MF_ConfigReadString2(pConfigFile, 1*(MAILFILTER_CONFIGURATION_LENGTH+1)));
+	 		this->MFLTRoot = MF_MakeValidPath(MF_ConfigReadString2(pConfigFile, 2*(MAILFILTER_CONFIGURATION_LENGTH+1)));
+	 		this->DomainName = MF_ConfigReadString2(pConfigFile, 3*(MAILFILTER_CONFIGURATION_LENGTH+1));
+	 		this->DomainEmailMailFilter = MF_ConfigReadString2(pConfigFile, 4*(MAILFILTER_CONFIGURATION_LENGTH+1));
+	 		this->DomainEmailPostmaster = MF_ConfigReadString2(pConfigFile, 5*(MAILFILTER_CONFIGURATION_LENGTH+1));
+	 		this->DomainHostname = MF_ConfigReadString2(pConfigFile, 6*(MAILFILTER_CONFIGURATION_LENGTH+1));
+	 		this->Multi2One = MF_ConfigReadString2(pConfigFile, 7*(MAILFILTER_CONFIGURATION_LENGTH+1));
+	 		this->BWLScheduleTime = MF_ConfigReadString2(pConfigFile, 8*(MAILFILTER_CONFIGURATION_LENGTH+1));
 			
 			this->DefaultNotification_InternalSender = (MailFilter_Configuration::Notification)
 				MF_ConfigReadInt(pConfigFile, iIntegerBase);

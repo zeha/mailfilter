@@ -76,7 +76,7 @@ static bool outputMailList(HINTERNET hndl, int startPage)
 	std::string szHttpPath;
 	std::string szScanPath;
 
-	szScanPath = MF_GlobalConfiguration.MFLTRoot + "\\MFPROB\\DROP\\";
+	szScanPath = MF_GlobalConfiguration->MFLTRoot + "\\MFPROB\\DROP\\";
 	szHttpPath = szScanPath;
 
 	MFD_Out(MFD_SOURCE_GENERIC,"NRM: have root: %s\n",szScanPath.c_str());
@@ -170,13 +170,14 @@ static bool outputMailList(HINTERNET hndl, int startPage)
 			// make direction var. and output file
 			iDirection = e[0] == 'S' ? MAILFILTER_MAILSOURCE_OUTGOING : MAILFILTER_MAILSOURCE_OUTGOING;
 			if (iDirection == MAILFILTER_MAILSOURCE_OUTGOING)
-				szFileOut = MF_GlobalConfiguration.MFLTRoot + "\\SEND\\" + e;
+				szFileOut = MF_GlobalConfiguration->MFLTRoot + "\\SEND\\" + e;
 			else
-				szFileOut = MF_GlobalConfiguration.GWIARoot + "\\RECEIVE\\" + e;
+				szFileOut = MF_GlobalConfiguration->GWIARoot + "\\RECEIVE\\" + e;
 
 			m = MailFilter_MailInit(e,iDirection);
 			if (m != NULL)
 			{
+				ThreadSwitch();
 				sprintf(m->szFileWork,"%s\\%s",szScanPath.c_str(),e);
 				if (MF_ParseMail(m, true) == 0)
 				{
@@ -206,8 +207,8 @@ static bool outputMailList(HINTERNET hndl, int startPage)
 				}
 				MailFilter_MailDestroy(m);
 			}
-			ThreadSwitch();
-		}		
+		}
+		ThreadSwitch();	
 	}
 
 	DL_HttpSendData(hndl,"\n<tr>\n");
@@ -327,7 +328,7 @@ UINT32 MF_NLM_RM_HttpHandler_Restore(
 	if(CONTROL_INITIALIZATION_BIT & InformationBits)
 		goto ERR_END;
 
-	if ( (MF_GlobalConfiguration.MFLTRoot == "") || (MF_GlobalConfiguration.GWIARoot == "") )
+	if ( (MF_GlobalConfiguration->MFLTRoot == "") || (MF_GlobalConfiguration->GWIARoot == "") )
 	{
 		DL_HttpSendErrorResponse(hndl, HTTP_INTERNAL_SERVER_ERROR);
 		rCode = HTTP_INTERNAL_SERVER_ERROR;
@@ -392,7 +393,7 @@ UINT32 MF_NLM_RM_HttpHandler_Restore(
 			char *						szFileOut = (char*)_mfd_malloc(MAX_PATH,"szFileOut");
 			int							iDirection = 0;
 
-			sprintf(scanPath,"%s\\MFPROB\\DROP",MF_GlobalConfiguration.MFLTRoot.c_str());
+			sprintf(scanPath,"%s\\MFPROB\\DROP",MF_GlobalConfiguration->MFLTRoot.c_str());
 			chdir(scanPath);
 
 			if (memicmp(pathBufferPtr+MAILFILTER_NRM_SERVICETAG_RESTORE_LEN+2, "RESTORE/", 8) == 0)
@@ -402,9 +403,9 @@ UINT32 MF_NLM_RM_HttpHandler_Restore(
 				
 				iDirection = (szFile[0] == 'S') ? 1 : 2;
 				if (iDirection == 1)
-					sprintf(szFileOut,"%s\\SEND\\%s",MF_GlobalConfiguration.MFLTRoot.c_str(),szFile);
+					sprintf(szFileOut,"%s\\SEND\\%s",MF_GlobalConfiguration->MFLTRoot.c_str(),szFile);
 				if (iDirection == 2)
-					sprintf(szFileOut,"%s\\RECEIVE\\%s",MF_GlobalConfiguration.GWIARoot.c_str(),szFile);
+					sprintf(szFileOut,"%s\\RECEIVE\\%s",MF_GlobalConfiguration->GWIARoot.c_str(),szFile);
 					
 				sprintf(szList,"%s\\%s",scanPath,szFile);
 				if (!MF_NRM_RestoreFile(szList,szFileOut,"RESTORE")) 
@@ -424,9 +425,9 @@ UINT32 MF_NLM_RM_HttpHandler_Restore(
 
 				iDirection = (szFile[0] == 'S') ? 1 : 2;
 				if (iDirection == 1)
-					sprintf(szFileOut,"%s\\SEND\\%s",MF_GlobalConfiguration.GWIARoot.c_str(),szFile);
+					sprintf(szFileOut,"%s\\SEND\\%s",MF_GlobalConfiguration->GWIARoot.c_str(),szFile);
 				if (iDirection == 2)
-					sprintf(szFileOut,"%s\\RECEIVE\\%s",MF_GlobalConfiguration.MFLTRoot.c_str(),szFile);
+					sprintf(szFileOut,"%s\\RECEIVE\\%s",MF_GlobalConfiguration->MFLTRoot.c_str(),szFile);
 					
 				sprintf(szList,"%s\\%s",scanPath,szFile);
 				if (!MF_NRM_RestoreFile(szList,szFileOut,"RECHECK")) 
@@ -536,7 +537,7 @@ UINT32 MF_NLM_RM_HttpHandler(
 			u.netware_minor,
 			u.servicepack));
 
-	if (MF_GlobalConfiguration.NRMInitialized == true)
+	if (MF_GlobalConfiguration->NRMInitialized == true)
 	{
 /*		std::string sztemp;
 		char buffer [sizeof(long)*8+1];
@@ -580,11 +581,11 @@ UINT32 MF_NLM_RM_HttpHandler(
 	/* Config Info */
 	DL_HttpSendData(hndl,"  <b>Configuration:</b><br>");
 
-	DL_HttpSendData(hndl,strprintf(" &nbsp;&nbsp; Configuration File: %s<br>\n",MF_GlobalConfiguration.config_file));
+	DL_HttpSendData(hndl,strprintf(" &nbsp;&nbsp; Configuration File: %s<br>\n",MF_GlobalConfiguration->config_file));
 	DL_HttpSendData(hndl,"    <br>\n");
 	
-	DL_HttpSendData(hndl,strprintf(" &nbsp;&nbsp; MailFilter Home: %s<br>\n",MF_GlobalConfiguration.MFLTRoot));
-	DL_HttpSendData(hndl,strprintf(" &nbsp;&nbsp; GWIA Home: %s<br>\n",MF_GlobalConfiguration.GWIARoot));
+	DL_HttpSendData(hndl,strprintf(" &nbsp;&nbsp; MailFilter Home: %s<br>\n",MF_GlobalConfiguration->MFLTRoot));
+	DL_HttpSendData(hndl,strprintf(" &nbsp;&nbsp; GWIA Home: %s<br>\n",MF_GlobalConfiguration->GWIARoot));
 	
 	
 	// end
@@ -648,7 +649,7 @@ int MF_NLM_RM_Init()
 		/* I- lpFailureRsnCode	*/	&rCode
 		);
 
-	if (MF_GlobalConfiguration.EnableNRMRestore)
+	if (MF_GlobalConfiguration->EnableNRMRestore)
 	bCode = DL_RegisterServiceMethodEx(
 		/* I- pzServiceName		*/	"E-Mail Restore",
 		/* I- pServiceTag 		*/	MAILFILTER_NRM_SERVICETAG_RESTORE,
@@ -682,7 +683,7 @@ void MF_NLM_RM_DeInit()
 	**	Deregister both service methods before the NLM unloads, in the 
 	**	opposite order that they were registered.
 	*/
-	if (MF_GlobalConfiguration.EnableNRMRestore)
+	if (MF_GlobalConfiguration->EnableNRMRestore)
 	bCode = DL_DeRegisterServiceMethod(
 		/* I- pzServiceName		*/	"Mail Restore",
 		/* I- pServiceTag 		*/	MAILFILTER_NRM_SERVICETAG_RESTORE,

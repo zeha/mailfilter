@@ -32,7 +32,7 @@ bool MF_StatusInit()
 	atexit(MF_StatusFree);
 #endif
 
-	sprintf(LogFile, "%sMailFlt.log",MF_GlobalConfiguration.LogDirectory.c_str());
+	sprintf(LogFile, "%sMailFlt.log",MF_GlobalConfiguration->LogDirectory.c_str());
 	MF_Log_FileHandle = NULL;
 	// Open LogFile   ascii (=t), append //, commit
 	MF_Log_FileHandle = fopen(LogFile,"a+");	//atc
@@ -90,7 +90,7 @@ void MF_StatusSendDailyReport(const char* szLogFile)
 	//
 	// If requested, send the admin the daily status report
 	//
-	if (MF_GlobalConfiguration.NotificationAdminDailyReport)
+	if (MF_GlobalConfiguration->NotificationAdminDailyReport)
 	{
 		char szTemp[500];
 		char szEmail[8000];
@@ -133,8 +133,8 @@ static bool MF_StatusCycleLog2()
 	if (LogFileOld == NULL)	{ MF_OutOfMemoryHandler();	MF_StatusUI_Update ( "*** ERROR CYCLING LOG *** (Alloc Failed)" );	return false; }
 	if (LogFileNew == NULL)	{ MF_OutOfMemoryHandler();	MF_StatusUI_Update ( "*** ERROR CYCLING LOG *** (Alloc Failed)" );	return false; }
 
-	sprintf( LogFileOld , "%sMailFlt.log"  , MF_GlobalConfiguration.LogDirectory.c_str());
-	sprintf( LogFileNew , "%sMailFlt.%03i" , MF_GlobalConfiguration.LogDirectory.c_str() , MFT_StatusLogCycledOnDay);
+	sprintf( LogFileOld , "%sMailFlt.log"  , MF_GlobalConfiguration->LogDirectory.c_str());
+	sprintf( LogFileNew , "%sMailFlt.%03i" , MF_GlobalConfiguration->LogDirectory.c_str() , MFT_StatusLogCycledOnDay);
 
 	unlink ( LogFileNew );
 
@@ -151,7 +151,7 @@ static bool MF_StatusCycleLog2()
 	_mfd_free(LogFileNew,"LogFileNew");
 	_mfd_free(LogFileOld,"LogFileOld");
 
-	if ( failed && MF_GlobalConfiguration.NotificationAdminLogs )
+	if ( failed && MF_GlobalConfiguration->NotificationAdminLogs )
 		MF_EMailPostmasterGeneric("Log Cycling Failed","An error occoured while cycling the log files.","","");
 
 	return MF_StatusInit();

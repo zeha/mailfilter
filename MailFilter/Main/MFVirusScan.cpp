@@ -20,14 +20,14 @@ long MFVS_MakeScanPath (char* buffer, unsigned int buflen)
 
 	int iScanDir;
 	bool bScanDir = false;
-	for (iScanDir = 0; iScanDir < MF_GlobalConfiguration.MailscanDirNum; iScanDir++)
+	for (iScanDir = 0; iScanDir < MF_GlobalConfiguration->MailscanDirNum; iScanDir++)
 	{
 		// Check if Scanner Status File exists...
-		sprintf(szScanFile,"%s"IX_DIRECTORY_SEPARATOR_STR"MFSCAN"IX_DIRECTORY_SEPARATOR_STR"%04i"IX_DIRECTORY_SEPARATOR_STR"MAILFLT.MFS",MF_GlobalConfiguration.MFLTRoot.c_str(),iScanDir);
+		sprintf(szScanFile,"%s"IX_DIRECTORY_SEPARATOR_STR"MFSCAN"IX_DIRECTORY_SEPARATOR_STR"%04i"IX_DIRECTORY_SEPARATOR_STR"MAILFLT.MFS",MF_GlobalConfiguration->MFLTRoot.c_str(),iScanDir);
 		if (access(szScanFile,F_OK))
 		{
 			// OK, Scanner Status File NOT found
-			sprintf(szScanDir,"%s"IX_DIRECTORY_SEPARATOR_STR"MFSCAN"IX_DIRECTORY_SEPARATOR_STR"%04i"IX_DIRECTORY_SEPARATOR_STR,MF_GlobalConfiguration.MFLTRoot.c_str(),iScanDir);
+			sprintf(szScanDir,"%s"IX_DIRECTORY_SEPARATOR_STR"MFSCAN"IX_DIRECTORY_SEPARATOR_STR"%04i"IX_DIRECTORY_SEPARATOR_STR,MF_GlobalConfiguration->MFLTRoot.c_str(),iScanDir);
 			
 			// Check if Lock file exists...
 			sprintf(szScanFile,"%sMAILFLT.LCK",szScanDir);
@@ -161,7 +161,7 @@ long MFVS_CheckWinmailDat(const char* szAttFile, std::string szTNEFFilename, Mai
 				case LIBTNEF_TYPE_ATTACHMENTDATA:
 
 					MFD_Out(MFD_SOURCE_MAIL," -> TNEF found attachment data\n");
-					if (MF_GlobalConfiguration.EnableAttachmentDecoder)
+					if (MF_GlobalConfiguration->EnableAttachmentDecoder)
 					{
 						MFD_Out(MFD_SOURCE_MAIL," -> TNEF decoding attachment\n");
 						// Extract Attachment

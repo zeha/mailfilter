@@ -118,7 +118,7 @@ static void MFConfig_ImportLicenseKey(void *)
 					cResult = strstr(szTemp,"KEY: ");	
 					if (cResult != NULL)
 						{ 
-						  MF_GlobalConfiguration.LicenseKey = cResult+5;
+						  MF_GlobalConfiguration->LicenseKey = cResult+5;
 						  if (formatPosition==2) formatPosition = 3;
 						} else formatPosition=0;		
 				}
@@ -284,8 +284,8 @@ static void MFConfig_UpdateFilterList()
 	// insert new stuff
 	{
 	
-		MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator first = MF_GlobalConfiguration.filterList.begin();
-		MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator last = MF_GlobalConfiguration.filterList.end();
+		MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator first = MF_GlobalConfiguration->filterList.begin();
+		MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator last = MF_GlobalConfiguration->filterList.end();
 
 		int curItem = 0;
 		for (; first != last; ++first)
@@ -374,12 +374,12 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 	nutHandle = nutHandle;	/* rid compiler warning */
 	
 	defaultNotify = 0;
-	if (MF_GlobalConfiguration.DefaultNotification_AdminIncoming)		defaultNotify |= MAILFILTER_NOTIFICATION_ADMIN_INCOMING;
-	if (MF_GlobalConfiguration.DefaultNotification_AdminOutgoing)		defaultNotify |= MAILFILTER_NOTIFICATION_ADMIN_OUTGOING;
-	if (MF_GlobalConfiguration.DefaultNotification_InternalRecipient)	defaultNotify |= MAILFILTER_NOTIFICATION_RECIPIENT_INCOMING;
-	if (MF_GlobalConfiguration.DefaultNotification_InternalSender)		defaultNotify |= MAILFILTER_NOTIFICATION_SENDER_OUTGOING;
-	if (MF_GlobalConfiguration.DefaultNotification_ExternalRecipient)	defaultNotify |= MAILFILTER_NOTIFICATION_RECIPIENT_OUTGOING;
-	if (MF_GlobalConfiguration.DefaultNotification_ExternalSender)		defaultNotify |= MAILFILTER_NOTIFICATION_SENDER_INCOMING;
+	if (MF_GlobalConfiguration->DefaultNotification_AdminIncoming)		defaultNotify |= MAILFILTER_NOTIFICATION_ADMIN_INCOMING;
+	if (MF_GlobalConfiguration->DefaultNotification_AdminOutgoing)		defaultNotify |= MAILFILTER_NOTIFICATION_ADMIN_OUTGOING;
+	if (MF_GlobalConfiguration->DefaultNotification_InternalRecipient)	defaultNotify |= MAILFILTER_NOTIFICATION_RECIPIENT_INCOMING;
+	if (MF_GlobalConfiguration->DefaultNotification_InternalSender)		defaultNotify |= MAILFILTER_NOTIFICATION_SENDER_OUTGOING;
+	if (MF_GlobalConfiguration->DefaultNotification_ExternalRecipient)	defaultNotify |= MAILFILTER_NOTIFICATION_RECIPIENT_OUTGOING;
+	if (MF_GlobalConfiguration->DefaultNotification_ExternalSender)		defaultNotify |= MAILFILTER_NOTIFICATION_SENDER_INCOMING;
 	
 	szTemp[0] = 0;
 	
@@ -442,7 +442,7 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 
 			if (rc == 1)
 			{
-				MF_GlobalConfiguration.filterList.clear();
+				MF_GlobalConfiguration->filterList.clear();
 			}
 			
 			//
@@ -451,7 +451,7 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 			
 			NWSStartWait(0,0,MF_NutInfo);
 		
-			if (!MF_GlobalConfiguration.ReadFilterListFromRulePackage(szTemp))
+			if (!MF_GlobalConfiguration->ReadFilterListFromRulePackage(szTemp))
 				NWSDisplayErrorText ( MSG_ERROR_UNKNOWN_ERROR , NUT_SEVERITY_WARNING , MF_NutInfo , szTemp );
 
 			NWSEndWait(MF_NutInfo);
@@ -498,7 +498,7 @@ static void MFConfig_Util_ExportListToFile(void* nutHandle)
 		} else {
 			NWSStartWait(0,0,MF_NutInfo);
 
-			if (!MF_GlobalConfiguration.WriteFilterList(szTemp))
+			if (!MF_GlobalConfiguration->WriteFilterList(szTemp))
 				NWSDisplayErrorText ( MSG_ERROR_UNKNOWN_ERROR , NUT_SEVERITY_WARNING , MF_NutInfo , szTemp );
 			
 			NWSEndWait(MF_NutInfo);
@@ -777,14 +777,14 @@ static int MFConfig_EditFilters_Act(LONG keyPressed, LIST **elementSelected,
 			myItem.action = (MailFilter_Configuration::FilterAction)MAILFILTER_MATCHACTION_DROP_MAIL;
 
 			myItem.notify = (MailFilter_Configuration::Notification)(MAILFILTER_NOTIFICATION_ADMIN_INCOMING | MAILFILTER_NOTIFICATION_ADMIN_OUTGOING);
-			if (MF_GlobalConfiguration.DefaultNotification_InternalRecipient)	myItem.notify = (MailFilter_Configuration::Notification)(myItem.notify | MAILFILTER_NOTIFICATION_RECIPIENT_INCOMING);
-			if (MF_GlobalConfiguration.DefaultNotification_InternalSender)		myItem.notify = (MailFilter_Configuration::Notification)(myItem.notify | MAILFILTER_NOTIFICATION_SENDER_OUTGOING);
-			if (MF_GlobalConfiguration.DefaultNotification_ExternalRecipient)	myItem.notify = (MailFilter_Configuration::Notification)(myItem.notify | MAILFILTER_NOTIFICATION_RECIPIENT_OUTGOING);
-			if (MF_GlobalConfiguration.DefaultNotification_ExternalSender)		myItem.notify = (MailFilter_Configuration::Notification)(myItem.notify | MAILFILTER_NOTIFICATION_SENDER_INCOMING);
+			if (MF_GlobalConfiguration->DefaultNotification_InternalRecipient)	myItem.notify = (MailFilter_Configuration::Notification)(myItem.notify | MAILFILTER_NOTIFICATION_RECIPIENT_INCOMING);
+			if (MF_GlobalConfiguration->DefaultNotification_InternalSender)		myItem.notify = (MailFilter_Configuration::Notification)(myItem.notify | MAILFILTER_NOTIFICATION_SENDER_OUTGOING);
+			if (MF_GlobalConfiguration->DefaultNotification_ExternalRecipient)	myItem.notify = (MailFilter_Configuration::Notification)(myItem.notify | MAILFILTER_NOTIFICATION_RECIPIENT_OUTGOING);
+			if (MF_GlobalConfiguration->DefaultNotification_ExternalSender)		myItem.notify = (MailFilter_Configuration::Notification)(myItem.notify | MAILFILTER_NOTIFICATION_SENDER_INCOMING);
 			
 			
 			rc = MFConfig_EditFilterDialog(&myItem);
-			MF_GlobalConfiguration.filterList.push_back(myItem);
+			MF_GlobalConfiguration->filterList.push_back(myItem);
 //			MF_Filter_Sort();
 			return rc;
 
@@ -792,16 +792,16 @@ static int MFConfig_EditFilters_Act(LONG keyPressed, LIST **elementSelected,
 			int ci = *(int *)((*elementSelected)->otherInfo);
 			MFD_Out(MFD_SOURCE_GENERIC,"debug: %d\n",ci);
 
-			MAILFILTER_CONFIGURATION_FILTERLISTTYPE::iterator first = MF_GlobalConfiguration.filterList.begin();
+			MAILFILTER_CONFIGURATION_FILTERLISTTYPE::iterator first = MF_GlobalConfiguration->filterList.begin();
 			first += ci;
 
-			MF_GlobalConfiguration.filterList.erase(first);
+			MF_GlobalConfiguration->filterList.erase(first);
 
 			return -2;
 
 
 		case M_SELECT:
-			rc = MFConfig_EditFilterDialog(&MF_GlobalConfiguration.filterList[*(unsigned int *)((*elementSelected)->otherInfo)]);
+			rc = MFConfig_EditFilterDialog(&MF_GlobalConfiguration->filterList[*(unsigned int *)((*elementSelected)->otherInfo)]);
 			return rc;
 		}
 
@@ -841,8 +841,8 @@ static void MFConfig_EditFilters()
 	/*------------------------------------------------------------------------
 	*/
 	
-	MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator first = MF_GlobalConfiguration.filterList.begin();
-	MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator last = MF_GlobalConfiguration.filterList.end();
+	MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator first = MF_GlobalConfiguration->filterList.begin();
+	MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator last = MF_GlobalConfiguration->filterList.end();
 
 	int curItem = 0;
 	for (; first != last; ++first)
@@ -891,7 +891,7 @@ static void MFConfig_EditFilters()
 static void MFConfig_Util_Sort(void* nutHandle)
 {
 #pragma unused(nutHandle)
-	sort(MF_GlobalConfiguration.filterList.begin(),MF_GlobalConfiguration.filterList.end(),CompareFilters());
+	sort(MF_GlobalConfiguration->filterList.begin(),MF_GlobalConfiguration->filterList.end(),CompareFilters());
 	MFConfig_UpdateFilterList();
 	
 	NWSUngetKey(UGK_SPECIAL_KEY,UGK_REFRESH_KEY,MF_NutInfo);
@@ -910,10 +910,10 @@ static void MFConfig_EditLicense()
 
 	newLicenseKey[0]=0;
 
-	if (MF_GlobalConfiguration.LicenseKey != "")
+	if (MF_GlobalConfiguration->LicenseKey != "")
 	{
-		newLicenseKey[0]=( char)MF_GlobalConfiguration.LicenseKey.c_str()[0];
-		newLicenseKey[1]=( char)MF_GlobalConfiguration.LicenseKey.c_str()[1];
+		newLicenseKey[0]=( char)MF_GlobalConfiguration->LicenseKey.c_str()[0];
+		newLicenseKey[1]=( char)MF_GlobalConfiguration->LicenseKey.c_str()[1];
 		newLicenseKey[2]='.';
 		newLicenseKey[3]='.';
 		newLicenseKey[4]='.';
@@ -977,7 +977,7 @@ static void MFConfig_EditLicense()
 	
 	if (formSaved == -2)
 	{
-		MF_GlobalConfiguration.LicenseKey = newLicenseKey;
+		MF_GlobalConfiguration->LicenseKey = newLicenseKey;
 	}
 	
 #endif
@@ -1002,17 +1002,17 @@ static void MFConfig_EditConfig()
 	char	newLoginUsername[MAILFILTER_CONFIGURATION_LENGTH];
 	char	newLoginPassword[MAILFILTER_CONFIGURATION_LENGTH];
 	char	newEmailOffice[50];
-	BOOL	newNotification_InternalRcpt = (BOOL)MF_GlobalConfiguration.DefaultNotification_InternalRecipient;
-	BOOL	newNotification_InternalSndr = (BOOL)MF_GlobalConfiguration.DefaultNotification_InternalSender;
-	BOOL	newNotification_ExternalRcpt = (BOOL)MF_GlobalConfiguration.DefaultNotification_ExternalRecipient;
-	BOOL	newNotification_ExternalSndr = (BOOL)MF_GlobalConfiguration.DefaultNotification_ExternalSender;
-	BOOL	newNotification_AdminIn = (BOOL)MF_GlobalConfiguration.DefaultNotification_AdminIncoming;
-	BOOL	newNotification_AdminOut = (BOOL)MF_GlobalConfiguration.DefaultNotification_AdminOutgoing;
-	BOOL	newNotification_AdminLogs = (BOOL)MF_GlobalConfiguration.NotificationAdminLogs;
-	BOOL	newNotification_AdminMailsKilled = (BOOL)MF_GlobalConfiguration.NotificationAdminMailsKilled;
-	BOOL	newNotification_AdminDailyReport = (BOOL)MF_GlobalConfiguration.NotificationAdminDailyReport;
-	LONG	newProblemDir_MaxSize = (LONG)MF_GlobalConfiguration.ProblemDirMaxSize;
-	LONG	newProblemDir_MaxAge = (LONG)MF_GlobalConfiguration.ProblemDirMaxAge;
+	BOOL	newNotification_InternalRcpt = (BOOL)MF_GlobalConfiguration->DefaultNotification_InternalRecipient;
+	BOOL	newNotification_InternalSndr = (BOOL)MF_GlobalConfiguration->DefaultNotification_InternalSender;
+	BOOL	newNotification_ExternalRcpt = (BOOL)MF_GlobalConfiguration->DefaultNotification_ExternalRecipient;
+	BOOL	newNotification_ExternalSndr = (BOOL)MF_GlobalConfiguration->DefaultNotification_ExternalSender;
+	BOOL	newNotification_AdminIn = (BOOL)MF_GlobalConfiguration->DefaultNotification_AdminIncoming;
+	BOOL	newNotification_AdminOut = (BOOL)MF_GlobalConfiguration->DefaultNotification_AdminOutgoing;
+	BOOL	newNotification_AdminLogs = (BOOL)MF_GlobalConfiguration->NotificationAdminLogs;
+	BOOL	newNotification_AdminMailsKilled = (BOOL)MF_GlobalConfiguration->NotificationAdminMailsKilled;
+	BOOL	newNotification_AdminDailyReport = (BOOL)MF_GlobalConfiguration->NotificationAdminDailyReport;
+	LONG	newProblemDir_MaxSize = (LONG)MF_GlobalConfiguration->ProblemDirMaxSize;
+	LONG	newProblemDir_MaxAge = (LONG)MF_GlobalConfiguration->ProblemDirMaxAge;
 	char	newPathGwia[MAILFILTER_CONFIGURATION_LENGTH];
 	char	newPathMflt[MAILFILTER_CONFIGURATION_LENGTH];
 //	char	newDNSBLZone[MAILFILTER_CONFIGURATION_LENGTH];
@@ -1020,13 +1020,13 @@ static void MFConfig_EditConfig()
 	LONG	newScanDirWait = 0;
 	LONG	newGwiaVersion = 0;
 	char	newControlPassword[MAILFILTER_CONFIGURATION_LENGTH];
-  	BOOL	newEnableAttachmentDecoder = (BOOL)MF_GlobalConfiguration.EnableAttachmentDecoder;
-  	BOOL	newEnablePFA = (BOOL)MF_GlobalConfiguration.EnablePFAFunctionality;
-  	BOOL	newEnableNRMThread = (BOOL)MF_GlobalConfiguration.EnableNRMThread;
-  	BOOL	newEnableNRMRestore = (BOOL)MF_GlobalConfiguration.EnableNRMRestore;
-	BOOL	newDropBrokenMessages = (BOOL)MF_GlobalConfiguration.DropBrokenMessages;
-	BOOL	newDropPartialMessages = (BOOL)MF_GlobalConfiguration.DropPartialMessages;
-	BOOL	newRequireAVA = (BOOL)MF_GlobalConfiguration.RequireAVA;
+  	BOOL	newEnableAttachmentDecoder = (BOOL)MF_GlobalConfiguration->EnableAttachmentDecoder;
+  	BOOL	newEnablePFA = (BOOL)MF_GlobalConfiguration->EnablePFAFunctionality;
+  	BOOL	newEnableNRMThread = (BOOL)MF_GlobalConfiguration->EnableNRMThread;
+  	BOOL	newEnableNRMRestore = (BOOL)MF_GlobalConfiguration->EnableNRMRestore;
+	BOOL	newDropBrokenMessages = (BOOL)MF_GlobalConfiguration->DropBrokenMessages;
+	BOOL	newDropPartialMessages = (BOOL)MF_GlobalConfiguration->DropPartialMessages;
+	BOOL	newRequireAVA = (BOOL)MF_GlobalConfiguration->RequireAVA;
 
 	NWSPushList(MF_NutInfo);
 	NWSInitForm(MF_NutInfo);
@@ -1037,41 +1037,41 @@ static void MFConfig_EditConfig()
 	line = 0;
 	
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_GENERAL_PATH_GWIA], MF_NutInfo);
-	strcpy (newPathGwia, MF_GlobalConfiguration.GWIARoot.c_str());
+	strcpy (newPathGwia, MF_GlobalConfiguration->GWIARoot.c_str());
 	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newPathGwia, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z\\/{}[]()=#-_.,:;!§$&+~0..9", EF_SET, NULL, MF_NutInfo); 
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_GENERAL_PATH_MFLT], MF_NutInfo);
-	strcpy (newPathMflt, MF_GlobalConfiguration.MFLTRoot.c_str());
+	strcpy (newPathMflt, MF_GlobalConfiguration->MFLTRoot.c_str());
 	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newPathMflt, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z\\/{}[]()=#-_.,:;!§$&+~0..9", EF_SET, NULL, MF_NutInfo); 
 	line++;
 
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_DOMAIN_DOMAIN_NAME], MF_NutInfo);
-	strcpy (newDomainName, MF_GlobalConfiguration.DomainName.c_str());
+	strcpy (newDomainName, MF_GlobalConfiguration->DomainName.c_str());
 	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newDomainName, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z_-,.0..9", EF_SET, NULL, MF_NutInfo); 
 
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_DOMAIN_DOMAIN_HOSTNAME], MF_NutInfo);
-	strcpy (newDomainHostname, MF_GlobalConfiguration.DomainHostname.c_str());
+	strcpy (newDomainHostname, MF_GlobalConfiguration->DomainHostname.c_str());
 	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newDomainHostname, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z_-.0..9", EF_SET, NULL, MF_NutInfo); 
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_DOMAIN_POSTMASTER], MF_NutInfo);
-	strcpy (newEmailPostMaster, MF_GlobalConfiguration.DomainEmailPostmaster.c_str());
+	strcpy (newEmailPostMaster, MF_GlobalConfiguration->DomainEmailPostmaster.c_str());
 	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newEmailPostMaster, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z@_-+!<>.0..9", EF_SET, NULL, MF_NutInfo); 
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_DOMAIN_MAILFILTER], MF_NutInfo);
-	strcpy (newEmailMailFilter, MF_GlobalConfiguration.DomainEmailMailFilter.c_str());
+	strcpy (newEmailMailFilter, MF_GlobalConfiguration->DomainEmailMailFilter.c_str());
 	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newEmailMailFilter, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z@_-+!<>.0..9", EF_SET, NULL, MF_NutInfo); 
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"General E-Mail Address without Domain Names:", MF_NutInfo);
 	NWSAppendCommentField (line, 61, (_MF_NUTCHAR)"(blank=disabled)", MF_NutInfo);
-	strcpy (newEmailOffice, MF_GlobalConfiguration.Multi2One.c_str());
+	strcpy (newEmailOffice, MF_GlobalConfiguration->Multi2One.c_str());
 	NWSAppendStringField (line+1, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newEmailOffice, (_MF_NUTCHAR)"A..Za..z_-+!.0..9", EF_SET, MF_NutInfo);
 	line += 2;
 	
@@ -1079,12 +1079,12 @@ static void MFConfig_EditConfig()
 	
 	// username+password
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_LOGIN_USERNAME], MF_NutInfo);
-	strcpy (newLoginUsername, MF_GlobalConfiguration.LoginUserName.c_str());
+	strcpy (newLoginUsername, MF_GlobalConfiguration->LoginUserName.c_str());
 	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newLoginUsername, MAILFILTER_CONFIGURATION_LENGTH, NULL, EF_ANY, NULL, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_LOGIN_PASSWORD], MF_NutInfo);
-	strcpy (newLoginPassword, MF_GlobalConfiguration.LoginUserPassword.c_str());
+	strcpy (newLoginPassword, MF_GlobalConfiguration->LoginUserPassword.c_str());
 	NWSAppendPasswordField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newLoginPassword, MAILFILTER_CONFIGURATION_LENGTH, NULL, true, NULL, '*', MF_NutInfo);
 	line++;
 
@@ -1092,23 +1092,23 @@ static void MFConfig_EditConfig()
 
 	// schedule
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_BWL_SCHEDULETIME], MF_NutInfo);
-	strcpy (newScheduleTime, MF_GlobalConfiguration.BWLScheduleTime.c_str());
+	strcpy (newScheduleTime, MF_GlobalConfiguration->BWLScheduleTime.c_str());
 	NWSAppendScrollableStringField (line, 50, 25, NORMAL_FIELD, (_MF_NUTCHAR)newScheduleTime, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"0..9-:,", EF_SET, NULL, MF_NutInfo); 
 	line++;
 
 	// other stuff
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"GWIA Mode/Version: (see manual)", MF_NutInfo);
-	newGwiaVersion = (unsigned long)MF_GlobalConfiguration.GWIAVersion;
+	newGwiaVersion = (unsigned long)MF_GlobalConfiguration->GWIAVersion;
 	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newGwiaVersion, 550, 600, NULL, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Number of Mail Queues:", MF_NutInfo);
-	newScanDirNum = (unsigned long)MF_GlobalConfiguration.MailscanDirNum;
+	newScanDirNum = (unsigned long)MF_GlobalConfiguration->MailscanDirNum;
 	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newScanDirNum, 0, 50, NULL, MF_NutInfo);
 	line++;
 
 /*	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"MailFilter Control/Config Password:", MF_NutInfo);
-	strcpy (newControlPassword, MF_GlobalConfiguration.ControlPassword.c_str());
+	strcpy (newControlPassword, MF_GlobalConfiguration->ControlPassword.c_str());
 	NWSAppendPasswordField(line, 50, 20, NORMAL_FIELD, (_MF_NUTCHAR)newControlPassword, 50, NULL, true, NULL, '*', MF_NutInfo); 
 	line++;
 */	
@@ -1154,7 +1154,7 @@ static void MFConfig_EditConfig()
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Seconds to wait for Real Time Scan:", MF_NutInfo);
-	newScanDirWait = (unsigned long)MF_GlobalConfiguration.MailscanTimeout;
+	newScanDirWait = (unsigned long)MF_GlobalConfiguration->MailscanTimeout;
 	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newScanDirWait, 0, 600, NULL, MF_NutInfo);
 	line++;
 
@@ -1229,53 +1229,53 @@ static void MFConfig_EditConfig()
 	*/
 	if (formSaved)
 	{
-		MF_GlobalConfiguration.GWIARoot					= newPathGwia;
-		MF_GlobalConfiguration.MFLTRoot					= newPathMflt;
-		MF_GlobalConfiguration.DomainName				= newDomainName;
-		MF_GlobalConfiguration.DomainHostname			= newDomainHostname;
-		MF_GlobalConfiguration.DomainEmailPostmaster	= newEmailPostMaster;
-		MF_GlobalConfiguration.DomainEmailMailFilter	= newEmailMailFilter;
-		MF_GlobalConfiguration.BWLScheduleTime			= newScheduleTime;
-		MF_GlobalConfiguration.Multi2One				= newEmailOffice;
-		MF_GlobalConfiguration.LoginUserName			= newLoginUsername;
-		MF_GlobalConfiguration.LoginUserPassword		= newLoginPassword;
+		MF_GlobalConfiguration->GWIARoot					= newPathGwia;
+		MF_GlobalConfiguration->MFLTRoot					= newPathMflt;
+		MF_GlobalConfiguration->DomainName				= newDomainName;
+		MF_GlobalConfiguration->DomainHostname			= newDomainHostname;
+		MF_GlobalConfiguration->DomainEmailPostmaster	= newEmailPostMaster;
+		MF_GlobalConfiguration->DomainEmailMailFilter	= newEmailMailFilter;
+		MF_GlobalConfiguration->BWLScheduleTime			= newScheduleTime;
+		MF_GlobalConfiguration->Multi2One				= newEmailOffice;
+		MF_GlobalConfiguration->LoginUserName			= newLoginUsername;
+		MF_GlobalConfiguration->LoginUserPassword		= newLoginPassword;
 
 		// check if pass has changed, if yes encrypt ...
-		if (strcmp(MF_GlobalConfiguration.ControlPassword.c_str(),newControlPassword) != 0)
+		if (strcmp(MF_GlobalConfiguration->ControlPassword.c_str(),newControlPassword) != 0)
 			MFU_strxor((char*)newControlPassword,(char)18);
 			
-		MF_GlobalConfiguration.ControlPassword = 			newControlPassword;
+		MF_GlobalConfiguration->ControlPassword = 			newControlPassword;
 
-		MF_GlobalConfiguration.DefaultNotification_AdminIncoming =(MailFilter_Configuration::Notification)newNotification_AdminIn;
-		MF_GlobalConfiguration.DefaultNotification_AdminOutgoing =(MailFilter_Configuration::Notification)newNotification_AdminOut;
+		MF_GlobalConfiguration->DefaultNotification_AdminIncoming =(MailFilter_Configuration::Notification)newNotification_AdminIn;
+		MF_GlobalConfiguration->DefaultNotification_AdminOutgoing =(MailFilter_Configuration::Notification)newNotification_AdminOut;
 		
-		MF_GlobalConfiguration.DefaultNotification_InternalRecipient =(MailFilter_Configuration::Notification)newNotification_InternalRcpt;
-		MF_GlobalConfiguration.DefaultNotification_InternalSender =(MailFilter_Configuration::Notification)newNotification_InternalSndr;
+		MF_GlobalConfiguration->DefaultNotification_InternalRecipient =(MailFilter_Configuration::Notification)newNotification_InternalRcpt;
+		MF_GlobalConfiguration->DefaultNotification_InternalSender =(MailFilter_Configuration::Notification)newNotification_InternalSndr;
 		
-		MF_GlobalConfiguration.DefaultNotification_ExternalRecipient =(MailFilter_Configuration::Notification)newNotification_ExternalRcpt;
-		MF_GlobalConfiguration.DefaultNotification_ExternalSender =(MailFilter_Configuration::Notification)newNotification_ExternalSndr;
+		MF_GlobalConfiguration->DefaultNotification_ExternalRecipient =(MailFilter_Configuration::Notification)newNotification_ExternalRcpt;
+		MF_GlobalConfiguration->DefaultNotification_ExternalSender =(MailFilter_Configuration::Notification)newNotification_ExternalSndr;
 
-		MF_GlobalConfiguration.NotificationAdminLogs 		=(bool)newNotification_AdminLogs;
-		MF_GlobalConfiguration.NotificationAdminDailyReport	=(bool)newNotification_AdminDailyReport;
+		MF_GlobalConfiguration->NotificationAdminLogs 		=(bool)newNotification_AdminLogs;
+		MF_GlobalConfiguration->NotificationAdminDailyReport	=(bool)newNotification_AdminDailyReport;
 
-		MF_GlobalConfiguration.NotificationAdminMailsKilled	=(bool)newNotification_AdminMailsKilled;
-		MF_GlobalConfiguration.ProblemDirMaxSize  			=(unsigned int)newProblemDir_MaxSize;
-		MF_GlobalConfiguration.ProblemDirMaxAge 			=(unsigned int)newProblemDir_MaxAge;
+		MF_GlobalConfiguration->NotificationAdminMailsKilled	=(bool)newNotification_AdminMailsKilled;
+		MF_GlobalConfiguration->ProblemDirMaxSize  			=(unsigned int)newProblemDir_MaxSize;
+		MF_GlobalConfiguration->ProblemDirMaxAge 			=(unsigned int)newProblemDir_MaxAge;
 
-		MF_GlobalConfiguration.MailscanTimeout				=(unsigned int)newScanDirWait;
-		MF_GlobalConfiguration.MailscanDirNum				=(unsigned int)newScanDirNum;
-		MF_GlobalConfiguration.EnableAttachmentDecoder		=(bool)newEnableAttachmentDecoder;
-		MF_GlobalConfiguration.EnablePFAFunctionality		=(bool)newEnablePFA;
-		MF_GlobalConfiguration.EnableNRMThread				=(bool)newEnableNRMThread;
-		MF_GlobalConfiguration.EnableNRMRestore				=(bool)newEnableNRMRestore;
-		MF_GlobalConfiguration.DropBrokenMessages 			=(bool)newDropBrokenMessages;
-		MF_GlobalConfiguration.DropPartialMessages 			=(bool)newDropPartialMessages;
-		MF_GlobalConfiguration.RequireAVA					=(bool)newRequireAVA;
+		MF_GlobalConfiguration->MailscanTimeout				=(unsigned int)newScanDirWait;
+		MF_GlobalConfiguration->MailscanDirNum				=(unsigned int)newScanDirNum;
+		MF_GlobalConfiguration->EnableAttachmentDecoder		=(bool)newEnableAttachmentDecoder;
+		MF_GlobalConfiguration->EnablePFAFunctionality		=(bool)newEnablePFA;
+		MF_GlobalConfiguration->EnableNRMThread				=(bool)newEnableNRMThread;
+		MF_GlobalConfiguration->EnableNRMRestore				=(bool)newEnableNRMRestore;
+		MF_GlobalConfiguration->DropBrokenMessages 			=(bool)newDropBrokenMessages;
+		MF_GlobalConfiguration->DropPartialMessages 			=(bool)newDropPartialMessages;
+		MF_GlobalConfiguration->RequireAVA					=(bool)newRequireAVA;
 
-		MF_GlobalConfiguration.GWIAVersion					=(unsigned int)newGwiaVersion;
+		MF_GlobalConfiguration->GWIAVersion					=(unsigned int)newGwiaVersion;
 		
-		if (MF_GlobalConfiguration.GWIAVersion != 600)			// only allow 600 or 550
-			MF_GlobalConfiguration.GWIAVersion = 550;
+		if (MF_GlobalConfiguration->GWIAVersion != 600)			// only allow 600 or 550
+			MF_GlobalConfiguration->GWIAVersion = 550;
 
 	}
 
@@ -1329,14 +1329,14 @@ static int NLM_MenuMainAct(int index, void *parm)
 			MF_UI_ShowKeys(MFUI_KEYS_CANCEL);
 			if (NLM_VerifySaveExit())
 			{
-				MF_GlobalConfiguration.WriteToFile("");
+				MF_GlobalConfiguration->WriteToFile("");
 				return(0);
 			}
 			break;
 			
 		case MSG_MENU_MAIN_SAVE_AND_RESTART:
 			MF_UI_ShowKeys(MFUI_KEYS_CANCEL);
-			MF_GlobalConfiguration.WriteToFile("");
+			MF_GlobalConfiguration->WriteToFile("");
 			return(0);
 			break;	// never reached
 		}
@@ -1431,14 +1431,14 @@ int MailFilter_Main_RunAppConfig(bool bStandalone)
 
 	memset(szTemp,' ',80);
 	szTemp[81]=0;
-	sprintf(szTemp,"  Path: %s",MF_GlobalConfiguration.config_directory.c_str());
+	sprintf(szTemp,"  Path: %s",MF_GlobalConfiguration->config_directory.c_str());
 	szTemp[81]=0;
 	NWSShowLineAttribute ( 1 , 0 , (_MF_NUTCHAR)szTemp , VNORMAL , 80 , (struct ScreenStruct*)MF_NutInfo->screenID );
 
 	memset(szTemp,' ',80);
 	szTemp[81]=0;
 	sprintf(szTemp,"  MailFilter Version: 001.%03i              Configuration File Version: 001.%03i",
-						MailFilter_Configuration::CurrentConfigVersion,MF_GlobalConfiguration.config_build);
+						MailFilter_Configuration::CurrentConfigVersion,MF_GlobalConfiguration->config_build);
 	NWSShowLineAttribute ( 2 , 0 , (_MF_NUTCHAR)szTemp , VNORMAL , 80 , (struct ScreenStruct*)MF_NutInfo->screenID );
 
 	NLM_MenuMain(bStandalone);

@@ -160,10 +160,12 @@ int MailFilter_AV_ScanFile(const char* szFileName, char* szVirusName, size_t iVi
 
 int MailFilter_AV_DeInit()
 {	
-	if (MailFilter_AV_Check())
+	int rc = 0;
+	rc = MailFilter_AV_Check();
+	if ((rc) && (rc != ENOCONTEXT))
 		return ENOCONTEXT;
 
-	int rc = MailFilter_AVA_DeInit_sym(ghAgent);
+	rc = MailFilter_AVA_DeInit_sym(ghAgent);
 	MFD_Out(MFD_SOURCE_VSCAN,"AVA: %X DeInit rc: %d\n",ghAgent,rc);
 	ghAgent = NULL;
 	return 0;

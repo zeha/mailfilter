@@ -93,17 +93,17 @@ int MF_CountFilters(int action)
 	unsigned int curItem;
 	int num = 0;
 	
-	for (curItem = 0; curItem < MF_GlobalConfiguration.filterList.size(); curItem++)
+	for (curItem = 0; curItem < MF_GlobalConfiguration->filterList.size(); curItem++)
 	{
-		if (MF_GlobalConfiguration.filterList[curItem].expression == "")
+		if (MF_GlobalConfiguration->filterList[curItem].expression == "")
 			break;
 
 		if (
-			(MF_GlobalConfiguration.filterList[curItem].action == action)
+			(MF_GlobalConfiguration->filterList[curItem].action == action)
 			&& 
-			(MF_GlobalConfiguration.filterList[curItem].enabled == true)
+			(MF_GlobalConfiguration->filterList[curItem].enabled == true)
 			&&
-			( (MF_GlobalConfiguration.filterList[curItem].enabledIncoming == true) || (MF_GlobalConfiguration.filterList[curItem].enabledOutgoing == true) )
+			( (MF_GlobalConfiguration->filterList[curItem].enabledIncoming == true) || (MF_GlobalConfiguration->filterList[curItem].enabledOutgoing == true) )
 		) {
 
 			num++;
@@ -118,9 +118,9 @@ int MF_CountAllFilters()
 	unsigned int curItem;
 	int num = 0;
 	
-	for (curItem = 0; curItem < MF_GlobalConfiguration.filterList.size(); curItem++)
+	for (curItem = 0; curItem < MF_GlobalConfiguration->filterList.size(); curItem++)
 	{
-		if (MF_GlobalConfiguration.filterList[curItem].expression == "")
+		if (MF_GlobalConfiguration->filterList[curItem].expression == "")
 			break;
 
 		num++;
@@ -161,7 +161,7 @@ int MFUtil_CheckCurrentVersion()
 						"\r\n"
 						"Yours,\r\nMailFilter Version %s on %s.\r\n\r\n",
 						MAILFILTERVERNUM,
-						MF_GlobalConfiguration.ServerName.c_str()
+						MF_GlobalConfiguration->ServerName.c_str()
 						);
 
 			MF_EMailPostmasterGeneric(
@@ -179,7 +179,7 @@ int MFUtil_CheckCurrentVersion()
 						"\r\n"
 						"Yours,\r\nMailFilter Version %s on %s.\r\n\r\n",
 						MAILFILTERVERNUM,
-						MF_GlobalConfiguration.ServerName.c_str()
+						MF_GlobalConfiguration->ServerName.c_str()
 						);
 
 			MF_EMailPostmasterGeneric(
@@ -199,7 +199,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 	bool bTArgOkay;
 	ix_getopt_init();
 
-	MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::SERVER;
+	MF_GlobalConfiguration->ApplicationMode = MailFilter_Configuration::SERVER;
 
 	while (1)
 	{
@@ -247,7 +247,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 					if (strcasecmp(argv[ix_optind],"server") == 0)
 #endif
 					{
-						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::SERVER;
+						MF_GlobalConfiguration->ApplicationMode = MailFilter_Configuration::SERVER;
 						bTArgOkay = true;
 					}
 #if defined(N_PLAT_NLM) && !defined(__NOVELL_LIBC__)				
@@ -256,7 +256,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 					if (strcasecmp(argv[ix_optind],"config") == 0)
 #endif
 					{
-						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::CONFIG;
+						MF_GlobalConfiguration->ApplicationMode = MailFilter_Configuration::CONFIG;
 						bTArgOkay = true;
 					}
 #if defined(N_PLAT_NLM) && !defined(__NOVELL_LIBC__)				
@@ -265,7 +265,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 					if (strcasecmp(argv[ix_optind],"restore") == 0)
 #endif
 					{
-						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::RESTORE;
+						MF_GlobalConfiguration->ApplicationMode = MailFilter_Configuration::RESTORE;
 						bTArgOkay = true;
 					}
 #if defined(N_PLAT_NLM) && !defined(__NOVELL_LIBC__)				
@@ -274,7 +274,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 					if (strcasecmp(argv[ix_optind],"install") == 0)
 #endif
 					{
-						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::INSTALL;
+						MF_GlobalConfiguration->ApplicationMode = MailFilter_Configuration::INSTALL;
 						bTArgOkay = true;
 					}
 #if defined(N_PLAT_NLM) && !defined(__NOVELL_LIBC__)				
@@ -283,7 +283,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 					if (strcasecmp(argv[ix_optind],"upgrade") == 0)
 #endif
 					{
-						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::UPGRADE;
+						MF_GlobalConfiguration->ApplicationMode = MailFilter_Configuration::UPGRADE;
 						bTArgOkay = true;
 					}
 #if defined(N_PLAT_NLM)
@@ -293,7 +293,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 					if (strcasecmp(argv[ix_optind],"nrm") == 0)
 #endif
 					{
-						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::NRM;
+						MF_GlobalConfiguration->ApplicationMode = MailFilter_Configuration::NRM;
 						bTArgOkay = true;
 					}
 #endif
@@ -314,23 +314,23 @@ int MF_ParseCommandLine( int argc, char **argv )
 	if (ix_optind < argc)
 	{
 		MF_DisplayCriticalError("MAILFILTER: Using %s as Configuration Directory.\n",argv[ix_optind]);
-		MF_GlobalConfiguration.config_directory = argv[ix_optind];
+		MF_GlobalConfiguration->config_directory = argv[ix_optind];
 		
 #ifdef IXPLAT_WIN32
 	} else {
 		char* xdir = GetRegValue(HKEY_LOCAL_MACHINE,"SOFTWARE\\Hofstaedtler IE GmbH\\MailFilter","InstallDir","C:\\Progra~1\\MailFilter");
 		MF_DisplayCriticalError("MAILFILTER: Using %s as Configuration Directory.\n",xdir);
-		MF_GlobalConfiguration.config_directory = xdir;
+		MF_GlobalConfiguration->config_directory = xdir;
 	}
 #endif
 #ifdef IXPLAT_NETWARE
 	} else {
-		MF_GlobalConfiguration.config_directory = "sys:\\etc\\mailflt";
+		MF_GlobalConfiguration->config_directory = "sys:\\etc\\mailflt";
 	}
 #endif
 
 
-	MF_GlobalConfiguration.setDefaults();
+	MF_GlobalConfiguration->setDefaults();
 
 	return true;
 }
@@ -449,6 +449,7 @@ void MF_GetServerName(char* serverName, unsigned long bufSize)	//, char* sourceP
 #endif
 */
 	serverName[0] = '\0';
+#ifndef __NOVELL_LIBC__
 	
 	// ReturnFileServerName gets called by both uname and ParsePath
 	// so we just call it oureselves and that's fine.
@@ -457,6 +458,11 @@ void MF_GetServerName(char* serverName, unsigned long bufSize)	//, char* sourceP
 	unsigned int retLen = ReturnFileServerName(serverName);
 	serverName[retLen] = '\0';
 	strcpy(serverName, serverName + 1);
+#else
+	struct utsname u;
+	uname(&u);
+	strncpy(serverName,u.servername,bufSize);
+#endif
 	
 	if (serverName[0] == '\0')
 	{
@@ -602,9 +608,9 @@ bool MFBW_CheckCurrentScheduleState()
 
 	thenow = (now->tm_hour)*60 + now->tm_min;
 
-	if (MF_GlobalConfiguration.BWLScheduleTime != "")
+	if (MF_GlobalConfiguration->BWLScheduleTime != "")
 	{
-		p = MF_GlobalConfiguration.BWLScheduleTime.c_str();
+		p = MF_GlobalConfiguration->BWLScheduleTime.c_str();
 		
 		while (rc>0)
 		{	

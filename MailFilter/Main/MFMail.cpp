@@ -351,13 +351,7 @@ int MF_ParseMail(MailFilter_MailData* m, bool bMiniMode)
 					if (curChr != 0x20)
 						curChr = 0;
 
-#if defined(__NOVELL_LIBC__)
-		NXThreadYield();
-#else
-#ifdef N_PLAT_NLM
-		ThreadSwitch();
-#endif
-#endif
+					ThreadSwitch();
 				}
 								
 				if ( !feof(mailFile) )
@@ -374,7 +368,7 @@ int MF_ParseMail(MailFilter_MailData* m, bool bMiniMode)
 					ungetc(curChr,mailFile);
 					if (curChr != 'C')
 					{
-						if ((MF_GlobalConfiguration.EnableAttachmentDecoder) && (!bMiniMode))
+						if ((MF_GlobalConfiguration->EnableAttachmentDecoder) && (!bMiniMode))
 						{
 							if ( !feof(mailFile) )
 								ungetc('\n',mailFile);	// go one back for decode()
@@ -442,13 +436,7 @@ int MF_ParseMail(MailFilter_MailData* m, bool bMiniMode)
 				if ( (curChr != '\r') && (curChr != '\n'))
 					szScanBuffer[curPos]=(char)curChr;
 
-#if defined(__NOVELL_LIBC__)
-		NXThreadYield();
-#else
-#ifdef N_PLAT_NLM
-		ThreadSwitch();
-#endif
-#endif
+				ThreadSwitch();
 			}
 			
 			if (curPos>0)
@@ -502,6 +490,7 @@ if ( feof(mailFile) )
 		//for (int i = 0; i < 10; i++)
 		//	MFD_Out(MFD_SOURCE_SMTP,"[%d/%d] ",szScanBuffer[i],i);
 
+		ThreadSwitch();
 
 		// looks confusing, it is! some things below check the first character of the next line...
 		cNextLineStart = (char)fgetc(mailFile);
@@ -586,7 +575,7 @@ if ( feof(mailFile) )
 //				}
 
 				/* also copy the (last) received: from header over */
-				if ( ( memicmp(szScanBuffer,"received: from ",15) == 0 ) && ((!m->bHaveReceivedFrom) || (MF_GlobalConfiguration.EnablePFAFunctionality)) )
+				if ( ( memicmp(szScanBuffer,"received: from ",15) == 0 ) && ((!m->bHaveReceivedFrom) || (MF_GlobalConfiguration->EnablePFAFunctionality)) )
 				{
 //TODO
 					// look for ip first
@@ -634,7 +623,7 @@ if ( feof(mailFile) )
 					if (szCmpBuffer[0])
 					{
 						
-						if (MF_GlobalConfiguration.EnablePFAFunctionality)
+						if (MF_GlobalConfiguration->EnablePFAFunctionality)
 						{	
 							/*
 							 * Ok, now this is just for the f*cking Novell PFA
@@ -743,7 +732,7 @@ MFD_Out(MFD_SOURCE_MAIL,"UU Attachment: '%s'\n",szCmpBuffer);
 	(int (*output_fn) (const char *buf,  int size,  void *closure),
 									void *closure);	
 */								
-					if (MF_GlobalConfiguration.EnableAttachmentDecoder && (!bMiniMode))
+					if (MF_GlobalConfiguration->EnableAttachmentDecoder && (!bMiniMode))
 					{
 						// Extract Attachment
 						m->iNumOfAttachments++;
@@ -1037,6 +1026,8 @@ MFD_Out(MFD_SOURCE_MAIL,"-=> TYPE '%s'\n",szThisAttachment);
 		}*/
 
 	}	// end of while
+
+	ThreadSwitch();
 
 	fseek(mailFile,0,SEEK_END);
 	m->iMailSize = ftell(mailFile);

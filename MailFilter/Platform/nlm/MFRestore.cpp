@@ -99,7 +99,7 @@ int MFRestore_ShowDetails(const char* fileName, int enableRestoreField)
 
 	NWSStartWait(0,0,MF_NutInfo);
 
-	szFileIn = MF_GlobalConfiguration.MFLTRoot + "\\MFPROB\\DROP\\";
+	szFileIn = MF_GlobalConfiguration->MFLTRoot + "\\MFPROB\\DROP\\";
 	szFileIn += fileName;
 
 	MailFilter_MailData* m = MailFilter_MailInit(
@@ -141,17 +141,17 @@ int MFRestore_ShowDetails(const char* fileName, int enableRestoreField)
 
 	if (iDirection == 1)
 	{
-		szFileRestore = MF_GlobalConfiguration.MFLTRoot + "\\SEND\\";
+		szFileRestore = MF_GlobalConfiguration->MFLTRoot + "\\SEND\\";
 		szFileRestore += fileName;
-		szFileRecheck = MF_GlobalConfiguration.GWIARoot + "\\SEND\\";
+		szFileRecheck = MF_GlobalConfiguration->GWIARoot + "\\SEND\\";
 		szFileRecheck += fileName;
 	}
 		
 	if (iDirection == 2)
 	{
-		szFileRestore = MF_GlobalConfiguration.GWIARoot + "\\RECEIVE\\";
+		szFileRestore = MF_GlobalConfiguration->GWIARoot + "\\RECEIVE\\";
 		szFileRestore += fileName;
-		szFileRecheck = MF_GlobalConfiguration.MFLTRoot + "\\RECEIVE\\";
+		szFileRecheck = MF_GlobalConfiguration->MFLTRoot + "\\RECEIVE\\";
 		szFileRecheck += fileName;
 	}
 
@@ -285,7 +285,7 @@ int MFRestore_ShowFile(const char* fileName)
 	if (MFT_NLM_Exiting)
 		return -2;
 
-	szFileName = MF_GlobalConfiguration.MFLTRoot + "\\MFPROB\\DROP\\";
+	szFileName = MF_GlobalConfiguration->MFLTRoot + "\\MFPROB\\DROP\\";
 	szFileName += fileName;
 
 	fp = fopen(szFileName.c_str(),"rt");
@@ -419,7 +419,7 @@ void NLM_Main(void)
 	** Look for dropped mails and put them in the list.
 	*/
 	
-	sprintf(scanPath,"%s\\MFPROB\\DROP",MF_GlobalConfiguration.MFLTRoot.c_str());
+	sprintf(scanPath,"%s\\MFPROB\\DROP",MF_GlobalConfiguration->MFLTRoot.c_str());
 	chdir(scanPath);
 	
 	struct tm* time;
@@ -435,7 +435,7 @@ void NLM_Main(void)
 		e = dir.GetCurrentEntryName();
 		lTime = dir.GetCurrentEntryModificationTime();
 
-		cI = (char*)_mfd_malloc(strlen(e),"addEntry");
+		cI = (char*)_mfd_malloc(strlen(e)+1,"addEntry");
 		strcpy(cI,(e));
 		
 		strcpy (szFile,e);
@@ -501,11 +501,11 @@ static void MFRestore_UI_ShowKeys(int keys)
 	szTemp[81]=0;
 
 	strcpy(szTemp+1,"GWIA: ");
-	strncpy(szTemp+7,MF_GlobalConfiguration.GWIARoot.c_str(),60);
+	strncpy(szTemp+7,MF_GlobalConfiguration->GWIARoot.c_str(),60);
 	NWSShowLineAttribute ( 22 , 0 , (_MF_NUTCHAR)szTemp , VREVERSE , 80 , (ScreenStruct*)MF_NutInfo->screenID );
 
 	strcpy(szTemp+1,"MFLT: ");
-	strncpy(szTemp+7,MF_GlobalConfiguration.MFLTRoot.c_str(),60);
+	strncpy(szTemp+7,MF_GlobalConfiguration->MFLTRoot.c_str(),60);
 	NWSShowLineAttribute ( 23 , 0 , (_MF_NUTCHAR)szTemp , VREVERSE , 80 , (ScreenStruct*)MF_NutInfo->screenID );
 	
 	MF_UI_ShowKeys(keys);

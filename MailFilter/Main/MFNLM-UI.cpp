@@ -36,28 +36,28 @@ void MF_UI_ShowConfiguration(void)
 		MF_StatusUI_UpdateLog(szTemp);
 	}
 
-	sprintf(szTemp, " Host Name....: %s (%s)",MF_GlobalConfiguration.DomainHostname.c_str(),MF_GlobalConfiguration.ServerName.c_str());
+	sprintf(szTemp, " Host Name....: %s (%s)",MF_GlobalConfiguration->DomainHostname.c_str(),MF_GlobalConfiguration->ServerName.c_str());
 #else
-	sprintf(szTemp, " Host Name....: %s (%s)",MF_GlobalConfiguration.DomainHostname.c_str(),MF_GlobalConfiguration.ServerName.c_str());
+	sprintf(szTemp, " Host Name....: %s (%s)",MF_GlobalConfiguration->DomainHostname.c_str(),MF_GlobalConfiguration->ServerName.c_str());
 #endif
 	MF_StatusUI_UpdateLog(szTemp);
 	
 	strcpy(szTemp, " Domains......: ");
-	strncat(szTemp,MF_GlobalConfiguration.DomainName.c_str(),82-16);
+	strncat(szTemp,MF_GlobalConfiguration->DomainName.c_str(),82-16);
 	MF_StatusUI_UpdateLog(szTemp);
 
 	strcpy(szTemp, " Prb Mail From: ");
-	strncat(szTemp,MF_GlobalConfiguration.DomainEmailMailFilter.c_str(),82-16);
+	strncat(szTemp,MF_GlobalConfiguration->DomainEmailMailFilter.c_str(),82-16);
 	MF_StatusUI_UpdateLog(szTemp);
 
 	strcpy(szTemp, " Prb Mail Rcpt: ");
-	strncat(szTemp,MF_GlobalConfiguration.DomainEmailPostmaster.c_str(),82-16);
+	strncat(szTemp,MF_GlobalConfiguration->DomainEmailPostmaster.c_str(),82-16);
 	MF_StatusUI_UpdateLog(szTemp);
 
-	sprintf(szTemp, " Prb Dir Clean: %d kBytes, %d Days, Notify: %s",MF_GlobalConfiguration.ProblemDirMaxSize,MF_GlobalConfiguration.ProblemDirMaxAge,MF_GlobalConfiguration.NotificationAdminMailsKilled==true?"On":"Off");
+	sprintf(szTemp, " Prb Dir Clean: %d kBytes, %d Days, Notify: %s",MF_GlobalConfiguration->ProblemDirMaxSize,MF_GlobalConfiguration->ProblemDirMaxAge,MF_GlobalConfiguration->NotificationAdminMailsKilled==true?"On":"Off");
 	MF_StatusUI_UpdateLog(szTemp);
 
-	sprintf(szTemp, " Virus Scan...: %s, Delay: %d, Decode: %s",MFC_MAILSCAN_Enabled == 0 ? "Off" : "On",MF_GlobalConfiguration.MailscanTimeout,MF_GlobalConfiguration.EnableAttachmentDecoder == 0 ? "Off" : "On");
+	sprintf(szTemp, " Virus Scan...: %s, Delay: %d, Decode: %s",MFC_MAILSCAN_Enabled == 0 ? "Off" : "On",MF_GlobalConfiguration->MailscanTimeout,MF_GlobalConfiguration->EnableAttachmentDecoder == 0 ? "Off" : "On");
 	MF_StatusUI_UpdateLog(szTemp);
 
 	sprintf(szTemp, " Loaded Rules.: %d present in memory",MF_CountAllFilters());
@@ -67,24 +67,24 @@ void MF_UI_ShowConfiguration(void)
 	sprintf(szTemp, " Scheduling...: %s, %d rule(s)", MFBW_CheckCurrentScheduleState() == false ? "On" : "Off",MF_CountFilters(MailFilter_Configuration::schedule));
 	MF_StatusUI_UpdateLog(szTemp);
 
-	sprintf(szTemp, " Scheduling...: %s",MF_GlobalConfiguration.BWLScheduleTime.c_str());
+	sprintf(szTemp, " Scheduling...: %s",MF_GlobalConfiguration->BWLScheduleTime.c_str());
 	MF_StatusUI_UpdateLog(szTemp);
 
-	sprintf(szTemp, " Directories..: %d Queues",MF_GlobalConfiguration.MailscanDirNum); 
+	sprintf(szTemp, " Directories..: %d Queues",MF_GlobalConfiguration->MailscanDirNum); 
 	MF_StatusUI_UpdateLog(szTemp);
 
-	sprintf(szTemp, "  MailFilter..: %s",MF_GlobalConfiguration.MFLTRoot.c_str());
+	sprintf(szTemp, "  MailFilter..: %s",MF_GlobalConfiguration->MFLTRoot.c_str());
 	MF_StatusUI_UpdateLog(szTemp);
 
-	sprintf(szTemp, "  GWIA Home...: %s",MF_GlobalConfiguration.GWIARoot.c_str()); 
+	sprintf(szTemp, "  GWIA Home...: %s",MF_GlobalConfiguration->GWIARoot.c_str()); 
 	MF_StatusUI_UpdateLog(szTemp);
 
-	sprintf(szTemp, "  Logging To..: %s",MF_GlobalConfiguration.LogDirectory.c_str()); 
+	sprintf(szTemp, "  Logging To..: %s",MF_GlobalConfiguration->LogDirectory.c_str()); 
 	MF_StatusUI_UpdateLog(szTemp);
 
-	if (MF_GlobalConfiguration.LoginUserName != "")
+	if (MF_GlobalConfiguration->LoginUserName != "")
 	{
-		sprintf(szTemp, " Logging in as: %s",MF_GlobalConfiguration.LoginUserName.c_str());
+		sprintf(szTemp, " Logging in as: %s",MF_GlobalConfiguration->LoginUserName.c_str());
 		MF_StatusUI_UpdateLog(szTemp);
 	}
 

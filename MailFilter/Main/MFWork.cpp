@@ -82,7 +82,7 @@ static int MF_CopyEmail_Send(const char* szAttachFileName, MailFilter_MailData* 
 
 	if (fileTemplate == NULL)	{	fclose(fMailFile);	MF_OutOfMemoryHandler(); return 239; }
 
-	sprintf(fileTemplate,"%s\\%s",MF_GlobalConfiguration.config_directory.c_str(),"MAILCOPY.TPL");
+	sprintf(fileTemplate,"%s\\%s",MF_GlobalConfiguration->config_directory.c_str(),"MAILCOPY.TPL");
 
 	fTemplate = fopen(fileTemplate,"rt");
 	
@@ -92,9 +92,9 @@ static int MF_CopyEmail_Send(const char* szAttachFileName, MailFilter_MailData* 
 	{
 		MF_StatusText("Error reading MailCopy template!");
 
-		fprintf(fMailFile,"MAIL FROM:%s\r\nRCPT TO:%s\r\n",MF_GlobalConfiguration.DomainEmailMailFilter.c_str(),szDestinationEMail);
+		fprintf(fMailFile,"MAIL FROM:%s\r\nRCPT TO:%s\r\n",MF_GlobalConfiguration->DomainEmailMailFilter.c_str(),szDestinationEMail);
 		
-		fprintf(fMailFile,"From: %s\nTo: %s\n",MF_GlobalConfiguration.DomainEmailMailFilter.c_str(),szDestinationEMail);
+		fprintf(fMailFile,"From: %s\nTo: %s\n",MF_GlobalConfiguration->DomainEmailMailFilter.c_str(),szDestinationEMail);
 		fprintf(fMailFile,"Subject: MailFilter MailCopy\r\n");
 		fprintf(fMailFile,"X-Mailer: MailFilter professional "MAILFILTERVERNUM"\r\nMime-Version: 1.0\r\n");
 		fprintf(fMailFile,"Content-Type: multipart/mixed; boundary=\"==MFMFMFMFMF%s\"\r\n\r\n",szBoundary);
@@ -180,15 +180,15 @@ static int MF_CopyEmail_Send(const char* szAttachFileName, MailFilter_MailData* 
 							break;
 						case 'P':
 							// PostMaster E-Mail
-							sprintf(templateString,"%.79s",MF_GlobalConfiguration.DomainEmailPostmaster.c_str());
+							sprintf(templateString,"%.79s",MF_GlobalConfiguration->DomainEmailPostmaster.c_str());
 							break;
 						case 'M':
 							// MailFilter E-Mail
-							sprintf(templateString,"%.79s",MF_GlobalConfiguration.DomainEmailMailFilter.c_str());
+							sprintf(templateString,"%.79s",MF_GlobalConfiguration->DomainEmailMailFilter.c_str());
 							break;
 						case 'S':
 							// Servername
-							sprintf(templateString,"%.79s",MF_GlobalConfiguration.ServerName.c_str());
+							sprintf(templateString,"%.79s",MF_GlobalConfiguration->ServerName.c_str());
 							break;
 						case 'V':
 							// MailFilter Product Version
@@ -270,26 +270,26 @@ int MFAPI_FilterCheck( char *szScan , int mailSource, int matchfield )
 	while(rc==0)
 	{
 //		if (curItem > MailFilter_MaxFilters) break;
-		if (curItem > MF_GlobalConfiguration.filterList.size()) break;
+		if (curItem > MF_GlobalConfiguration->filterList.size()) break;
 
 //		if (MFC_Filters[curItem].expression[0] == 0)
-		if (MF_GlobalConfiguration.filterList[curItem].expression == "")
+		if (MF_GlobalConfiguration->filterList[curItem].expression == "")
 			break;
 
 		if (
 			
-			(MF_GlobalConfiguration.filterList[curItem].matchfield == matchfield) && 
+			(MF_GlobalConfiguration->filterList[curItem].matchfield == matchfield) && 
 			
 			( 
-				((mailSource == MAILFILTER_MAILSOURCE_INCOMING) && (MF_GlobalConfiguration.filterList[curItem].enabledIncoming == true))
+				((mailSource == MAILFILTER_MAILSOURCE_INCOMING) && (MF_GlobalConfiguration->filterList[curItem].enabledIncoming == true))
 				||
-				((mailSource == MAILFILTER_MAILSOURCE_OUTGOING) && (MF_GlobalConfiguration.filterList[curItem].enabledOutgoing == true))
+				((mailSource == MAILFILTER_MAILSOURCE_OUTGOING) && (MF_GlobalConfiguration->filterList[curItem].enabledOutgoing == true))
 			)
 			
 		) {
 
 			re = pcre_compile(
-			  MF_GlobalConfiguration.filterList[curItem].expression.c_str(), /* the pattern */
+			  MF_GlobalConfiguration->filterList[curItem].expression.c_str(), /* the pattern */
 			  0,                    /* default options */
 			  &error,               /* for error message */
 			  &erroffset,           /* for error offset */
@@ -318,10 +318,10 @@ int MFAPI_FilterCheck( char *szScan , int mailSource, int matchfield )
 				    {	// no error, but no match
 				    		rc = 0;
 				    		// if this is a NO match rule, then the filter applies and we break the cycle...
-							if (MF_GlobalConfiguration.filterList[curItem].type == MailFilter_Configuration::noMatch)
+							if (MF_GlobalConfiguration->filterList[curItem].type == MailFilter_Configuration::noMatch)
 							{
 								rc=(int)curItem+1;
-								if (MF_GlobalConfiguration.filterList[curItem].action == MailFilter_Configuration::schedule)
+								if (MF_GlobalConfiguration->filterList[curItem].action == MailFilter_Configuration::schedule)
 									rc = 0;
 								
 								if (rc)	break;
@@ -334,13 +334,13 @@ int MFAPI_FilterCheck( char *szScan , int mailSource, int matchfield )
 				// Match Applies.
 
 		    		// if this is a NO match rule, then the filter DOES NOT apply
-					if (MF_GlobalConfiguration.filterList[curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
+					if (MF_GlobalConfiguration->filterList[curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
 						{
 							rc=0;
 						} else {
 							/* normal MATCH rule, break the cycle */
 							rc=(int)curItem+1;
-							if (MF_GlobalConfiguration.filterList[curItem].action == MAILFILTER_MATCHACTION_SCHEDULE)
+							if (MF_GlobalConfiguration->filterList[curItem].action == MAILFILTER_MATCHACTION_SCHEDULE)
 								rc = 0;
 							
 							if (rc)	break;
@@ -361,7 +361,7 @@ int MFAPI_FilterCheck( char *szScan , int mailSource, int matchfield )
 	{
 		// check if we just should cancel rule processing if the
 		// rule matches
-		if (MF_GlobalConfiguration.filterList[curItem].action == MAILFILTER_MATCHACTION_PASS)
+		if (MF_GlobalConfiguration->filterList[curItem].action == MAILFILTER_MATCHACTION_PASS)
 		{
 			// yes, we have to!
 			// clear our status code, this indicates no match ...
@@ -413,26 +413,26 @@ int MF_FilterCheck( MailFilter_MailData* m, char *szScan , int matchfield )
 	while(rc==0)
 	{
 //		curItem++;
-		if (curItem > MF_GlobalConfiguration.filterList.size()) break;
+		if (curItem > MF_GlobalConfiguration->filterList.size()) break;
 
-		if (MF_GlobalConfiguration.filterList[curItem].expression == "")
+		if (MF_GlobalConfiguration->filterList[curItem].expression == "")
 			break;
 
 		if (
 			
-			(MF_GlobalConfiguration.filterList[curItem].matchfield == matchfield) && 
+			(MF_GlobalConfiguration->filterList[curItem].matchfield == matchfield) && 
 			
 			( 
-				((m->iMailSource == MAILFILTER_MAILSOURCE_INCOMING) && (MF_GlobalConfiguration.filterList[curItem].enabledIncoming == true))
+				((m->iMailSource == MAILFILTER_MAILSOURCE_INCOMING) && (MF_GlobalConfiguration->filterList[curItem].enabledIncoming == true))
 				||
-				((m->iMailSource == MAILFILTER_MAILSOURCE_OUTGOING) && (MF_GlobalConfiguration.filterList[curItem].enabledOutgoing == true))
+				((m->iMailSource == MAILFILTER_MAILSOURCE_OUTGOING) && (MF_GlobalConfiguration->filterList[curItem].enabledOutgoing == true))
 			)
 			
 		) {
 
 /*#ifdef _MAILFILTER_WITH_REGEXP_H*/
 			re = pcre_compile(
-			  MF_GlobalConfiguration.filterList[curItem].expression.c_str(), /* the pattern */
+			  MF_GlobalConfiguration->filterList[curItem].expression.c_str(), /* the pattern */
 			  0,                    /* default options */
 			  &error,               /* for error message */
 			  &erroffset,           /* for error offset */
@@ -461,10 +461,10 @@ int MF_FilterCheck( MailFilter_MailData* m, char *szScan , int matchfield )
 				    {	// no error, but no match
 				    		rc = 0;
 				    		// if this is a NO match rule, then the filter applies and we break the cycle...
-							if (MF_GlobalConfiguration.filterList[curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
+							if (MF_GlobalConfiguration->filterList[curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
 							{
 								rc=(int)curItem+1;
-								if (MF_GlobalConfiguration.filterList[curItem].action == MAILFILTER_MATCHACTION_SCHEDULE)
+								if (MF_GlobalConfiguration->filterList[curItem].action == MAILFILTER_MATCHACTION_SCHEDULE)
 								{
 									m->bSchedule = true;
 									rc = 0;
@@ -480,13 +480,13 @@ int MF_FilterCheck( MailFilter_MailData* m, char *szScan , int matchfield )
 				// Match Applies.
 
 		    		// if this is a NO match rule, then the filter DOES NOT apply
-					if (MF_GlobalConfiguration.filterList[curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
+					if (MF_GlobalConfiguration->filterList[curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
 						{
 							rc=0;
 						} else {
 							/* normal MATCH rule, break the cycle */
 							rc=(int)curItem+1;
-							if (MF_GlobalConfiguration.filterList[curItem].action == MAILFILTER_MATCHACTION_SCHEDULE)
+							if (MF_GlobalConfiguration->filterList[curItem].action == MAILFILTER_MATCHACTION_SCHEDULE)
 							{
 								m->bSchedule = true;
 								rc = 0;
@@ -535,7 +535,7 @@ int MF_FilterCheck( MailFilter_MailData* m, char *szScan , int matchfield )
 	{
 		// check if we just should cancel rule processing if the
 		// rule matches
-		if (MF_GlobalConfiguration.filterList[curItem].action == MAILFILTER_MATCHACTION_PASS)
+		if (MF_GlobalConfiguration->filterList[curItem].action == MAILFILTER_MATCHACTION_PASS)
 		{
 			// yes, we have to!
 			// clear our status code, this indicates no match ...
@@ -544,8 +544,8 @@ int MF_FilterCheck( MailFilter_MailData* m, char *szScan , int matchfield )
 	}
 	if (rc)
 	{	/* set these things appropaite */
-		m->iFilterNotify = MF_GlobalConfiguration.filterList[(unsigned int)(m->iFilterHandle-1)].notify;
-		m->iFilterAction = MF_GlobalConfiguration.filterList[(unsigned int)(m->iFilterHandle-1)].action;
+		m->iFilterNotify = MF_GlobalConfiguration->filterList[(unsigned int)(m->iFilterHandle-1)].notify;
+		m->iFilterAction = MF_GlobalConfiguration->filterList[(unsigned int)(m->iFilterHandle-1)].action;
 	}
 	
 	_mfd_free(toScan,"FilterCheckSBuf");
@@ -643,19 +643,19 @@ int MF_RuleExec( MailFilter_MailData* m )
 		att = m->lstAttachments->GetNext(att);
 	}
 
-	for (curItem = 0; curItem < MF_GlobalConfiguration.filterList.size(); curItem++)
+	for (curItem = 0; curItem < MF_GlobalConfiguration->filterList.size(); curItem++)
 	{
 		iResult = 2;
 
-		if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression == "")
+		if (MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression == "")
 			break;
 //MFD_Out("ck:%i",curItem);
 	if (
-			(MF_GlobalConfiguration.filterList[(unsigned int)curItem].enabled == true) &&
+			(MF_GlobalConfiguration->filterList[(unsigned int)curItem].enabled == true) &&
 			(
-			((m->iMailSource == MAILFILTER_MAILSOURCE_INCOMING) && (MF_GlobalConfiguration.filterList[(unsigned int)curItem].enabledIncoming == true))
+			((m->iMailSource == MAILFILTER_MAILSOURCE_INCOMING) && (MF_GlobalConfiguration->filterList[(unsigned int)curItem].enabledIncoming == true))
 			||
-			((m->iMailSource == MAILFILTER_MAILSOURCE_OUTGOING) && (MF_GlobalConfiguration.filterList[(unsigned int)curItem].enabledOutgoing == true))
+			((m->iMailSource == MAILFILTER_MAILSOURCE_OUTGOING) && (MF_GlobalConfiguration->filterList[(unsigned int)curItem].enabledOutgoing == true))
 			)
 	) {
 
@@ -664,7 +664,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 		bOverrideErrorMessage = false;
 		
 //MFD_Out("..");
-		switch (MF_GlobalConfiguration.filterList[(unsigned int)curItem].matchfield)
+		switch (MF_GlobalConfiguration->filterList[(unsigned int)curItem].matchfield)
 		{
 		case MailFilter_Configuration::always:
 			// this rule matches without any other filters
@@ -675,10 +675,10 @@ int MF_RuleExec( MailFilter_MailData* m )
 			if (chkFlag(iIgnoreFields,MailFilter_Configuration::email)) continue;
 			szFieldDescription = "E-Mail address";
 
-			if (m->szMailFrom[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailFrom);		szFieldDescription = "Sender's E-Mail";	}
-			if (m->szEnvelopeFrom[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeFrom);	szFieldDescription = "Sender's E-Mail";		}
-			if (m->szMailRcpt[0]!=0)		if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailRcpt);		szFieldDescription = "Recipients's E-Mail";	}
-			if (m->szEnvelopeRcpt[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeRcpt);	szFieldDescription = "Recipients's E-Mail";	}
+			if (m->szMailFrom[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szMailFrom);		szFieldDescription = "Sender's E-Mail";	}
+			if (m->szEnvelopeFrom[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeFrom);	szFieldDescription = "Sender's E-Mail";		}
+			if (m->szMailRcpt[0]!=0)		if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szMailRcpt);		szFieldDescription = "Recipients's E-Mail";	}
+			if (m->szEnvelopeRcpt[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeRcpt);	szFieldDescription = "Recipients's E-Mail";	}
 
 			break;
 		case MailFilter_Configuration::emailBothAndCC:
@@ -686,11 +686,11 @@ int MF_RuleExec( MailFilter_MailData* m )
 			if (chkFlag(iIgnoreFields,MailFilter_Configuration::email)) break;
 			szFieldDescription = "E-Mail address";
 
-			if (m->szMailFrom[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailFrom);		szFieldDescription = "Sender's E-Mail";	}
-			if (m->szEnvelopeFrom[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeFrom);	szFieldDescription = "Sender's E-Mail";		}
-			if (m->szMailRcpt[0]!=0)		if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailRcpt);		szFieldDescription = "Recipients's E-Mail";	}
-			if (m->szEnvelopeRcpt[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeRcpt);	szFieldDescription = "Recipients's E-Mail";	}
-			if (m->szMailCC[0]!=0)			if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailCC);		szFieldDescription = "CC's E-Mail";			}
+			if (m->szMailFrom[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szMailFrom);		szFieldDescription = "Sender's E-Mail";	}
+			if (m->szEnvelopeFrom[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeFrom);	szFieldDescription = "Sender's E-Mail";		}
+			if (m->szMailRcpt[0]!=0)		if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szMailRcpt);		szFieldDescription = "Recipients's E-Mail";	}
+			if (m->szEnvelopeRcpt[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeRcpt);	szFieldDescription = "Recipients's E-Mail";	}
+			if (m->szMailCC[0]!=0)			if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szMailCC);		szFieldDescription = "CC's E-Mail";			}
 
 			break;
 		case MailFilter_Configuration::emailFrom:
@@ -699,8 +699,8 @@ int MF_RuleExec( MailFilter_MailData* m )
 			if (chkFlag(iIgnoreFields,MailFilter_Configuration::email)) break;
 			szFieldDescription = "Sender's E-Mail";
 
-			if (m->szMailFrom[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailFrom);		}
-			if (m->szEnvelopeFrom[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeFrom);	}
+			if (m->szMailFrom[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szMailFrom);		}
+			if (m->szEnvelopeFrom[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeFrom);	}
 
 			break;
 		case MailFilter_Configuration::emailTo:
@@ -709,8 +709,8 @@ int MF_RuleExec( MailFilter_MailData* m )
 			if (chkFlag(iIgnoreFields,MailFilter_Configuration::email)) break;
 			szFieldDescription = "Recipients's E-Mail";
 
-			if (m->szMailRcpt[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailRcpt);		}
-			if (m->szEnvelopeRcpt[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeRcpt);	}
+			if (m->szMailRcpt[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szMailRcpt);		}
+			if (m->szEnvelopeRcpt[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeRcpt);	}
 
 			break;
 		case MailFilter_Configuration::emailToAndCC:
@@ -719,9 +719,9 @@ int MF_RuleExec( MailFilter_MailData* m )
 			if (chkFlag(iIgnoreFields,MailFilter_Configuration::email)) break;
 			szFieldDescription = "Recipients's E-Mail";
 
-			if (m->szMailRcpt[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailRcpt);		}
-			if (m->szEnvelopeRcpt[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeRcpt);	}
-			if (m->szMailCC[0]!=0)			if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailCC);			szFieldDescription = "CC's E-Mail";			}
+			if (m->szMailRcpt[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szMailRcpt);		}
+			if (m->szEnvelopeRcpt[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeRcpt);	}
+			if (m->szMailCC[0]!=0)			if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szMailCC);			szFieldDescription = "CC's E-Mail";			}
 
 			break;
 		case MailFilter_Configuration::subject:
@@ -729,7 +729,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 			if (chkFlag(iIgnoreFields,MailFilter_Configuration::subject)) break;
 			szFieldDescription = "Subject";
 
-			if (m->szMailSubject[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailSubject);		}
+			if (m->szMailSubject[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),m->szMailSubject);		}
 			
 			break;
 		case MailFilter_Configuration::size:
@@ -737,12 +737,12 @@ int MF_RuleExec( MailFilter_MailData* m )
 			if (chkFlag(iIgnoreFields,MailFilter_Configuration::size)) break;
 			szFieldDescription = "Mail Size";
 			lVal = 0;
-			lVal = atol(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str()+1);
-			if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression[0] == '>')
+			lVal = atol(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str()+1);
+			if (MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression[0] == '>')
 				if (lVal > m->iMailSize)	
 					iResult = 1;
 
-			if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression[0] == '<')
+			if (MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression[0] == '<')
 				if (lVal < m->iMailSize)	
 					iResult = 1;
 				
@@ -755,7 +755,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 				if (((char*)att->data)[0]==0)
 					break;
 
-				iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),(char*)att->data);	szFieldDescription = "Attachment Name";
+				iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),(char*)att->data);	szFieldDescription = "Attachment Name";
 
 				if (iResult == 1)
 					break;
@@ -765,7 +765,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 			break;
 		case MailFilter_Configuration::archiveContentName:
 			if (chkFlag(iIgnoreFields,MailFilter_Configuration::archiveContentName)) break;
-			bool bIsEncryptedCheck = (MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression == "<encrypted file>");
+			bool bIsEncryptedCheck = (MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression == "<encrypted file>");
 			att = m->lstArchiveContents->GetFirst();
 			while (att != NULL)
 			{
@@ -774,7 +774,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 
 				if (!bIsEncryptedCheck)
 				{
-					iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),att->name);	szFieldDescription = "Archive Attachment";
+					iResult = MF_RuleExec_RE(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),att->name);	szFieldDescription = "Archive Attachment";
 				} else {
 					iResult = (((bool)att->data == true) ? 1 : 0);
 				}
@@ -787,7 +787,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 			break;
 		case MailFilter_Configuration::archiveContentCount:
 			if (chkFlag(iIgnoreFields,MailFilter_Configuration::archiveContentCount)) break;
-			int cmpCount = atoi(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str());
+			int cmpCount = atoi(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str());
 			int effectiveCount = 0;
 			att = m->lstArchiveContents->GetFirst();
 			while (att != NULL)
@@ -808,7 +808,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 		case MailFilter_Configuration::blacklist:
 			if (chkFlag(iIgnoreFields,MailFilter_Configuration::blacklist)) break;
 		
-			char* holeZone = _mfd_strdup(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),"holeZone");
+			char* holeZone = _mfd_strdup(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),"holeZone");
 			char* validResponse = strchr(holeZone,':');
 			if (validResponse == NULL) 
 			{   // this was the default in previous versions
@@ -835,7 +835,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 				// matching type
 				//
 				iResult = 0;
-				if (MF_GlobalConfiguration.filterList[curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
+				if (MF_GlobalConfiguration->filterList[curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
 				{	iResult = 1;	}
 			}						  */
 			
@@ -901,7 +901,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 			break;
 		}		
 		default:
-			MFD_Out(MFD_SOURCE_RULE,"MF_RuleExec encountered unknown field %d!\n",MF_GlobalConfiguration.filterList[(unsigned int)curItem].matchfield);
+			MFD_Out(MFD_SOURCE_RULE,"MF_RuleExec encountered unknown field %d!\n",MF_GlobalConfiguration->filterList[(unsigned int)curItem].matchfield);
 			break;
 		}
 		
@@ -911,7 +911,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 			if (iResult == 0)
 			{	// no match
 	    		// if this is a NO match rule, then the filter applies and we break the cycle...
-				if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
+				if (MF_GlobalConfiguration->filterList[(unsigned int)curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
 				{
 					iResult = 1;
 				}
@@ -919,38 +919,38 @@ int MF_RuleExec( MailFilter_MailData* m )
 			} else {
 				// Match Applies.
 	    		// if this is a NO match rule, then the filter DOES NOT apply
-				if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
+				if (MF_GlobalConfiguration->filterList[(unsigned int)curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
 				{
 					iResult=0;
 				}
 			}
 
 			if (iResult)
-				MFD_Out(MFD_SOURCE_RULE,"%i -> %i [%i] [\"%s\"]\n",curItem,iResult,MF_GlobalConfiguration.filterList[(unsigned int)curItem].type,MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str());
+				MFD_Out(MFD_SOURCE_RULE,"%i -> %i [%i] [\"%s\"]\n",curItem,iResult,MF_GlobalConfiguration->filterList[(unsigned int)curItem].type,MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str());
 
 			if (iResult)
 			{
-				if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_COPY)
+				if (MF_GlobalConfiguration->filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_COPY)
 				{
 					m->bCopy = true;
 					iResult = 0;
-					m->lstCopies->AddValueChar("", MF_GlobalConfiguration.filterList[(unsigned int)curItem].name.c_str());
+					m->lstCopies->AddValueChar("", MF_GlobalConfiguration->filterList[(unsigned int)curItem].name.c_str());
 					
 				}
-				if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_SCHEDULE)
+				if (MF_GlobalConfiguration->filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_SCHEDULE)
 				{
 					m->bSchedule = true;
 					iResult = 0;
 				}
-				if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_NOSCHEDULE)
+				if (MF_GlobalConfiguration->filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_NOSCHEDULE)
 				{
 					m->bSchedule = false;
 					iResult = 0;
 				}
-				if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_PASS)
+				if (MF_GlobalConfiguration->filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_PASS)
 				{
-					MFD_Out(MFD_SOURCE_RULE,"Ignore: %x -> %x\n",iIgnoreFields,iIgnoreFields|MF_GlobalConfiguration.filterList[(unsigned int)curItem].matchfield);
-					iIgnoreFields = iIgnoreFields | MF_GlobalConfiguration.filterList[(unsigned int)curItem].matchfield;
+					MFD_Out(MFD_SOURCE_RULE,"Ignore: %x -> %x\n",iIgnoreFields,iIgnoreFields|MF_GlobalConfiguration->filterList[(unsigned int)curItem].matchfield);
+					iIgnoreFields = iIgnoreFields | MF_GlobalConfiguration->filterList[(unsigned int)curItem].matchfield;
 					iResult = 0;
 				}
 			}
@@ -986,16 +986,16 @@ MFD_Out(MFD_SOURCE_RULE,"-> %i %i ",iResult,curItem);
 	{	/* set these things approaite */
 		m->bFilterMatched = true;
 		m->iFilterHandle = curItem+1;
-		m->iFilterNotify = MF_GlobalConfiguration.filterList[(unsigned int)curItem].notify;
-		m->iFilterAction = MF_GlobalConfiguration.filterList[(unsigned int)curItem].action;
-MFD_Out(MFD_SOURCE_RULE,"%s",MF_GlobalConfiguration.filterList[(unsigned int)curItem].name.c_str());
+		m->iFilterNotify = MF_GlobalConfiguration->filterList[(unsigned int)curItem].notify;
+		m->iFilterAction = MF_GlobalConfiguration->filterList[(unsigned int)curItem].action;
+MFD_Out(MFD_SOURCE_RULE,"%s",MF_GlobalConfiguration->filterList[(unsigned int)curItem].name.c_str());
 
 		if (!bOverrideErrorMessage)
 		{
-			if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].name == "")
-				sprintf(m->szErrorMessage," Match: %s: \"%s\"",szFieldDescription,MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str());
+			if (MF_GlobalConfiguration->filterList[(unsigned int)curItem].name == "")
+				sprintf(m->szErrorMessage," Match: %s: \"%s\"",szFieldDescription,MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str());
 				else
-				sprintf(m->szErrorMessage," Match: %s: %s",szFieldDescription,MF_GlobalConfiguration.filterList[(unsigned int)curItem].name.c_str());
+				sprintf(m->szErrorMessage," Match: %s: %s",szFieldDescription,MF_GlobalConfiguration->filterList[(unsigned int)curItem].name.c_str());
 		} else {
 			strncpy(m->szErrorMessage,szFieldDescription,999);
 		}
@@ -1233,7 +1233,7 @@ int MF_HandleMailFile(MailFilter_MailData* m)
 		MFD_Out(MFD_SOURCE_MAIL,"Classified as Partial.\n");
 
 	// pre-flight checks
-	if (m->bBrokenMessage && MF_GlobalConfiguration.DropBrokenMessages)
+	if (m->bBrokenMessage && MF_GlobalConfiguration->DropBrokenMessages)
 	{
 		MF_StatusText("  Mail contains broken data.");
 		m->iFilterNotify = MAILFILTER_NOTIFICATION_ADMIN_INCOMING|MAILFILTER_NOTIFICATION_ADMIN_OUTGOING;
@@ -1241,7 +1241,7 @@ int MF_HandleMailFile(MailFilter_MailData* m)
 		strcpy(m->szErrorMessage,"Invalid/Broken E-Mail data or attachments detected.");
 		
 	}
-	if (m->bPartialMessage && MF_GlobalConfiguration.DropPartialMessages)
+	if (m->bPartialMessage && MF_GlobalConfiguration->DropPartialMessages)
 	{
 		MF_StatusText("  Mail is only a partial message.");
 		m->iFilterNotify = MAILFILTER_NOTIFICATION_ADMIN_INCOMING|MAILFILTER_NOTIFICATION_ADMIN_OUTGOING;
@@ -1267,9 +1267,9 @@ int MF_HandleMailFile(MailFilter_MailData* m)
 
 	if (m->szProblemMailDestination != NULL)
 	{
-		if ((m->iMailSource == 0) && (MF_GlobalConfiguration.DefaultNotification_InternalSender == 1))
+		if ((m->iMailSource == 0) && (MF_GlobalConfiguration->DefaultNotification_InternalSender == 1))
 			strncpy(m->szProblemMailDestination,m->szMailFrom,250);
-		if ((m->iMailSource == 1) && (MF_GlobalConfiguration.DefaultNotification_InternalRecipient == 1))
+		if ((m->iMailSource == 1) && (MF_GlobalConfiguration->DefaultNotification_InternalRecipient == 1))
 			strncpy(m->szProblemMailDestination,m->szMailRcpt,250);
 		
 		m->szProblemMailDestination[250]=0;
@@ -1459,7 +1459,7 @@ static int MF_Notification_Send(MailFilter_MailData* m)	//const int notify, cons
 	firstMatch = NULL;
 	secondMatch = NULL;
 	
-	firstMatch = MF_GlobalConfiguration.DomainName.c_str();
+	firstMatch = MF_GlobalConfiguration->DomainName.c_str();
 	secondMatch = strchr(firstMatch, ',');
 
 	if (m->iMailSource == MAILFILTER_MAILSOURCE_SEND)
@@ -1506,7 +1506,7 @@ static int MF_Notification_Send(MailFilter_MailData* m)	//const int notify, cons
 		
 	} else {
 	
-		MF_ReadAddressFromDomain(MF_GlobalConfiguration.DomainName.c_str(),szAddresses,szInternalAddress,iSize);
+		MF_ReadAddressFromDomain(MF_GlobalConfiguration->DomainName.c_str(),szAddresses,szInternalAddress,iSize);
 
 	}
 
@@ -1595,7 +1595,7 @@ int MF_ParseTemplate(const char* szTemplateName, FILE* fMailFile, MailFilter_Mai
 	if (mMailInfo == NULL)		return 220;
 	if (fileTemplate == NULL)	{	MF_OutOfMemoryHandler(); return 239; }
 
-	sprintf(fileTemplate,"%s\\%s",MF_GlobalConfiguration.config_directory.c_str(),szTemplateName);
+	sprintf(fileTemplate,"%s\\%s",MF_GlobalConfiguration->config_directory.c_str(),szTemplateName);
 
 	fTemplate = fopen(fileTemplate,"rt");
 	
@@ -1618,7 +1618,7 @@ int MF_ParseTemplate(const char* szTemplateName, FILE* fMailFile, MailFilter_Mai
 		fprintf(fMailFile,"%s\r\n\r\n",mMailInfo->szErrorMessage);
 		fprintf(fMailFile,"From: \"%s\"\r\nRecipient: \"%s\"\r\nSubject: \"%s\"\r\n\r\n",mMailInfo->szMailFrom,mMailInfo->szMailRcpt,mMailInfo->szMailSubject);
 //		fprintf(fMailFile,"Probably you are the only one, who has been notified! Please take approaite actions,\r\ne.g. inform the sender and/or the recipient of the original mail.\r\n\r\n");
-//		fprintf(fMailFile,"The message (file) handle was:\r\n%s\r\n\r\n\nRegards,\r\nMailFilter/%s.\r\n",fileIn,MF_GlobalConfiguration.ServerName.c_str());
+//		fprintf(fMailFile,"The message (file) handle was:\r\n%s\r\n\r\n\nRegards,\r\nMailFilter/%s.\r\n",fileIn,MF_GlobalConfiguration->ServerName.c_str());
 		fprintf(fMailFile,"ERROR: This is the default text. It is used, \r\n");
 		fprintf(fMailFile,"because the template is not accessible!\r\n\r\n");
 		
@@ -1676,15 +1676,15 @@ int MF_ParseTemplate(const char* szTemplateName, FILE* fMailFile, MailFilter_Mai
 							break;
 						case 'P':
 							// PostMaster E-Mail
-							sprintf(templateString,"%.79s",MF_GlobalConfiguration.DomainEmailPostmaster.c_str());
+							sprintf(templateString,"%.79s",MF_GlobalConfiguration->DomainEmailPostmaster.c_str());
 							break;
 						case 'M':
 							// MailFilter E-Mail
-							sprintf(templateString,"%.79s",MF_GlobalConfiguration.DomainEmailMailFilter.c_str());
+							sprintf(templateString,"%.79s",MF_GlobalConfiguration->DomainEmailMailFilter.c_str());
 							break;
 						case 'S':
 							// Servername
-							sprintf(templateString,"%.79s",MF_GlobalConfiguration.ServerName.c_str());
+							sprintf(templateString,"%.79s",MF_GlobalConfiguration->ServerName.c_str());
 							break;
 						case 'V':
 							// MailFilter Product Version
@@ -1805,11 +1805,11 @@ int MF_Notification_Send2(const char messageType, const char* bounceRcpt, MailFi
 			}
 			szTemp[pos-spos]=0;		
 			
-			if (MF_GlobalConfiguration.GWIAVersion == 600)
-				fprintf(mail,"%s\r\nEHLO %s\r\n",szTemp,MF_GlobalConfiguration.DomainHostname.c_str());
+			if (MF_GlobalConfiguration->GWIAVersion == 600)
+				fprintf(mail,"%s\r\nEHLO %s\r\n",szTemp,MF_GlobalConfiguration->DomainHostname.c_str());
 
-			if (MF_GlobalConfiguration.GWIAVersion == 550)
-				fprintf(mail,"%s\r\nHELO %s\r\n",szTemp,MF_GlobalConfiguration.DomainHostname.c_str());
+			if (MF_GlobalConfiguration->GWIAVersion == 550)
+				fprintf(mail,"%s\r\nHELO %s\r\n",szTemp,MF_GlobalConfiguration->DomainHostname.c_str());
 
 		}
 				
@@ -1833,11 +1833,11 @@ int MF_Notification_Send2(const char messageType, const char* bounceRcpt, MailFi
 		}
 		szTemp[0]=0;
 		strcpy(szTemp,bounceRcpt+pos);
-		fprintf(mail,"MAIL FROM:%s\r\nRCPT TO:%s\r\n",MF_GlobalConfiguration.DomainEmailMailFilter.c_str(),szTemp);
+		fprintf(mail,"MAIL FROM:%s\r\nRCPT TO:%s\r\n",MF_GlobalConfiguration->DomainEmailMailFilter.c_str(),szTemp);
 		if (messageType < 2)
 			fprintf(mail,"DATA\n");
 		
-		fprintf(mail,"From: %s\r\nTo: %s\r\n",MF_GlobalConfiguration.DomainEmailMailFilter.c_str(),bounceRcpt);
+		fprintf(mail,"From: %s\r\nTo: %s\r\n",MF_GlobalConfiguration->DomainEmailMailFilter.c_str(),bounceRcpt);
 
 		if (messageType > 1)
 		{
@@ -1908,8 +1908,8 @@ int MF_MailProblemReport(MailFilter_MailData* mMailInfo) //const char* errorText
 		return 240;
 	}
 	
-	fprintf(mail,"MAIL FROM:%s\r\nRCPT TO:%s\r\n",MF_GlobalConfiguration.DomainEmailMailFilter.c_str(),MF_GlobalConfiguration.DomainEmailPostmaster.c_str());
-	fprintf(mail,"From: %s\r\nTo: %s\n",MF_GlobalConfiguration.DomainEmailMailFilter.c_str(),MF_GlobalConfiguration.DomainEmailPostmaster.c_str());
+	fprintf(mail,"MAIL FROM:%s\r\nRCPT TO:%s\r\n",MF_GlobalConfiguration->DomainEmailMailFilter.c_str(),MF_GlobalConfiguration->DomainEmailPostmaster.c_str());
+	fprintf(mail,"From: %s\r\nTo: %s\n",MF_GlobalConfiguration->DomainEmailMailFilter.c_str(),MF_GlobalConfiguration->DomainEmailPostmaster.c_str());
 	
 	MF_ParseTemplate("REPORT.TPL", mail, mMailInfo);
 	
@@ -1978,16 +1978,16 @@ int MF_EMailPostmasterGeneric(const char* Subject, const char* Text, const char*
 			bAttachFile = false;
 		}
 		
-		fprintf(mail,"MAIL FROM:%s\r\nRCPT TO:%s\r\n",MF_GlobalConfiguration.DomainEmailMailFilter.c_str(),MF_GlobalConfiguration.DomainEmailPostmaster.c_str());
+		fprintf(mail,"MAIL FROM:%s\r\nRCPT TO:%s\r\n",MF_GlobalConfiguration->DomainEmailMailFilter.c_str(),MF_GlobalConfiguration->DomainEmailPostmaster.c_str());
 		
-		fprintf(mail,"From: %s\nTo: %s\n",MF_GlobalConfiguration.DomainEmailMailFilter.c_str(),MF_GlobalConfiguration.DomainEmailPostmaster.c_str());
+		fprintf(mail,"From: %s\nTo: %s\n",MF_GlobalConfiguration->DomainEmailMailFilter.c_str(),MF_GlobalConfiguration->DomainEmailPostmaster.c_str());
 		fprintf(mail,"Subject: MailFilter Notification - %s\r\n",Subject);
 		fprintf(mail,"X-Mailer: MailFilter professional "MAILFILTERVERNUM"\r\nMime-Version: 1.0\r\n");
 		fprintf(mail,"Content-Type: multipart/mixed; boundary=\"==MFMFMFMFMF%s\"\r\n\r\n",szBoundary);
 		fprintf(mail,"--==MFMFMFMFMF%s\r\n",szBoundary);
 		fprintf(mail,"Content-Type: text/plain; charset=US-ASCII\r\nContent-Transfer-Encoding: 7bit\r\nContent-Disposition: inline\r\n\r\n");
 
-		fprintf(mail,"%s\r\nRegards,\r\nMailFilter/%s.\r\n\r\n",Text,MF_GlobalConfiguration.ServerName.c_str());
+		fprintf(mail,"%s\r\nRegards,\r\nMailFilter/%s.\r\n\r\n",Text,MF_GlobalConfiguration->ServerName.c_str());
 		
 		if (bAttachFile)
 		{
@@ -2116,7 +2116,7 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 				break;
 			case 'r':
 			case 'R':
-				if ( ( m->iMailSource == MAILFILTER_MAILSOURCE_RECEIVE ) && ( MF_GlobalConfiguration.EnablePFAFunctionality ) )
+				if ( ( m->iMailSource == MAILFILTER_MAILSOURCE_RECEIVE ) && ( MF_GlobalConfiguration->EnablePFAFunctionality ) )
 				{
 					/*
 					 * "PFA Functionality"
@@ -2148,7 +2148,7 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 						firstMatch = NULL;
 						secondMatch = NULL;
 						
-						firstMatch = MF_GlobalConfiguration.DomainName.c_str();
+						firstMatch = MF_GlobalConfiguration->DomainName.c_str();
 						secondMatch = strchr(firstMatch, ',');
 
 						if (secondMatch != NULL)
@@ -2190,7 +2190,7 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 							
 						} else {
 						
-							MF_ReadAddressFromDomain(MF_GlobalConfiguration.DomainName.c_str(),szAddresses,szInternalAddress,iSize);
+							MF_ReadAddressFromDomain(MF_GlobalConfiguration->DomainName.c_str(),szAddresses,szInternalAddress,iSize);
 
 						}
 						
@@ -2208,7 +2208,7 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 				}
 				if ( memicmp(szScanBuffer,"return-path:",12) == 0 )
 				{
-					if ((m->iMailSource == 0) && (bModifiedReturnPathAddress == false) && (MF_GlobalConfiguration.Multi2One != ""))
+					if ((m->iMailSource == 0) && (bModifiedReturnPathAddress == false) && (MF_GlobalConfiguration->Multi2One != ""))
 					{
 						szTemp[0]=0;
 						strncpy( szTemp , szScanBuffer+12, 2000 );
@@ -2223,7 +2223,7 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 								}
 						}
 						
-						curCmpPos = (int)strlen(MF_GlobalConfiguration.Multi2One.c_str());
+						curCmpPos = (int)strlen(MF_GlobalConfiguration->Multi2One.c_str());
 						
 						szCmpBuffer[0]=szTemp[strlen(szTemp)-1];
 						szCmpBuffer[1]=szTemp[strlen(szTemp)-0];
@@ -2233,10 +2233,10 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 						{
 							szCmpBuffer[0]=0;
 							
-							if (memicmp(MF_GlobalConfiguration.Multi2One.c_str(),szTemp+strlen(szTemp)-strlen(MF_GlobalConfiguration.Multi2One.c_str()),strlen(MF_GlobalConfiguration.Multi2One.c_str())-2)==0)
+							if (memicmp(MF_GlobalConfiguration->Multi2One.c_str(),szTemp+strlen(szTemp)-strlen(MF_GlobalConfiguration->Multi2One.c_str()),strlen(MF_GlobalConfiguration->Multi2One.c_str())-2)==0)
 							{
-								szScanBuffer[curPos-2+12] = MF_GlobalConfiguration.Multi2One[(unsigned int)(curCmpPos-2)];
-								szScanBuffer[curPos-1+12] = MF_GlobalConfiguration.Multi2One[(unsigned int)(curCmpPos-1)];
+								szScanBuffer[curPos-2+12] = MF_GlobalConfiguration->Multi2One[(unsigned int)(curCmpPos-2)];
+								szScanBuffer[curPos-1+12] = MF_GlobalConfiguration->Multi2One[(unsigned int)(curCmpPos-1)];
 							}
 						}
 						bModifiedReturnPathAddress = true;
@@ -2249,7 +2249,7 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 				{
 					_POSTSCANMOD_WRITEXSIEVE()
 					
-					if ((m->iMailSource == 0) && (bModifiedFromAddress == false) && (MF_GlobalConfiguration.Multi2One != ""))
+					if ((m->iMailSource == 0) && (bModifiedFromAddress == false) && (MF_GlobalConfiguration->Multi2One != ""))
 					{
 						szTemp[0]=0;
 						strncpy( szTemp , szScanBuffer+5, 2000 );
@@ -2264,7 +2264,7 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 								}
 						}
 						
-						curCmpPos = (int)strlen(MF_GlobalConfiguration.Multi2One.c_str());
+						curCmpPos = (int)strlen(MF_GlobalConfiguration->Multi2One.c_str());
 						
 						szCmpBuffer[0]=szTemp[strlen(szTemp)-1];
 						szCmpBuffer[1]=szTemp[strlen(szTemp)-0];
@@ -2274,10 +2274,10 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 						{
 							szCmpBuffer[0]=0;
 							
-							if (memicmp(MF_GlobalConfiguration.Multi2One.c_str(),szTemp+strlen(szTemp)-strlen(MF_GlobalConfiguration.Multi2One.c_str()),strlen(MF_GlobalConfiguration.Multi2One.c_str())-2)==0)
+							if (memicmp(MF_GlobalConfiguration->Multi2One.c_str(),szTemp+strlen(szTemp)-strlen(MF_GlobalConfiguration->Multi2One.c_str()),strlen(MF_GlobalConfiguration->Multi2One.c_str())-2)==0)
 							{
-								szScanBuffer[curPos-2+5] = MF_GlobalConfiguration.Multi2One[(unsigned int)(curCmpPos-2)];
-								szScanBuffer[curPos-1+5] = MF_GlobalConfiguration.Multi2One[(unsigned int)(curCmpPos-1)];
+								szScanBuffer[curPos-2+5] = MF_GlobalConfiguration->Multi2One[(unsigned int)(curCmpPos-2)];
+								szScanBuffer[curPos-1+5] = MF_GlobalConfiguration->Multi2One[(unsigned int)(curCmpPos-1)];
 							}
 						}
 						bModifiedFromAddress = true;
@@ -2286,7 +2286,7 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 				break;
 			case '.':
 				if (!bWroteFooter)
-					fwrite(MF_GlobalConfiguration.MessageFooterText.c_str(),sizeof(char),strlen(MF_GlobalConfiguration.MessageFooterText.c_str()),fOutput);
+					fwrite(MF_GlobalConfiguration->MessageFooterText.c_str(),sizeof(char),strlen(MF_GlobalConfiguration->MessageFooterText.c_str()),fOutput);
 				bWroteFooter = true;
 				break;
 			case 'C':
@@ -2408,7 +2408,7 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 
 	/* write out a footer text */
 	if (!bWroteFooter)
-		fwrite(MF_GlobalConfiguration.MessageFooterText.c_str(),sizeof(char),strlen(MF_GlobalConfiguration.MessageFooterText.c_str()),fOutput);
+		fwrite(MF_GlobalConfiguration->MessageFooterText.c_str(),sizeof(char),strlen(MF_GlobalConfiguration->MessageFooterText.c_str()),fOutput);
 
 	fclose(mailFile);
 	fclose(fOutput);
@@ -2673,11 +2673,11 @@ static void MFVS_CheckQueue()
 	int rc = 0;
 
 	/* Scan the SCAN directory (our queue) ... */
-	for (int iScanDir = 0; iScanDir < MF_GlobalConfiguration.MailscanDirNum; iScanDir++)
+	for (int iScanDir = 0; iScanDir < MF_GlobalConfiguration->MailscanDirNum; iScanDir++)
 	{
 		if (MFT_NLM_Exiting > 0)	break;
 		
-		sprintf(szScanDir,"%s"IX_DIRECTORY_SEPARATOR_STR"MFSCAN"IX_DIRECTORY_SEPARATOR_STR"%04i"IX_DIRECTORY_SEPARATOR_STR,MF_GlobalConfiguration.MFLTRoot.c_str(),iScanDir);
+		sprintf(szScanDir,"%s"IX_DIRECTORY_SEPARATOR_STR"MFSCAN"IX_DIRECTORY_SEPARATOR_STR"%04i"IX_DIRECTORY_SEPARATOR_STR,MF_GlobalConfiguration->MFLTRoot.c_str(),iScanDir);
 		chdir(szScanDir);
 
 		sprintf(szScanFile,"%sMAILFLT.MFS",szScanDir);
@@ -2691,7 +2691,7 @@ static void MFVS_CheckQueue()
 
 //			MFD_Out(" F %d - %d\n",iScanDir,(unsigned int) difftime(currentTime,statBuf.st_ctime));
 
-			if (((unsigned int) difftime(currentTime,statBuf.st_ctime)) > MF_GlobalConfiguration.MailscanTimeout)
+			if (((unsigned int) difftime(currentTime,statBuf.st_ctime)) > MF_GlobalConfiguration->MailscanTimeout)
 			{
 				m = MailFilter_MailRead(szScanFile);
 				if (m == NULL)
@@ -2825,10 +2825,10 @@ MFD_Out(MFD_SOURCE_VSCAN,"  VSCAN FAIL\n");
 
 					strcpy(m->szErrorMessage,"Virus Scan failed.");
 					m->iFilterNotify = MAILFILTER_NOTIFICATION_ADMIN_INCOMING | MAILFILTER_NOTIFICATION_ADMIN_OUTGOING;
-					if (MF_GlobalConfiguration.DefaultNotification_InternalRecipient)	{ m->iFilterNotify |= MAILFILTER_NOTIFICATION_RECIPIENT_INCOMING; }
-					if (MF_GlobalConfiguration.DefaultNotification_InternalSender)		{ m->iFilterNotify |= MAILFILTER_NOTIFICATION_SENDER_OUTGOING; }
-					if (MF_GlobalConfiguration.DefaultNotification_ExternalRecipient)	{ m->iFilterNotify |= MAILFILTER_NOTIFICATION_RECIPIENT_OUTGOING; }
-					if (MF_GlobalConfiguration.DefaultNotification_ExternalSender)		{ m->iFilterNotify |= MAILFILTER_NOTIFICATION_SENDER_INCOMING; }
+					if (MF_GlobalConfiguration->DefaultNotification_InternalRecipient)	{ m->iFilterNotify |= MAILFILTER_NOTIFICATION_RECIPIENT_INCOMING; }
+					if (MF_GlobalConfiguration->DefaultNotification_InternalSender)		{ m->iFilterNotify |= MAILFILTER_NOTIFICATION_SENDER_OUTGOING; }
+					if (MF_GlobalConfiguration->DefaultNotification_ExternalRecipient)	{ m->iFilterNotify |= MAILFILTER_NOTIFICATION_RECIPIENT_OUTGOING; }
+					if (MF_GlobalConfiguration->DefaultNotification_ExternalSender)		{ m->iFilterNotify |= MAILFILTER_NOTIFICATION_SENDER_INCOMING; }
 
 					MF_Notification_Send(m);
 					
@@ -2880,11 +2880,11 @@ void MF_CheckProblemDirAgeSize()
 	if (MFT_MF_ProbDir[0] == 0)
 		return;
 
-	if ((MF_GlobalConfiguration.ProblemDirMaxSize == 0) && (MF_GlobalConfiguration.ProblemDirMaxAge == 0))
+	if ((MF_GlobalConfiguration->ProblemDirMaxSize == 0) && (MF_GlobalConfiguration->ProblemDirMaxAge == 0))
 		return;
 	
-	if (MF_GlobalConfiguration.ProblemDirMaxAge)
-		killAge = (unsigned long)(time(NULL) - (MF_GlobalConfiguration.ProblemDirMaxAge*86400));
+	if (MF_GlobalConfiguration->ProblemDirMaxAge)
+		killAge = (unsigned long)(time(NULL) - (MF_GlobalConfiguration->ProblemDirMaxAge*86400));
 	
 #if defined(N_PLAT_NLM) && !defined(__NOVELL_LIBC__)
 	sprintf(probDir,"%s*.*",MFT_MF_ProbDir);
@@ -2926,7 +2926,7 @@ MFD_Out(MFD_SOURCE_GENERIC,"prb: %s\n",probDir);
 
 			cntTotalSize = cntTotalSize + statInfo.st_size;
 			
-			if ((!MF_GlobalConfiguration.ProblemDirMaxAge == 0) && (killAge > statInfo.st_mtime))
+			if ((!MF_GlobalConfiguration->ProblemDirMaxAge == 0) && (killAge > statInfo.st_mtime))
 			{
 				cntKilledNumber++;
 
@@ -2939,15 +2939,15 @@ MFD_Out(MFD_SOURCE_GENERIC,"prb: %s\n",probDir);
 	if (mailDir != NULL) closedir(mailDir);
 
 	MFD_Out(MFD_SOURCE_GENERIC,"deleted %d OLD files (%lld kB)\n",cntKilledNumber,cntKilledSize/1024);
-	MFD_Out(MFD_SOURCE_GENERIC,"size compare says: %lld vs %d\n", ((cntTotalSize - cntKilledSize)/1024), MF_GlobalConfiguration.ProblemDirMaxSize);
+	MFD_Out(MFD_SOURCE_GENERIC,"size compare says: %lld vs %d\n", ((cntTotalSize - cntKilledSize)/1024), MF_GlobalConfiguration->ProblemDirMaxSize);
 
 	if (( ((cntTotalSize - cntKilledSize)/1024) > 
 #ifdef __NOVELL_LIBC__
-		(long long)MF_GlobalConfiguration.ProblemDirMaxSize
+		(long long)MF_GlobalConfiguration->ProblemDirMaxSize
 #else
-		MF_GlobalConfiguration.ProblemDirMaxSize
+		MF_GlobalConfiguration->ProblemDirMaxSize
 #endif
-		) && (bool)(MF_GlobalConfiguration.ProblemDirMaxSize)
+		) && (bool)(MF_GlobalConfiguration->ProblemDirMaxSize)
 	)
 	{
 		MFD_Out(MFD_SOURCE_GENERIC,"==> trying size reduction\n");
@@ -2991,9 +2991,9 @@ MFD_Out(MFD_SOURCE_GENERIC,"prb: %s\n",probDir);
 			
 			if ( ((cntTotalSize - cntKilledSize)/1024) < 
 		#ifdef __NOVELL_LIBC__
-				(long long)MF_GlobalConfiguration.ProblemDirMaxSize
+				(long long)MF_GlobalConfiguration->ProblemDirMaxSize
 		#else
-				MF_GlobalConfiguration.ProblemDirMaxSize
+				MF_GlobalConfiguration->ProblemDirMaxSize
 		#endif
 				)
 				break;
@@ -3011,7 +3011,7 @@ MFD_Out(MFD_SOURCE_GENERIC,"prb: %s\n",probDir);
 #endif
 			cntTotalNumber,cntTotalSize,cntKilledNumber,cntKilledSize,cntTotalNumber-cntKilledNumber,cntTotalSize - cntKilledSize);
 
-	if (MF_GlobalConfiguration.NotificationAdminMailsKilled && cntKilledNumber)
+	if (MF_GlobalConfiguration->NotificationAdminMailsKilled && cntKilledNumber)
 	{
 		cntTotalSize = cntTotalSize / 1024;
 		cntKilledSize = cntKilledSize / 1024;
@@ -3036,7 +3036,6 @@ static void MFBW_CheckQueue(const char* szFile,const char* szIn,const char* szOu
 		MF_MoveFileToFile(szIn,szOut,true);
 	}
 }
-
 
 /*
  * Create the directory szDirectoryName if it doesnt exist.
@@ -3086,6 +3085,22 @@ static bool CheckDirectory(const char* szDirectoryName, bool bCleanUp)
 	return true;
 }
 
+
+void __mfd_symbols_worker()
+{
+	char scanDir[MAX_PATH];
+	sprintf(scanDir,"%s"IX_DIRECTORY_SEPARATOR_STR"MFSCAN"IX_DIRECTORY_SEPARATOR_STR"%04i"IX_DIRECTORY_SEPARATOR_STR"lock.mfs",MF_GlobalConfiguration->MFLTRoot.c_str(),0);
+	
+	FILE* f = fopen(scanDir,"wt");
+	fprintf(f,"foo\n");
+	fclose(f);
+	
+	sprintf(scanDir,"%s"IX_DIRECTORY_SEPARATOR_STR"MFSCAN"IX_DIRECTORY_SEPARATOR_STR"%04i"IX_DIRECTORY_SEPARATOR_STR,MF_GlobalConfiguration->MFLTRoot.c_str(),0);
+	CheckDirectory(scanDir					,true	);
+
+
+}
+
 /*
  * Loop through the directory szDirectoryName 
  * and call MF_ProcessFile for all files in it.
@@ -3131,14 +3146,14 @@ void MFWorker_SetupPaths()
 #define PS IX_DIRECTORY_SEPARATOR_STR
 
 	// Init Directories
-	sprintf(MFT_GWIA_SendDirIn,				"%s"PS"SEND"PS,			MF_GlobalConfiguration.GWIARoot.c_str());
-	sprintf(MFT_GWIA_SendDirOut,			"%s"PS"SEND"PS,			MF_GlobalConfiguration.MFLTRoot.c_str());
-	sprintf(MFT_GWIA_RecvDirIn,				"%s"PS"RECEIVE"PS,		MF_GlobalConfiguration.MFLTRoot.c_str());
-	sprintf(MFT_GWIA_RecvDirOut,			"%s"PS"RECEIVE"PS,		MF_GlobalConfiguration.GWIARoot.c_str());
-	sprintf(MFT_GWIA_ResultDirIn,			"%s"PS"RESULT"PS,		MF_GlobalConfiguration.MFLTRoot.c_str());
-	sprintf(MFT_GWIA_ResultDirOut,			"%s"PS"RESULT"PS,		MF_GlobalConfiguration.GWIARoot.c_str());
-	sprintf(MFT_MF_ScheduleDirSend,			"%s"PS"MFSCHED"PS,		MF_GlobalConfiguration.MFLTRoot.c_str());
-	sprintf(MFT_MF_ProbDir,					"%s"PS"MFPROB"PS,		MF_GlobalConfiguration.MFLTRoot.c_str());
+	sprintf(MFT_GWIA_SendDirIn,				"%s"PS"SEND"PS,			MF_GlobalConfiguration->GWIARoot.c_str());
+	sprintf(MFT_GWIA_SendDirOut,			"%s"PS"SEND"PS,			MF_GlobalConfiguration->MFLTRoot.c_str());
+	sprintf(MFT_GWIA_RecvDirIn,				"%s"PS"RECEIVE"PS,		MF_GlobalConfiguration->MFLTRoot.c_str());
+	sprintf(MFT_GWIA_RecvDirOut,			"%s"PS"RECEIVE"PS,		MF_GlobalConfiguration->GWIARoot.c_str());
+	sprintf(MFT_GWIA_ResultDirIn,			"%s"PS"RESULT"PS,		MF_GlobalConfiguration->MFLTRoot.c_str());
+	sprintf(MFT_GWIA_ResultDirOut,			"%s"PS"RESULT"PS,		MF_GlobalConfiguration->GWIARoot.c_str());
+	sprintf(MFT_MF_ScheduleDirSend,			"%s"PS"MFSCHED"PS,		MF_GlobalConfiguration->MFLTRoot.c_str());
+	sprintf(MFT_MF_ProbDir,					"%s"PS"MFPROB"PS,		MF_GlobalConfiguration->MFLTRoot.c_str());
 
 	CheckDirectory(MFT_GWIA_SendDirIn		,true	);
 	CheckDirectory(MFT_GWIA_SendDirOut		,false	);
@@ -3157,14 +3172,14 @@ void MFWorker_SetupPaths()
 	strcpy(MFT_MF_ProbDir,scanDir);
 
 	// Create SCAN directory.
-	sprintf(scanDir,"%s"IX_DIRECTORY_SEPARATOR_STR"MFSCAN"PS,MF_GlobalConfiguration.MFLTRoot.c_str());
+	sprintf(scanDir,"%s"IX_DIRECTORY_SEPARATOR_STR"MFSCAN"PS,MF_GlobalConfiguration->MFLTRoot.c_str());
 	CheckDirectory(scanDir					,false	);
 
 	// Create SCAN %i subdirectories...
 	int iScanDir = 0;
-	for (iScanDir = 0; iScanDir < MF_GlobalConfiguration.MailscanDirNum; iScanDir++)
+	for (iScanDir = 0; iScanDir < MF_GlobalConfiguration->MailscanDirNum; iScanDir++)
 	{
-		sprintf(scanDir,"%s"PS"MFSCAN"PS"%04i"PS,MF_GlobalConfiguration.MFLTRoot.c_str(),iScanDir);
+		sprintf(scanDir,"%s"PS"MFSCAN"PS"%04i"PS,MF_GlobalConfiguration->MFLTRoot.c_str(),iScanDir);
 		CheckDirectory(scanDir					,true	);
 	}
 }
@@ -3236,12 +3251,12 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 		if 
 		(
 			(
-				MF_GlobalConfiguration.RequireAVA &&
+				MF_GlobalConfiguration->RequireAVA &&
 				(MailFilter_AV_Check() == 0)
 			)
 			||
 			(
-				MF_GlobalConfiguration.RequireAVA != true
+				MF_GlobalConfiguration->RequireAVA != true
 			)
 			||
 			(
@@ -3261,7 +3276,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 		if
 		(
 			MFT_bTriedAVInit && 
-			MF_GlobalConfiguration.RequireAVA &&
+			MF_GlobalConfiguration->RequireAVA &&
 			(MailFilter_AV_Check() != 0)
 		)
 		{
@@ -3402,13 +3417,13 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 				MFC_MAILSCAN_Enabled = false;		// doh, not licensed.
 				else
 				{
-					if ( (MF_GlobalConfiguration.MailscanDirNum == 0) || (MF_GlobalConfiguration.MailscanTimeout == 0) )
+					if ( (MF_GlobalConfiguration->MailscanDirNum == 0) || (MF_GlobalConfiguration->MailscanTimeout == 0) )
 						MFC_MAILSCAN_Enabled = false;		// licensed but RT Scanner disabled.
 						else
 						MFC_MAILSCAN_Enabled = true;		// ok, valid config + license for this.
 	
 					// AV NLM scanning only needs a scan dir.
-					if (MF_GlobalConfiguration.MailscanDirNum != 0)
+					if (MF_GlobalConfiguration->MailscanDirNum != 0)
 					{
 						// config okay, now init AV NLMs ASAP.
 						if (MailFilter_AV_Check() && (!MFT_bTriedAVInit))
@@ -3421,7 +3436,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 			
 			// scheduling licensed?
 			if (!MFL_GetFlag(MAILFILTER_MC_M_BWTHCNTRL))
-				MF_GlobalConfiguration.BWLScheduleTime = "";
+				MF_GlobalConfiguration->BWLScheduleTime = "";
 		}
 
 		//* Scheduling Directory: Send *
@@ -3562,7 +3577,7 @@ static int MF_GoOn()
 		out[keylen+2]=0;
 	
 		// check
-		if (memicmp(MF_GlobalConfiguration.LicenseKey.c_str(),out,0))
+		if (memicmp(MF_GlobalConfiguration->LicenseKey.c_str(),out,0))
 			ret = 0;
 			
 		// zap it out

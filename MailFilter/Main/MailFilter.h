@@ -300,7 +300,7 @@ typedef LONG rtag_t;
 
 	#ifdef __cplusplus
 		#include "MFConfig.h++"
-		MailFilter_Configuration::Configuration MF_GlobalConfiguration;
+		MailFilter_Configuration::Configuration *MF_GlobalConfiguration;
 	#endif
 
 #else // _MAILFILTER_MAIN_
@@ -319,7 +319,7 @@ typedef LONG rtag_t;
 
 	#ifdef __cplusplus
 		#include "MFConfig.h++"
-		extern MailFilter_Configuration::Configuration MF_GlobalConfiguration;
+		extern MailFilter_Configuration::Configuration *MF_GlobalConfiguration;
 	#endif
 
 #endif // _MAILFILTER_MAIN_

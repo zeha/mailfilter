@@ -12,7 +12,6 @@
 
 
 #include <string>
-#include <iostream>
 #include <vector>
 
 #ifndef __MAILFILTER_CONFIGURATION_FILTER_CPP_HEADER

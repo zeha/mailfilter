@@ -22,4 +22,7 @@ typedef int(*MailFilter_AVA_Status_t)(MFAVA_HANDLE, long);
 
 #ifdef __cplusplus
 }
+
+void* __my_malloc(size_t length);
+
 #endif

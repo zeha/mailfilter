@@ -264,7 +264,7 @@ int eTrust7_ScanFile(MFAVA_HANDLE hAVA, const char* szFileName, char* szVirusNam
 	if (app->eTrust_InitComplete != 1)
 		return ENOENT;
 
-	if ((virus = (VirusData_t*)malloc(sizeof(VirusData_t))) == NULL)
+	if ((virus = (VirusData_t*)__my_malloc(sizeof(VirusData_t))) == NULL)
 		return ENOMEM;
 		
 	if (gDebugSetCmd) printf("MFAVADebug: %X VirusNameLength = %d\n",hAVA,iVirusNameLength);
@@ -429,7 +429,7 @@ int eTrust7_Init(MFAVA_HANDLE &hAVA)
 	cf2.l9 = 2;
 	cf2.l10 = 2;
 
-	cf2.p1 = (char*)malloc(0x20);
+	cf2.p1 = (char*)__my_malloc(0x20);
 	if (cf2.p1 == NULL)
 		return ENOMEM;
 		
@@ -440,7 +440,7 @@ int eTrust7_Init(MFAVA_HANDLE &hAVA)
 	cf2.p1[3] = (char)0xCA;
 	cf2.p1[4] = (char)0x0C;
 
-	cf2.p2 = (char*)malloc(0x20);
+	cf2.p2 = (char*)__my_malloc(0x20);
 	if (cf2.p2 == NULL)
 	{
 		free(cf2.p1);

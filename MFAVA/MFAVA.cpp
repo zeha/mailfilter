@@ -60,6 +60,46 @@ int DownWarning
 	return 0;
 }
 
+void *__my_AllocSleepOK ( 
+   size_t   size, 
+   rtag_t   rTag, 
+   int     *slept)
+{
+	
+	void* p = NULL;
+
+
+	for (int cnt = 0; cnt<20; cnt++)
+	{
+		p = AllocSleepOK(size,rTag,slept);
+		if ((!p)&&(cnt==0))
+			printf("MFAVA: AllocSleepOK returned NULL memory.\n");
+
+		if (p)
+			return p;
+	}
+	printf("MFAVA: Out of memory!\n");
+	return NULL;
+}
+
+
+void* __my_malloc(size_t length)
+{
+	void* p = NULL;
+
+	for (int cnt = 0; cnt<20; cnt++)
+	{
+		p = malloc(length);
+		if ((!p)&&(cnt==0))
+			printf("MFAVA: malloc returned NULL memory.\n");
+
+		if (p)
+			return p;
+	}
+	printf("MFAVA: out of memory.\n");
+	return NULL;
+}
+
 // **
 // ** Library support stuff
 // **
@@ -81,7 +121,8 @@ appdata_t *GetOrSetAppData( void )
 	if (!(rtag = getallocresourcetag()))
 		rtag = gLibAllocRTag;
 
-	if ( (app = (appdata_t*)AllocSleepOK(sizeof(appdata_t), rtag, NULL)) != NULL )
+
+	if ( (app = (appdata_t*)__my_AllocSleepOK(sizeof(appdata_t), rtag, NULL)) != NULL )
 	{
 		app->Debug = 0;
 		app->eTrust_InitComplete = 0;
@@ -150,8 +191,10 @@ static int MFAVA_DeInit(MFAVA_HANDLE hAVA)
 	
 	// eTrust 7.x
 	iError = eTrust7_DeInit(hAVA);
-	if (iError)		return iError;
-		
+	if (iError)		goto FinishIt;
+	
+FinishIt:
+	
 	DisposeAppData(GetOrSetAppData());
 		
 	return iError;

@@ -112,12 +112,12 @@ bool MailFilterApp_Server_LoginToServer()
 	MFT_IdentitiesOkay = false;
 
 	if (
-		 (MF_GlobalConfiguration.LoginUserName == "") &&
-		 (MF_GlobalConfiguration.LoginUserPassword == "")
+		 (MF_GlobalConfiguration->LoginUserName == "") &&
+		 (MF_GlobalConfiguration->LoginUserPassword == "")
 		)
 		return true;		// we shouldnt log in?
 
-	err = create_identity ("", MF_GlobalConfiguration.LoginUserName.c_str(), MF_GlobalConfiguration.LoginUserPassword.c_str(),
+	err = create_identity ("", MF_GlobalConfiguration->LoginUserName.c_str(), MF_GlobalConfiguration->LoginUserPassword.c_str(),
 								NULL, XPORT_WILD|USERNAME_ASCII, &MFT_ServerIdentity);
 	if (err)
 	{
