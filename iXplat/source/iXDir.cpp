@@ -15,6 +15,7 @@ iXDir::iXDir(const char* DirectoryName)
 	strcpy(szFull,DirectoryName);
 	strcat(szFull,"\\*.*");
 	m_Directory = opendir(szFull);
+	free(szFull);
 #else
 	m_Directory = opendir(DirectoryName);
 #endif
