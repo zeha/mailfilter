@@ -23,9 +23,12 @@ static UINT (*dynaload_BuildAndSendHeader) (HINTERNET handle, char *windowTitle,
 static UINT32 (*dynaload_BuildAndSendFooter) (HINTERNET hndl);
 static char *(*dynaload_HttpReturnString)(UINT32 stringType);
 static BOOL (*dynaload_HttpReturnRequestMethod) (HINTERNET hndl, UINT32_PTR httpRequestMethodType);
+static int (*dynaload_HttpReturnPathBuffers)(HINTERNET hrequest, UINT32_PTR lpszPathBufs, char **path, char **cnvpath);
 
 int DLSetupNRM()
 {
+	dynaload_HttpReturnPathBuffers = ImportPublicObject(getnlmhandle(),"HttpReturnPathBuffers");
+					if (dynaload_HttpReturnPathBuffers == NULL) goto handle_dynaload_err;
 	dynaload_HttpSendDataSprintf = ImportPublicObject(getnlmhandle(),"HttpSendDataSprintf");
 					if (dynaload_HttpSendDataSprintf == NULL) goto handle_dynaload_err;
 	dynaload_HttpSendErrorResponse = ImportPublicObject(getnlmhandle(),"HttpSendErrorResponse");
@@ -57,6 +60,8 @@ handle_dynaload_err:
 
 int DLDeSetupNRM()
 {
+	if (dynaload_HttpReturnPathBuffers != NULL)
+			UnImportPublicObject(getnlmhandle(),"HttpReturnPathBuffers");
 	if (dynaload_HttpSendDataSprintf != NULL)
 			UnImportPublicObject(getnlmhandle(),"HttpSendDataSprintf");
 	if (dynaload_HttpSendErrorResponse != NULL)
@@ -81,6 +86,15 @@ int DLDeSetupNRM()
 	return 1;
 }
 
+int DL_HttpReturnPathBuffers(HINTERNET hrequest, UINT32_PTR lpszPathBufs, char **path, char **cnvpath)
+{
+	int dynaloadReturnValue;
+	if (dynaload_HttpReturnPathBuffers == NULL)
+		return NULL; // symbol not found, sorry!
+	dynaloadReturnValue = (*dynaload_HttpReturnPathBuffers) (hrequest, lpszPathBufs, path, cnvpath);
+	return dynaloadReturnValue;
+}
+//
 char* DL_HttpReturnString (UINT32 stringType)
 {
 	char* dynaloadReturnValue;

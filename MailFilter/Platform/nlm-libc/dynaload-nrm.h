@@ -33,6 +33,8 @@ extern UINT DL_BuildAndSendHeader (HINTERNET handle, char *windowTitle, char *pa
 extern UINT32 DL_BuildAndSendFooter (HINTERNET hndl);
 //
 extern char *DL_HttpReturnString(UINT32 stringType);
+//
+extern int DL_HttpReturnPathBuffers(HINTERNET hrequest, UINT32_PTR lpszPathBufs, char **path, char **cnvpath);
 
 extern int DLSetupNRM();
 extern int DLDeSetupNRM();
