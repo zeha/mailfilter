@@ -215,7 +215,7 @@ private:
 		szOut = "";
 		strStart = cpos;
 		outpos = strStart;
-		for (cpos = strStart ; cpos < len ; cpos++)
+		for (cpos = strStart ; (unsigned int)cpos < len ; cpos++)
 		{
 	//		printf(" %d,%d",outpos,cpos);
 			
@@ -624,13 +624,14 @@ void Execute(char* szInFile, char* szOutFile, int inType, int outType)
 int main( int argc, char* argv[] ) {
 	
 	fprintf(stderr,"MFFilterICE (c) Copyright 2002-2004 Christian & Walter Hofstaedtler\n");
-	fprintf(stderr,"             Version 1.01 for MailFilter/ax 1.5.5 Build 1122.\n");
+	fprintf(stderr,"             Version 1.02 for MailFilter 1.5.5 Build 1130.\n");
 //	fprintf(stderr,"             USE THIS PROGRAM AT YOUR OWN RISK.\n");
 	if (argc < 5)
 	{
 		printf("Usage: \n");
-		printf("  MFFilterICE InputType OutputType InputFile OutputFile\n\n");
-		printf("  Where InputType and OutputType can be one of: -csv -bin -tab\n");
+		printf("  MFFilterICE <InputType> <InputFile> <OutputType> <OutputFile>\n\n");
+		printf("  Where <InputType> and <OutputType> can be one of: -csv -bin -tab\n");
+		printf("  WARNING: This utility can not import CSV files in this release.\n");
 		return 0;
 	}
 

@@ -154,6 +154,9 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
+				RelativePath="..\Graphics\MailFilter.ico">
+			</File>
+			<File
 				RelativePath="main.rc">
 			</File>
 		</Filter>
