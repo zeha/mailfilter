@@ -482,7 +482,7 @@ void MF_StatusUI_Update(int newText)
 }
 
 					   //  0   1    2   3   
-static char cStatus[] = { '|','\\','-','/' };
+static char cStatus[] = { '|','/','-','\\' };
 extern unsigned int MFT_SleepTimer;
 
 //

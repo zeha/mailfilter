@@ -858,7 +858,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 					
 			bOverrideErrorMessage = true;
 			szFieldDescription = (char*)_mfd_malloc(1001,"szFieldDescription");
-			sprintf(szFieldDescription,"Found a blacklisted mailserver address. (RBL: %s)",holeZone);
+			sprintf(szFieldDescription,"Blacklisted Mail Server (RBL: %s)",holeZone);
 			
 			if( bl->LookupRBL_DNS(holeZone,validResponse) == 1 )	{ iResult = 1; } else { iResult = 0; }
 			_mfd_free(holeZone,"holeZone");
@@ -986,7 +986,10 @@ MFD_Out(MFD_SOURCE_RULE,"%s",MF_GlobalConfiguration.filterList[(unsigned int)cur
 		}
 			
 		m->szErrorMessage[1000] = 0;
-		MF_StatusText(m->szErrorMessage);
+		
+		std::string szDspError = "  Drop: ";
+		szDspError += m->szErrorMessage;
+		MF_StatusText(szDspError.c_str());
 			
 	}
 
@@ -1943,7 +1946,6 @@ MFD_Out(MFD_SOURCE_MAIL,"-=> TYPE '%s'\n",szThisAttachment);
 	sprintf(szCmpBuffer,"  From: %s",m->szMailFrom);		MF_StatusLog(szCmpBuffer);
 	sprintf(szCmpBuffer,"  Rcpt: %s",m->szMailRcpt);		MF_StatusLog(szCmpBuffer);
 	sprintf(szCmpBuffer,"  Subject: %s",m->szMailSubject);	MF_StatusLog(szCmpBuffer);
-	sprintf(szCmpBuffer,"  Mail Size: %d Byte",m->iMailSize);	MF_StatusLog(szCmpBuffer);
 
 	if (m->szProblemMailDestination != NULL)
 	{
@@ -1955,30 +1957,12 @@ MFD_Out(MFD_SOURCE_MAIL,"-=> TYPE '%s'\n",szThisAttachment);
 		m->szProblemMailDestination[250]=0;
 	}
 
-	if ( 
-			( m->bFilterMatched == true ) /*|| 
-			( m->iBlacklistResults == 1 ) || 
-			( ( m->iBlacklistResults == 2 ) && ( MFC_DropUnresolvableRelayHosts ) && ( m->iMailSource == MAILFILTER_MAILSOURCE_INCOMING ) ) */
-		)
+	if ( m->bFilterMatched == true )
 	{
 
-/*
-	  	if (m->iBlacklistResults == 1)
-    	{
-    		MF_StatusText(" Dropping because of blacklisted IP.");
-    		sprintf(m->szErrorMessage,"Found a blacklisted mailserver address. (RBL: %s)",MFC_DNSBL_Zonename);
-    	}
-    	if ( (m->iBlacklistResults == 2) && ( MFC_DropUnresolvableRelayHosts ) && ( m->iMailSource == MAILFILTER_MAILSOURCE_INCOMING ) )
-    	{
-    		MF_StatusText(" Dropping because of unresolvable relay host.");
-    		strcpy(m->szErrorMessage,"Found an unknown/unresolvable relay host address.");
-    	}
-*/
-		MF_StatusText(" Dropped Mail Summary:");
-		sprintf(szCmpBuffer,"  From: %s",m->szMailFrom);				MF_StatusText(szCmpBuffer);
-		sprintf(szCmpBuffer,"  Rcpt: %s",m->szMailRcpt);				MF_StatusText(szCmpBuffer);
+		sprintf(szCmpBuffer,"  Sender:  %s",m->szMailFrom);				MF_StatusText(szCmpBuffer);
+		sprintf(szCmpBuffer,"  Recpt.:  %s",m->szMailRcpt);				MF_StatusText(szCmpBuffer);
 		sprintf(szCmpBuffer,"  Subject: %s",m->szMailSubject);			MF_StatusText(szCmpBuffer);
-		sprintf(szCmpBuffer,"  Mail Size: %d Byte(s)",m->iMailSize);	MF_StatusText(szCmpBuffer);
 
 		if (
 			((m->iMailSource == MAILFILTER_MAILSOURCE_INCOMING) && chkFlag(m->iFilterNotify,MAILFILTER_NOTIFICATION_ADMIN_INCOMING))
@@ -1986,16 +1970,7 @@ MFD_Out(MFD_SOURCE_MAIL,"-=> TYPE '%s'\n",szThisAttachment);
 			((m->iMailSource == MAILFILTER_MAILSOURCE_OUTGOING) && chkFlag(m->iFilterNotify,MAILFILTER_NOTIFICATION_ADMIN_OUTGOING))
 		 ) {
 
-/*			MF_MailProblemReport(
-				m->szFileIn,
-				(m->szErrorMessage[0]==0) ? "A filter rule denied the further delivery." : m->szErrorMessage,
-				m->szMailFrom,
-				m->szMailRcpt,
-				m->szMailSubject
-				);*/
-
 			MF_MailProblemReport(m);
-				
 		}
 
 		MF_Notification_Send(m);
@@ -3483,12 +3458,10 @@ MFD_Out(MFD_SOURCE_VSCAN," totals: detected size %d, should be %d; result: %d \n
 MFD_Out(MFD_SOURCE_VSCAN,"  VSCAN FAIL\n");
 
 					/* Virus Scan Failed */
-					MF_StatusText(" Dropped Mail Summary:");
-					sprintf(szTemp,"  From: %s",m->szMailFrom);				MF_StatusText(szTemp);
-					sprintf(szTemp,"  Rcpt: %s",m->szMailRcpt);				MF_StatusText(szTemp);
-					sprintf(szTemp,"  Subject: %s",m->szMailSubject);		MF_StatusText(szTemp);
-					sprintf(szTemp,"  Mail Size: %d Byte(s)",m->iMailSize);	MF_StatusText(szTemp);
-					MF_StatusText("  Reason: Virus Scan failed.");
+					MF_StatusText("  Drop: Virus Scan failed.");
+					sprintf(szTemp,"  Sender:  %s",m->szMailFrom);				MF_StatusText(szTemp);
+					sprintf(szTemp,"  Recpt.:  %s",m->szMailRcpt);				MF_StatusText(szTemp);
+					sprintf(szTemp,"  Subject: %s",m->szMailSubject);			MF_StatusText(szTemp);
 
 					if (m->iMailSource == 0)
 						MFS_MF_MailsOutputFailed++;
@@ -3546,6 +3519,11 @@ void MF_CheckProblemDirAgeSize()
 #endif
 
 	MFD_Out(MFD_SOURCE_GENERIC,"Checking MFPROB size...");
+
+	if (MFT_MF_ProbDir == NULL)
+		return;
+	if (MFT_MF_ProbDir[0] == 0)
+		return;
 
 	if ((MF_GlobalConfiguration.ProblemDirMaxSize == 0) && (MF_GlobalConfiguration.ProblemDirMaxAge == 0))
 		return;
@@ -3873,6 +3851,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 	for (iScanDir = 0; iScanDir < MF_GlobalConfiguration.MailscanDirNum; iScanDir++)
 	{
 		sprintf(scanDir,"%s"PS"MFSCAN"PS"%04i"PS,MF_GlobalConfiguration.MFLTRoot.c_str(),iScanDir);
+		
 		_MF_DIRECTORY_OPENDIR(scanDir);
 
 		while ( mailDir != NULL )
