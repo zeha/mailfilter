@@ -1,13 +1,13 @@
-MailFilter/ax professional: Technical Information Document
-----------------------------------------------------------
+MailFilter professional: Technical Information Document
+-------------------------------------------------------
 
 "MFFilter2CSV.exe and the CSV file format"
 
-MFFilter2CSV.exe is a utility to convert between CSV and the binary MailFilter/ax Rule package files.
+MFFilter2CSV.exe is a utility to convert between CSV and the binary MailFilter Rule package files.
 To create a CSV from a rule package file use: MFFilter2CSV.exe -csv filters.bin filters.csv
 To create a rule package file from your CSV: MFFilter2CSV.exe -bin filters.csv filters.bin
 
-The Win32 configurator can read and write both CSV files and MailFilter/ax Rule Packages.
+The Win32 configurator can read and write both CSV files and MailFilter Rule Packages.
 
 
 The rule package is exported in this CSV format by MFFilter2CSV:
@@ -15,12 +15,19 @@ The rule package is exported in this CSV format by MFFilter2CSV:
 
 The first four fields are hex values, in particular:
    Matchfield:
+	MAILFILTER_MATCHFIELD_ALWAYS			0x0000
 	MATCHFIELD_ATTACHMENT				0x0001
 	MATCHFIELD_EMAIL				0x0002
-	MATCHFIELD_SUBJECT				0x0004
-	MATCHFIELD_SIZE					0x0008
-	MATCHFIELD_EMAIL_FROM				0x0010
-	MATCHFIELD_EMAIL_TO				0x0020
+	MATCHFIELD_SUBJECT				0x0003
+	MATCHFIELD_SIZE					0x0004
+	MATCHFIELD_EMAIL_FROM				0x0005
+	MATCHFIELD_EMAIL_TO				0x0006
+	MAILFILTER_MATCHFIELD_BLACKLIST			0x0007
+	MAILFILTER_MATCHFIELD_IPUNRESOLVABLE		0x0008
+	MAILFILTER_MATCHFIELD_ARCHIVECONTENTNAME	0x0009
+	MAILFILTER_MATCHFIELD_ARCHIVECONTENTCOUNT	0x0010
+	MAILFILTER_MATCHFIELD_EMAIL_TOANDCC		0x0011
+	MAILFILTER_MATCHFIELD_EMAIL_BOTHANDCC		0x0012
 
    Notification Type:
 	NOTIFICATION_ADMIN_INCOMING			0x0001
@@ -40,12 +47,15 @@ The first four fields are hex values, in particular:
 	MATCHACTION_RESCAN				0x0004
 	MATCHACTION_PASS				0x0008
 	MATCHACTION_SCHEDULE				0x0010
+	MAILFILTER_MATCHACTION_NOSCHEDULE		0x0020
+	MAILFILTER_MATCHACTION_COPY			0x0040
 
-Enabled should be set to '1' always.
+Enabled should always be set to '1'.
 Incoming and Outgoing represent if the rule should be enabled for Incoming/Outgoing mails. (0 = Disabled, 1 = Enabled)
 
 Description is a string which can be up to 60 characters long, describing the rule in short words.
 Expression is a string which contains the expression for this rule. It can be up to 200 characters long.
 
--------------------- Last Updated: Feb 13th 2003, ch -----
+-------------------- Note current for MailFilter 1.5.8 ---
+-------------------- Last Updated: Jul 13th 2004, ch -----
 
