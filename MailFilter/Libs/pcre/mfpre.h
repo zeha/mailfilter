@@ -4,7 +4,7 @@
 #undef _MAILFILTER_WITH_POSIX_REGEXP_H
 #define _MAILFILTER_WITH_POSIX_REGEXP_H
 
-#include "pcreposix.h"
+#include "pcreposix45.h"
 
 /***** TODO ******/
 // check REG_NEWLINE !!!

@@ -4,7 +4,7 @@
 #undef _MAILFILTER_WITH_REGEXP_H
 #define _MAILFILTER_WITH_REGEXP_H
 
-#include "pcre.h"
+#include "pcre45.h"
 #define OVECCOUNT 6    /* should be a multiple of 3 */
 
 /* -- */

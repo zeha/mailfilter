@@ -102,6 +102,7 @@ to get memory. For more detail, see comments and other stuff just above the
 match() function. On Unix systems, "configure" can be used to set this in the
 Makefile (use --disable-recursion). */
 
-#define NO_RECURSE
+// would be nice for netware, but we dont have longjmp and the like
+#undef NO_RECURSE
 
 /* End */
