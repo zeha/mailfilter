@@ -94,14 +94,16 @@ int MF_ParseCommandLine( int argc, char **argv )
 {
 
 	int c;
-	
+	bool bTArgOkay;
 	ix_getopt_init();
+
+	MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::SERVER;
 
 	while (1)
 	{
 //		int this_option_optind = ix_optind ? ix_optind : 1;
 
-		c = ix_getopt(argc, argv, "dhvx");
+		c = ix_getopt(argc, argv, "dhvx?");
 		if (c == -1)
 			break;
 			
@@ -125,19 +127,37 @@ int MF_ParseCommandLine( int argc, char **argv )
 				MFT_Verbose = true;
 				break;
 #endif
+			case '?':
 			case 'h':
-				printf ("MAILFILTER: Usage:\n	%s [-dv] ConfigurationDir\n	-d debug\n	-v verbose",argv[0]);
+				printf ("MAILFILTER: Usage:\n\t%s [-dv] ConfigurationDir\n\t-d debug\n\t-v verbose\n",argv[0]);
 				return false;
 				break;
-/*			case 'c':
-				ConsolePrintf ("MAILFILTER: Using %s as Configuration Directory.\n",ix_optarg);
-				sprintf(MAILFILTER_CONFIGURATION_MAILFILTER,"%s\\CONFIG.BIN",ix_optarg);
-				sprintf(MAILFILTER_CONFIGBACKUP__MAILFILTER,"%s\\CONFIG.BAK",ix_optarg);
-				sprintf(MAILFILTER_CONFIGERROR___MAILFILTER,"%s\\CONFIG.ERR",ix_optarg);								
+			case 't':
+				bTArgOkay = false;
+				if (argc>ix_optind)
+				{
+					if (strcasecmp(argv[ix_optind],"server") == 0)
+					{
+						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::SERVER;
+						bTArgOkay = true;
+					}
+					if (strcasecmp(argv[ix_optind],"config") == 0)
+					{
+						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::CONFIG;
+						bTArgOkay = true;
+					}
+					if (strcasecmp(argv[ix_optind],"restore") == 0)
+					{
+						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::RESTORE;
+						bTArgOkay = true;
+					}
+				}
+				
+				if (!bTArgOkay)
+				{
+					printf("MAILFILTER: Invalid argument passed to -t.\n\tValid args are: \"server\" \"config\" \"restore\"\n");
+				}
 				break;
-
- */
-
 			default:
 				break;
 			}
@@ -147,35 +167,22 @@ int MF_ParseCommandLine( int argc, char **argv )
 	{
 		ConsolePrintf ("MAILFILTER: Using %s as Configuration Directory.\n",argv[ix_optind]);
 		MF_GlobalConfiguration.config_directory = argv[ix_optind];
-//		MF_GlobalConfiguration.config_directory += "\\";
-//		sprintf(MFC_ConfigDirectory,"%s\\",argv[ix_optind]);
-//		strcpy(MFC_ConfigFile,			MFC_ConfigDirectory);	strcat(MFC_ConfigFile,"CONFIG.BIN");
-//		strcpy(MFC_ConfigFileBackup,	MFC_ConfigDirectory);	strcat(MFC_ConfigFileBackup,"CONFIG.BAK");
-//		strcpy(MFC_ConfigFileVoid,		MFC_ConfigDirectory);	strcat(MFC_ConfigFileVoid,"CONFIG.ERR");
+		
 #ifdef IXPLAT_WIN32
 	} else {
 		char* xdir = GetRegValue(HKEY_LOCAL_MACHINE,"SOFTWARE\\Hofstaedtler IE GmbH\\MailFilter","InstallDir","C:\\Progra~1\\MailFilter");
 		ConsolePrintf ("MAILFILTER: Using %s as Configuration Directory.\n",xdir);
 		MF_GlobalConfiguration.config_directory = xdir;
-//		sprintf(MFC_ConfigDirectory,"%s\\",xdir);
-//		strcpy(MFC_ConfigFile,			MFC_ConfigDirectory);	strcat(MFC_ConfigFile,"CONFIG.BIN");
-//		strcpy(MFC_ConfigFileBackup,	MFC_ConfigDirectory);	strcat(MFC_ConfigFileBackup,"CONFIG.BAK");
-//		strcpy(MFC_ConfigFileVoid,		MFC_ConfigDirectory);	strcat(MFC_ConfigFileVoid,"CONFIG.ERR");
 	}
 #endif
 #ifdef IXPLAT_NETWARE
 	} else {
 		MF_GlobalConfiguration.config_directory = "sys:\\etc\\mailflt";
-//		sprintf(MFC_ConfigDirectory,"SYS:\\ETC\\MAILFLT\\");
-//		strcpy(MFC_ConfigFile,			MFC_ConfigDirectory);	strcat(MFC_ConfigFile,"CONFIG.BIN");
-//		strcpy(MFC_ConfigFileBackup,	MFC_ConfigDirectory);	strcat(MFC_ConfigFileBackup,"CONFIG.BAK");
-//		strcpy(MFC_ConfigFileVoid,		MFC_ConfigDirectory);	strcat(MFC_ConfigFileVoid,"CONFIG.ERR");
 	}
 #endif
 
 
 	MF_GlobalConfiguration.setDefaults();
-
 
 	return true;
 }

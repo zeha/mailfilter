@@ -484,6 +484,29 @@ MF_ConfigRead_ERR:
 	
 }
 
+// Helper class to print a filter record to the config file
+class PrintFilter{
+	FILE* m_fFile;
+	public:
+		explicit PrintFilter(FILE* fFile) { m_fFile = fFile; }
+		
+		void operator() (const MailFilter_Configuration::Filter& filter) const
+		{
+			fputc(filter.matchfield,m_fFile);
+			fputc(filter.notify,m_fFile);
+			fputc(filter.type,m_fFile);		// new in v8
+			fputc(filter.action,m_fFile);
+			fputc(filter.enabled,m_fFile);
+			fputc(filter.enabledIncoming,m_fFile);
+			fputc(filter.enabledOutgoing,m_fFile);
+		
+			fprintf(m_fFile,"%s",filter.expression.c_str());
+			fputc(0,m_fFile);
+			fprintf(m_fFile,"%s",filter.name.c_str());
+			fputc(0,m_fFile);
+		}
+};
+
 bool Configuration::WriteToFile(std::string alternateFilename)
 {
 	int rc = 0;
@@ -556,34 +579,34 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 	fprintf(cfgFile,"%s",MAILFILTER_CONFIGURATION_SIGNATURE);
 	
 	doNull(60);
-	fprintf(cfgFile,"%s",this->ControlPassword);
+	fprintf(cfgFile,"%s",this->ControlPassword.c_str());
 
 	// License Key
 	doNull(240);
-	fprintf(cfgFile,"%s",this->LicenseKey);
+	fprintf(cfgFile,"%s",this->LicenseKey.c_str());
 
 	// Values
 	doNull(330);
-	fprintf(cfgFile,"%s",this->GWIARoot);
+	fprintf(cfgFile,"%s",this->GWIARoot.c_str());
 
 	doNull(660);
-	fprintf(cfgFile,"%s",this->MFLTRoot);
+	fprintf(cfgFile,"%s",this->MFLTRoot.c_str());
 
 	doNull(990);
-	fprintf(cfgFile,"%s",this->DomainName);
+	fprintf(cfgFile,"%s",this->DomainName.c_str());
 
 	doNull(1320);
-	fprintf(cfgFile,"%s",this->DomainEmailMailFilter);
+	fprintf(cfgFile,"%s",this->DomainEmailMailFilter.c_str());
 
 	doNull(1650);
-	fprintf(cfgFile,"%s",this->DomainEmailPostmaster);
+	fprintf(cfgFile,"%s",this->DomainEmailPostmaster.c_str());
 	
 	doNull(1980);
-	fprintf(cfgFile,"%s",this->DomainHostname);
+	fprintf(cfgFile,"%s",this->DomainHostname.c_str());
 	
 	// version 7
 	doNull(2310);
-	fprintf(cfgFile,"%s",this->Multi2One);
+	fprintf(cfgFile,"%s",this->Multi2One.c_str());
 	
 	// // removed in a later v8
 	//doNull(2475);
@@ -591,7 +614,7 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 
 	// version 8
 	doNull(2640);
-	fprintf(cfgFile,"%s",this->BWLScheduleTime);
+	fprintf(cfgFile,"%s",this->BWLScheduleTime.c_str());
 	
 	doNull(2970);
 	// next one goes here...
@@ -648,6 +671,10 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 
 	// Next start at 3547
 
+	// version 9
+	doNull(4000);
+
+	for_each(this->filterList.begin(),this->filterList.end(),PrintFilter(cfgFile));
 
 	fclose(cfgFile);
 

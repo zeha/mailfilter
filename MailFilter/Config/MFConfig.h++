@@ -30,6 +30,13 @@ namespace MailFilter_Configuration
 //#define MAILFILTER_CONFIGURATION_THISBUILD			9							//    TWO BUILD NUMBERS ***
 //#define MAILFILTER_CONFIGURATION_LENGTH				329
 
+	enum ApplicationModeType { 
+		SERVER, 
+		CONFIG, 
+		RESTORE, 
+		NRM 
+		};
+
 class Configuration
 {
 public:
@@ -70,6 +77,8 @@ public:
 	std::string	MessageFooterText;
 	
 	std::vector<MailFilter_Configuration::Filter> filterList;
+
+	ApplicationModeType ApplicationMode;	
 
 	int setDefaults(std::string directory = "", std::string domainname = "");
 

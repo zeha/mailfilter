@@ -1003,156 +1003,15 @@ static void _mfd_tellallocccountonexit()
 
 
 //
-//  Main NLM Function
 //
-//   * Startup
-//   * Read Configuration
-//   * Open Semaphore(s) ...
+//  NLM Application Startup Function:
+//   SERVER
+//
 //   * Start Thread(s) ...
-//   * Close Main Thread.
+//   * Run NUT in foreground thread.
 //
-int main( int argc, char *argv[ ])
-{
-
-	MFT_NLM_ThreadCount++;
-
-#ifdef _MF_MEMTRACE
-	atexit(_mfd_tellallocccountonexit);
-#endif //_MF_MEMTRACE
-
-#ifdef MF_WITH_I18N
-	if (LoadLanguageMessageTable(&programMesgTable, &MFT_I18N_MessageCount, &MFT_I18N_LanguageID))
-	{
-		ConsolePrintf("MailFilter: CRITICAL ERROR:\n\tCan't load Message Tables.\n");
-		exit(0); 
-	}
-#ifndef _MF_CLEANBUILD
-	ConsolePrintf("MailFilter: Language ID: %l, Messages Loaded: %l\n",MFT_I18N_LanguageID,MFT_I18N_MessageCount);
-#endif
-#endif
-
-	printf("%s\n",MF_Msg(MSG_BOOT_LOADING));
-	
-
-#ifndef __NOVELL_LIBC__
-	// Save Thread Group
-	mainThread_ThreadGroupID = GetThreadGroupID();
-
-	// Rename UI Thread
-	RenameThread( GetThreadID() , MF_Msg(THREADNAME_MAIN) );
-	
-	consoleprintf("MAILFLT: Info: This is the Legacy version of MailFilter!\n  Use only on NetWare 5.0, NetWare 5.1 prior SP6 or NetWare 6.0 prior SP3.\n");
-#else
-	{
-		struct utsname u;
-		uname(&u);
-		
-/*		consoleprintf("MAILFLT: Info: LibC version running on %d.%d SP%d\n",
-				u.netware_major,
-				u.netware_minor,
-				u.servicepack);
-*/				
-		if ( 
-			(u.netware_major == 6) &&
-			(u.netware_minor == 0) &&
-			(u.servicepack < 2)
-			)
-			{
-				consoleprintf("MAILFLT: Detected NetWare 6.0 prior to SP3.\n  Please upgrade to a newer version or use the legacy MAILFLT.NLM\n");
-				return 0;
-			}
-		if ( 
-			(u.netware_major == 5) &&
-			(u.netware_minor == 1) &&
-			(u.servicepack < 6)
-			)
-			{
-				consoleprintf("MAILFLT: Detected NetWare 5.1 prior to SP6.\n  Please upgrade to a newer version or use the legacy MAILFLT.NLM\n");
-				return 0;
-			}
-		if ( 
-			(u.netware_major == 5) &&
-			(u.netware_minor == 0)
-			)
-			{
-				consoleprintf("MAILFLT: Detected NetWare 5.0.\n  Please upgrade to a newer version or use the legacy MAILFLT.NLM\n");
-				return 0;
-			}
-		
-	}
-#endif
-
-	// Get handle to sysConsole
-#ifdef __NOVELL_LIBC__
-	scr_t SystemConsole = getconsolehandle();
-#else
-	long SystemConsole = CreateScreen("System Console",0);
-#endif
-
-
-extern int MF_ParseCommandLine( int argc, char **argv );
-
-	// Parse Command Line and build some vars...
-	if (!MF_ParseCommandLine(argc,argv))
-		goto MF_MAIN_TERMINATE;
-
-	// Get NLM and Screen Handles
-#ifdef __NOVELL_LIBC__
-	MF_NLMHandle = getnlmhandle();
-	MF_ScreenID = getscreenhandle();
-	setscreenmode(SCR_AUTOCLOSE_ON_EXIT|0x00000002);
-#else
-	MF_NLMHandle = GetNLMHandle();
-	MF_ScreenID = GetCurrentScreen();
-	SetCtrlCharCheckMode(false);
-#endif
-
-	// init Namespaces and so on... **** DONT DO THIS **** ON NW411 THIS WONT WORK ****
-//	SetCurrentNameSpace (NW_NS_LONG);
-//	SetTargetNameSpace(LONGNameSpace);
-
-	if (MFT_Verbose)
-	{
-#ifdef __NOVELL_LIBC__
-		MFD_ScreenTag = AllocateResourceTag( MF_NLMHandle, "MailFilter Debug Screen", ScreenSignature);
-		if (OpenScreen ( "MailFilter Debug", MFD_ScreenTag, &MFD_ScreenID))
-		{
-			consoleprintf("MailFilter: Unable to create debug screen!\n");
-			goto MF_MAIN_TERMINATE;
-		}
-#else
-		MFD_ScreenID = CreateScreen ( "MailFilter Debug", DONT_AUTO_ACTIVATE | DONT_CHECK_CTRL_CHARS ); 	// | AUTO_DESTROY_SCREEN
-#endif
-	}
-
-#ifndef __NOVELL_LIBC__
-	// Register Event Handle for Shutdown
-	eventHandleShutDown = RegisterForEvent(EVENT_DOWN_SERVER,	eventShutDownReport,	eventShutDownWarn);
-	if(eventHandleShutDown == -1)
-	{
-		ConsolePrintf(MF_Msg(CONMSG_MAIN_ERRREGSHUTDOWNHANDLER));
-		goto MF_MAIN_TERMINATE;
-	}
-	SetAutoScreenDestructionMode(true);
-#endif
-
-
-	// Read Configuration from File
-	printf(MF_Msg(MSG_BOOT_CONFIGURATION));
-
-	if (!MF_GlobalConfiguration.ReadFromFile(""))
-		goto MF_MAIN_TERMINATE;
-
-	printf(MF_Msg(MSG_BOOT_DONE));
-
-	// Register Exit Proc ...
-#ifndef __NOVELL_LIBC__
-	atexit(MF_ExitProc);
-#endif
-	signal(	SIGTERM	, NLM_SignalHandler	);
-	signal(	SIGINT	, NLM_SignalHandler	);
-	
-
+int MailFilter_Main_RunAppServer()
+{	
 	// Init NWSNut
 	printf(MF_Msg(MSG_BOOT_USERINTERFACE));
 
@@ -1266,8 +1125,8 @@ MF_MAIN_RUNLOOP:
 	#endif
 		*/
 		
-		// Switch Back to System Console ...
-		ActivateScreen (SystemConsole);
+//		// Switch Back to System Console ...
+//		ActivateScreen (SystemConsole);
 
 		// Allow a Thread Switch to occour
 		ThreadSwitch();
@@ -1304,7 +1163,7 @@ MF_MAIN_RUNLOOP:
 		if (MFT_NLM_Exiting == 254)
 		{
 MFD_Out(MFD_SOURCE_GENERIC,"MFNLM: MF Restart detected");
-			MF_StatusText("  Unloading for restart...");
+			MF_StatusText("  Terminating modules for restart...");
 
 #ifndef __NOVELL_LIBC__
 			if (MF_Thread_Work > 0)
@@ -1355,6 +1214,174 @@ MF_MAIN_TERMINATE:
 }
 /*
 */
+
+//
+//  Main NLM Function
+//
+//   * Startup
+//   * Read Configuration
+//   * Run the selected MF app
+//
+int main( int argc, char *argv[ ])
+{
+
+	MFT_NLM_ThreadCount++;
+
+#ifdef _MF_MEMTRACE
+	atexit(_mfd_tellallocccountonexit);
+#endif //_MF_MEMTRACE
+
+#ifdef MF_WITH_I18N
+	if (LoadLanguageMessageTable(&programMesgTable, &MFT_I18N_MessageCount, &MFT_I18N_LanguageID))
+	{
+		ConsolePrintf("MailFilter: CRITICAL ERROR:\n\tCan't load Message Tables.\n");
+		exit(0); 
+	}
+#ifndef _MF_CLEANBUILD
+	ConsolePrintf("MailFilter: Language ID: %l, Messages Loaded: %l\n",MFT_I18N_LanguageID,MFT_I18N_MessageCount);
+#endif
+#endif
+
+	printf("%s\n",MF_Msg(MSG_BOOT_LOADING));
+	
+
+#ifndef __NOVELL_LIBC__
+	// Save Thread Group
+	mainThread_ThreadGroupID = GetThreadGroupID();
+
+	// Rename UI Thread
+	RenameThread( GetThreadID() , MF_Msg(THREADNAME_MAIN) );
+	
+	consoleprintf("MAILFLT: Info: This is the Legacy version of MailFilter!\n  Use only on NetWare 5.0, NetWare 5.1 prior SP6 or NetWare 6.0 prior SP3.\n");
+#else
+	{
+		struct utsname u;
+		uname(&u);
+		
+/*		consoleprintf("MAILFLT: Info: LibC version running on %d.%d SP%d\n",
+				u.netware_major,
+				u.netware_minor,
+				u.servicepack);
+*/				
+		if ( 
+			(u.netware_major == 6) &&
+			(u.netware_minor == 0) &&
+			(u.servicepack < 2)
+			)
+			{
+				consoleprintf("MAILFLT: Detected NetWare 6.0 prior to SP3.\n  Please upgrade to a newer version or use the legacy MAILFLT.NLM\n");
+				return 0;
+			}
+		if ( 
+			(u.netware_major == 5) &&
+			(u.netware_minor == 1) &&
+			(u.servicepack < 6)
+			)
+			{
+				consoleprintf("MAILFLT: Detected NetWare 5.1 prior to SP6.\n  Please upgrade to a newer version or use the legacy MAILFLT.NLM\n");
+				return 0;
+			}
+		if ( 
+			(u.netware_major == 5) &&
+			(u.netware_minor == 0)
+			)
+			{
+				consoleprintf("MAILFLT: Detected NetWare 5.0.\n  Please upgrade to a newer version or use the legacy MAILFLT.NLM\n");
+				return 0;
+			}
+		
+	}
+#endif
+
+/*	// Get handle to sysConsole
+#ifdef __NOVELL_LIBC__
+	scr_t SystemConsole = getconsolehandle();
+#else
+	long SystemConsole = CreateScreen("System Console",0);
+#endif
+*/
+
+extern int MF_ParseCommandLine( int argc, char **argv );
+
+	// Parse Command Line and build some vars...
+	if (!MF_ParseCommandLine(argc,argv))
+		goto MF_MAIN_TERMINATE;
+
+	// Get NLM and Screen Handles
+#ifdef __NOVELL_LIBC__
+	MF_NLMHandle = getnlmhandle();
+	MF_ScreenID = getscreenhandle();
+	setscreenmode(SCR_AUTOCLOSE_ON_EXIT|0x00000002);
+#else
+	MF_NLMHandle = GetNLMHandle();
+	MF_ScreenID = GetCurrentScreen();
+	SetCtrlCharCheckMode(false);
+#endif
+
+	// init Namespaces and so on... **** DONT DO THIS **** ON NW411 THIS WONT WORK ****
+//	SetCurrentNameSpace (NW_NS_LONG);
+//	SetTargetNameSpace(LONGNameSpace);
+
+	if (MFT_Verbose)
+	{
+#ifdef __NOVELL_LIBC__
+		MFD_ScreenTag = AllocateResourceTag( MF_NLMHandle, "MailFilter Debug Screen", ScreenSignature);
+		if (OpenScreen ( "MailFilter Debug", MFD_ScreenTag, &MFD_ScreenID))
+		{
+			consoleprintf("MailFilter: Unable to create debug screen!\n");
+			goto MF_MAIN_TERMINATE;
+		}
+#else
+		MFD_ScreenID = CreateScreen ( "MailFilter Debug", DONT_AUTO_ACTIVATE | DONT_CHECK_CTRL_CHARS ); 	// | AUTO_DESTROY_SCREEN
+#endif
+	}
+
+#ifndef __NOVELL_LIBC__
+	// Register Event Handle for Shutdown
+	eventHandleShutDown = RegisterForEvent(EVENT_DOWN_SERVER,	eventShutDownReport,	eventShutDownWarn);
+	if(eventHandleShutDown == -1)
+	{
+		ConsolePrintf(MF_Msg(CONMSG_MAIN_ERRREGSHUTDOWNHANDLER));
+		goto MF_MAIN_TERMINATE;
+	}
+	SetAutoScreenDestructionMode(true);
+#endif
+
+
+	// Read Configuration from File
+	printf(MF_Msg(MSG_BOOT_CONFIGURATION));
+
+	if (!MF_GlobalConfiguration.ReadFromFile(""))
+		goto MF_MAIN_TERMINATE;
+
+	printf(MF_Msg(MSG_BOOT_DONE));
+
+	// Register Exit Proc ...
+#ifndef __NOVELL_LIBC__
+	atexit(MF_ExitProc);
+#endif
+	signal(	SIGTERM	, NLM_SignalHandler	);
+	signal(	SIGINT	, NLM_SignalHandler	);
+	
+	
+	if (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::SERVER)
+	{
+		return MailFilter_Main_RunAppServer();
+	}
+	else
+	if (0) { }
+	else 
+	if (0) { }
+	else
+	{
+		ConsolePrintf("MAILFILTER: Could not run your selected application.\n\tMaybe it is not compiled-in.\n");
+	
+		return -1;		
+	}
+MF_MAIN_TERMINATE:
+	return 0;
+}
+
 
 #endif // N_PLAT_NLM
 
