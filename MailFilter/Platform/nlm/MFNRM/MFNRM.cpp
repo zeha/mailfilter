@@ -140,11 +140,11 @@ int MF_NLM_RM_Init()
 	BOOL bCode;
 	UINT32 rCode = 0;
 
-/*	if (!MF_ConfigRead())
+	if (!MF_ConfigRead())
 	{
 		return NLM_FALSE;
 	}
-*/
+
 	/*------------------------------------------------------------------------
 	**	Register with Httpstk on the Server
 	*/
@@ -226,7 +226,7 @@ void MF_NLM_RM_DeInit()
 		/* I- lpFailureRsnCode	*/	&rCode
 		);
 	
-//	MF_ConfigFree();
+	MF_ConfigFree();
 	
 	MF_NRM_InitComplete = 0;	/* not init'ed */
 }
@@ -235,7 +235,7 @@ void MF_NLM_RM_DeInit()
 
 void NLM_SignalHandler(int sig)
 	{
-	int handlerThreadGroupID;
+//	int handlerThreadGroupID;
 	switch(sig)
 		{
 		case SIGTERM:
