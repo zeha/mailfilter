@@ -97,10 +97,6 @@ bool mf_nlmisloadedprotected()
 //
 void MF_ExitProc(void)
 {
-#ifndef __NOVELL_LIBC__
-	NWDSCCODE          ccode;
-#endif
-
 	// Shut down NUT	
 	if (MF_NutInfo != NULL)
 	{
@@ -109,40 +105,9 @@ void MF_ExitProc(void)
 		
 		statusPortalPCB = NULL;
 	}
-#ifndef __NOVELL_LIBC__
-	
-	// Log out from Server.
-	if ( MFT_NLM_Connection_Handle != NULL)
-	{
-		NWCCCloseConn ( MFT_NLM_Connection_Handle );
-	}
-	
-	if (MFT_NLM_Connection_HandleCLIB != 0)
-	{
-		SetCurrentConnection(0);
-		LogoutObject(MFT_NLM_Connection_HandleCLIB);
-	}
-	
-	// Log out from NDS.
-	if (MFT_NLM_DS_Context != NULL)
-	{
-		// DS Logout
-		ccode = NWDSLogout ( MFT_NLM_DS_Context );
-		if(ccode)
-			MF_DisplayCriticalError("MailFilter: NWDSLogout returned %X\n", ccode);
-
-		// DSLIB Free Context 
-		ccode = NWDSFreeContext( MFT_NLM_DS_Context );
-		if(ccode)
-			MF_DisplayCriticalError("MailFilter: NWDSFreeContext returned %X\n", ccode);
-
-	}
-
-#endif
 	
 	// Destroy Screen ...
 //	if (MFD_ScreenID)	CloseScreen ( MFD_ScreenID );
-
 }
 
 //	"   F6-Restart  F7-Exit                   F9-Show Configuration  F10 Configure  ",
@@ -314,28 +279,26 @@ bool MF_NutDeinit(void)
 
 static bool MailFilterApp_Server_InitNut()
 {
-
 	if (!MF_NutInit())
 		return false;
 
 	LONG	statusPortal;
-  
-	statusPortal = 
-		NWSCreatePortal(
-			4,
-			0,
-			20,
-			80,
-			20,
-			80,
-			SAVE,
-			NULL, //(unsigned char *)"Application Messages",
-			VNORMAL,
-			SINGLE,
-			VNORMAL,
-			CURSOR_OFF,
-			VIRTUAL,
-			MF_NutInfo);
+
+	statusPortal = NWSCreatePortal(
+						4,
+						0,
+						20,
+						80,
+						20,
+						80,
+						SAVE,
+						NULL, //(unsigned char *)"Application Messages",
+						VNORMAL,
+						SINGLE,
+						VNORMAL,
+						CURSOR_OFF,
+						VIRTUAL,
+						MF_NutInfo);
 
 	NWSGetPCB(&statusPortalPCB, statusPortal, MF_NutInfo);
 	NWSSelectPortal(statusPortal, MF_NutInfo);
@@ -1020,7 +983,7 @@ MF_MAIN_RUNLOOP:
 			bool bDoRestore = false;
 			if (MFT_NLM_Exiting == 252)		bDoRestore = true;
 		
-			MF_StatusText("  Please wait ...");
+			MF_StatusText("  Please wait ... (may take a few minutes)");
 
 #ifndef __NOVELL_LIBC__
 			if (MF_Thread_Work > 0)
@@ -1173,7 +1136,32 @@ int main( int argc, char *argv[ ])
 				MF_DisplayCriticalError("MAILFILTER: Detected NetWare 5.0.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
 				return 0;
 			}
-		
+
+		// load threads.nlm for nwsnut
+		if (
+			(
+				(u.netware_major == 5) &&
+				(u.netware_minor == 1) &&
+				(u.servicepack < 7)
+			)
+			||
+			(
+				(u.netware_major == 6) &&
+				(u.netware_minor == 0) &&
+				(u.servicepack < 5)
+			)
+			||
+			(
+				(u.netware_major == 6) &&
+				(u.netware_minor == 50) &&
+				(u.servicepack < 2)
+			)
+		   )
+		{
+			MF_DisplayCriticalError("MAILFILTER: Loading threads.nlm\n");
+			LoadModule(0, "THREADS.NLM", 0);
+		}
+					
 	}
 #endif
 

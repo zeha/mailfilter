@@ -918,6 +918,16 @@ MFD_Out(MFD_SOURCE_RULE,"\n->%i %u",iResult,iResult);
 		curItem = -2;
 	}
 	
+	if (iResult == 0)
+	{
+		// do evil MFAVA scanning.
+		char szTemp[MAX_PATH];
+		int iVirusType;
+		
+/*		MailFilter_AV_ScanFile(szAttachmentFile, szTemp, MAX_PATH, iVirusType);
+*/
+	}
+	
 	if (iResult == 1)
 	{	/* set these things approaite */
 		m->bFilterMatched = true;
@@ -2534,7 +2544,6 @@ static void MFVS_CheckQueue()
 	char szScanFile[MAX_PATH];
 	char szScanDir[MAX_PATH];
 	char szAttachmentFile[MAX_PATH];
-	char szTemp[MAX_PATH];
 
 	int i;
 	MailFilter_MailData* m;
@@ -2565,17 +2574,20 @@ static void MFVS_CheckQueue()
 			{
 				m = MailFilter_MailRead(szScanFile);
 				if (m == NULL)
-					{
+				{
 						MF_StatusText("** An error occoured while reading MFVS Status!");
 						continue;
-					}
+				}
+
+				// do evil MFAVA checking.
+				
 
 				/* Check for existance of the mail. */
 				if (access(m->szFileWork,F_OK) != 0)
 				{
 					rc = 4;
 					MF_StatusText(" AV Scan failed. (File deleted.)");
-				}					
+				}
 
 				if (rc == 0)
 				{
@@ -2678,7 +2690,9 @@ MFD_Out(MFD_SOURCE_VSCAN," totals: detected size %d, should be %d; result: %d \n
 					}
 					
 				} else {
+
 MFD_Out(MFD_SOURCE_VSCAN,"  VSCAN FAIL\n");
+					char szTemp[MAX_PATH];
 
 					/* Virus Scan Failed */
 					MF_StatusText("  Drop: Virus Scan failed.");

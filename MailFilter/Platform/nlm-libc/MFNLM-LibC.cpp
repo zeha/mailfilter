@@ -66,10 +66,13 @@ bool MF_NLM_OpenDebugScreen()
 
 void _NonAppStop ( void )
 {
-	OutputToScreen(0, "MAILFILTER: Unload Requested...\n");
-
+	OutputToScreen(0, "MAILFILTER: Unload requested.\n");
+	
 	MF_StatusFree();
 	MF_ExitProc();
+	system("UNLOAD MFAVA.NLM");
+	
+	OutputToScreen(0, "MAILFILTER: Unloaded.\n");
 }
 
 extern bool MF_UI_PromptUsernamePassword(std::string prompt, std::string username, std::string password);

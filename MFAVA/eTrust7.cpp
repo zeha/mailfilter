@@ -279,8 +279,6 @@ int eTrust7_ScanFile(MFAVA_HANDLE hAVA, const char* szFileName, char* szVirusNam
 	iVirusType = virus->lVirusType;
 	rc = (int)virus->lErrorCode;
 
-	EnterDebugger();
-
 	free(virus);
 
 	return rc;

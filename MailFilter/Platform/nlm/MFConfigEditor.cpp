@@ -1074,7 +1074,7 @@ static void MFConfig_EditConfig()
 	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableIncomingRcptCheck, NULL, MF_NutInfo);
 	line++;
 	
-	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable NRM on load (OS address space only):", MF_NutInfo);
+	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable Netware Remote Manager Snap-In:", MF_NutInfo);
 	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableNRMThread, NULL, MF_NutInfo);
 	line++;
 	
