@@ -262,7 +262,7 @@ void MF_GetServerName(char* serverName, unsigned long bufSize)	//, char* sourceP
 	// so we just call it oureselves and that's fine.
 	//
 	// from http://developer.novell.com/ndk/doc/samplecode/smscomp_sample/NLM_tsatest/TSATest.h.html
-	int retLen = ReturnFileServerName(serverName);
+	unsigned int retLen = ReturnFileServerName(serverName);
 	serverName[retLen] = '\0';
 	strcpy(serverName, serverName + 1);
 	
