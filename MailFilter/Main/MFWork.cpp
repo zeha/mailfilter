@@ -34,56 +34,6 @@ static char MFT_MF_ScheduleDirSend	[MAX_PATH];
 static char MFT_MF_ProbDir			[MAX_PATH];
 
 
-#ifdef HAVE_WINSOCK
-// Helper function to start WSA and associates ...
-static bool MF_Worker_WSA_Startup()
-{
-	WORD wVersionRequested;
-	WSADATA wsaData;
-	int err;
-	 
-	wVersionRequested = MAKEWORD( 2, 2 );
-	 
-	err = WSAStartup( wVersionRequested, &wsaData );
-	if ( err != 0 ) {
-	    /* Tell the user that we could not find a usable */
-	    /* WinSock DLL.                                  */
-	    return false;
-	}
-	 
-	/* Confirm that the WinSock DLL supports 2.2.*/
-	/* Note that if the DLL supports versions greater    */
-	/* than 2.2 in addition to 2.2, it will still return */
-	/* 2.2 in wVersion since that is the version we      */
-	/* requested.                                        */
-	 
-	if ( LOBYTE( wsaData.wVersion ) != 2 ||
-	        HIBYTE( wsaData.wVersion ) != 2 ) {
-	    /* Tell the user that we could not find a usable */
-	    /* WinSock DLL.                                  */
-	    WSACleanup( );
-	    return false; 
-	}
-	return true;
-}
-
-// Helper function to shut down WSA and associates ...
-static bool MF_Worker_WSA_Shutdown()
-{
-	WSACleanup( );
-	return true;
-}
-#else
-#define MF_Worker_WSA_Startup()	
-#define MF_Worker_WSA_Shutdown()
-#endif /* HAVE_WINSOCK */
-
-
-
-
-//static MailFilter_Filter MFC_Filters[MailFilter_MaxFilters];
-//static char MFT_ModifyInt_ListFrom[MFT_ModifyInt_ListFrom_MAX][50];
-
 /* Sleep Time for the worker thread */
 #define MF_WORKER_SLEEPTIME 3000
 
@@ -3663,7 +3613,7 @@ MFD_Out(MFD_SOURCE_GENERIC,"prb: %s\n",probDir);
 	}
 }
 
-static void MFBW_CheckQueue(char* szFile,char* szIn,char* szOut)
+static void MFBW_CheckQueue(const char* szFile,const char* szIn,const char* szOut)
 {
 #pragma unused(szFile)
 	if (MFBW_CheckCurrentScheduleState())
@@ -3701,12 +3651,20 @@ static bool CheckDirectory(const char* szDirectoryName, bool bCleanUp)
 			long long s = dir.GetCurrentEntrySize();
 			time_t t = dir.GetCurrentEntryModificationTime();
 
+
+			if ( stricmp(e,"lock.mfs") == 0 )
+			{
+				MFD_Out(MFD_SOURCE_VSCAN,"Delete: %s\n",e);
+				dir.UnlinkCurrentEntry();
+			}
+
 			if ( (t < mintime) && (s == 0) )
 			{
 				sprintf(szTemp,"Found old file '%s' in a queue. Deleting.",e);
 				MF_StatusText(szTemp);
 				dir.UnlinkCurrentEntry();
 			}
+			
 		}
 	}
 	
@@ -3807,19 +3765,11 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 {
 #pragma unused(dummy)
 
-	DIR* mailDir;
-	DIR* readentry;
-
 	char fileIn[MAX_PATH];
 	char fileOut[MAX_PATH];
-	char scanDir[MAX_PATH];
-	char scanPath[MAX_PATH];
 	int tlc = 0;
 	int lc = 255;
 	int shallTerminate = 0;
-	int iScanDir;
-
-#pragma unused(scanPath)
 
 	MFT_NLM_ThreadCount++;
 	
@@ -3832,67 +3782,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 #endif
 
 
-	// OLD BROKEN CODE
-	// PLEASE REPLACE WITH iXDir c++ api!
-#ifdef N_PLAT_NLM
-#ifdef __NOVELL_LIBC__
-#define _MF_DIRECTORY_FILENAME readentry->d_name
-#define _MF_DIRECTORY_OPENDIR(dirPath) mailDir = NULL; errno = 0; chdir(dirPath); strcpy(scanPath,dirPath); mailDir = opendir(scanPath); \
-		if (mailDir == NULL) { MFD_Out(MFD_SOURCE_ERROR,"opendir error!\n"); if (errno) { MFD_Out(MFD_SOURCE_ERROR,"mailDir (%d): %s\n",errno,strerror(errno)); } }
-#define _MF_DIRECTORY_READDIR errno = 0; readentry = readdir(mailDir); if (readentry == NULL) { if (errno) { MFD_Out(MFD_SOURCE_ERROR,"readdir (%d): %s\n",errno,strerror(errno)); } break; }
-#else
-#define _MF_DIRECTORY_FILENAME readentry->d_nameDOS
-#define _MF_DIRECTORY_OPENDIR(dirPath) errno = 0; chdir(dirPath); sprintf(scanPath,"%s*.*",dirPath); mailDir = opendir(scanPath);
-#define _MF_DIRECTORY_READDIR readentry = readdir(mailDir);  if (readentry == NULL) break;
-#endif
-#endif
-
-	// check SCAN %i subdirectories for left-over files ...
-	for (iScanDir = 0; iScanDir < MF_GlobalConfiguration.MailscanDirNum; iScanDir++)
-	{
-		sprintf(scanDir,"%s"PS"MFSCAN"PS"%04i"PS,MF_GlobalConfiguration.MFLTRoot.c_str(),iScanDir);
-		
-		_MF_DIRECTORY_OPENDIR(scanDir);
-
-		while ( mailDir != NULL )
-		{
-			_MF_DIRECTORY_READDIR;
-			if (_MF_DIRECTORY_FILENAME[0] == '.')
-				continue;
-			
-			if ( stricmp(_MF_DIRECTORY_FILENAME,"lock.mfs") == 0 )
-			{
-				MFD_Out(MFD_SOURCE_VSCAN,"Found stale lockfile for %d\n",iScanDir);
-				
-				sprintf(fileIn,"%s"PS"MFSCAN"PS"%04i"PS"%s",MF_GlobalConfiguration.MFLTRoot.c_str(),iScanDir,"lock.mfs");
-				
-				MFD_Out(MFD_SOURCE_VSCAN,"Delete: %s\n",fileIn);
-				unlink(fileIn);
-			}
-			else
-			{
-				struct stat st;
-				char szTemp[1024];
-				time_t mintime;
-				mintime = time(NULL) - (2*(24*60*60));
-
-				stat(_MF_DIRECTORY_FILENAME,&st);
-				if (st.st_mtime < mintime)
-				{
-
-					sprintf(szTemp,"Found old file '%s' in a queue. Deleting.",_MF_DIRECTORY_FILENAME);
-					MF_StatusText(szTemp);
-				
-					sprintf(fileIn,"%s"PS"MFSCAN"PS"%04i"PS"%s",MF_GlobalConfiguration.MFLTRoot.c_str(),iScanDir,_MF_DIRECTORY_FILENAME);
-					MFD_Out(MFD_SOURCE_VSCAN,"Delete: %s\n",fileIn);
-					unlink(fileIn);
-				}
-			}
-		}
-		if (mailDir != NULL)		closedir(mailDir);
-	}
-
-	MF_Worker_WSA_Startup();
+	WinSockStartup();
 
 /*	// MFSCAN Crash Recovery
 	sprintf(scanDir,"%s"PS,MFT_MF_WorkDir);
@@ -3935,7 +3825,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 		tlc++;
 		if (MFT_NLM_Exiting > 0)	break;
 
-		// Results Directory ...
+		//* Results Directory ... *
 		{
 		
 			iXDir dir(MFT_GWIA_ResultDirIn);
@@ -4062,37 +3952,36 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 		}
 
 		//* Scheduling Directory: Send *
-		_MF_DIRECTORY_OPENDIR(MFT_MF_ScheduleDirSend);
-		while ( mailDir != NULL )
 		{
-			if (MFT_NLM_Exiting > 0)	break;
-
-			_MF_DIRECTORY_READDIR;
-
-			if ( _MF_DIRECTORY_FILENAME[0] != '.' )
+		
+			iXDir dir(MFT_MF_ScheduleDirSend);
+			dir.SkipDotFiles = true;
+			
+			while ( dir.ReadNextEntry() )
 			{
-				MFD_Out(MFD_SOURCE_WORKER,"Schedule: Found %s for Sched.\n",_MF_DIRECTORY_FILENAME);
-				// Build filenames...
-				sprintf(fileIn,  "%s%s", MFT_MF_ScheduleDirSend, _MF_DIRECTORY_FILENAME);
-				sprintf(fileOut, "%s%s", MFT_GWIA_SendDirOut,	 _MF_DIRECTORY_FILENAME);
+				const char* e = dir.GetCurrentEntryName();
 				
-				MFBW_CheckQueue(_MF_DIRECTORY_FILENAME,fileIn,fileOut);
-			}
-#ifdef N_PLAT_NLM
-			ThreadSwitch();
-#endif
+				if (MFT_NLM_Exiting > 0)
+					break;
 
+				MFD_Out(MFD_SOURCE_WORKER,"Schedule: Found %s for Sched.\n",e);
+
+				// Build filenames...
+				sprintf(fileIn,  "%s%s", MFT_MF_ScheduleDirSend, e);
+				sprintf(fileOut, "%s%s", MFT_GWIA_SendDirOut,	 e);
+				
+				MFBW_CheckQueue(e,fileIn,fileOut);
+
+				ThreadSwitch();
+			}
+			MF_StatusNothing();
 		}
-		if (mailDir != NULL) 		closedir(mailDir);
-		MF_StatusNothing();
 
 		if (MFT_NLM_Exiting > 0)	break;
 		
 
 		delay(MF_WORKER_SLEEPTIME);
-#ifdef N_PLAT_NLM
-		NXThreadYield();
-#endif
+		ThreadSwitch();
 
 		// Check for Invalid License.
 		if ((tlc > 500) && (lc == -1))
@@ -4124,10 +4013,10 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 #endif
 
 		if (shallTerminate)
-			break;		
+			break;
 	}
 
-	MF_Worker_WSA_Shutdown();
+	WinSockShutdown();
 
 	// Tell NLM that we've exited...
 	MFT_NLM_ThreadCount--;

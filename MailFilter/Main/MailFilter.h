@@ -381,7 +381,6 @@ typedef LONG rtag_t;
 	// Counters ...	(MFS_)
 	_MFGS(	LONG,			MFS_MF_MailsInputTotal,				0		);
 	_MFGS(	LONG,			MFS_MF_MailsInputFailed,			0		);
-//	_MFGS(	LONG,			MFS_MF_MailsInputTotalSize,			0		);
 	_MFGS(	LONG,			MFS_MF_MailsOutputTotal	,			0		);
 	_MFGS(	LONG,			MFS_MF_MailsOutputFailed,			0		);
 
@@ -556,6 +555,21 @@ bool MF_NutDeinit(void);
 extern "C" {
 	void MF_DisplayCriticalError(const char* format, ...);
 }
+
+#ifdef HAVE_WINSOCK
+bool WinSockStartup();
+bool WinSockShutdown();
+#else
+__inline bool WinSockStartup()
+{
+	return true;
+}
+__inline bool WinSockShutdown()
+{
+	return true;
+}
+#endif /* HAVE_WINSOCK */
+
 
 int MailFilter_Main_RunAppConfig(bool bStandalone);
 #ifdef N_PLAT_NLM
