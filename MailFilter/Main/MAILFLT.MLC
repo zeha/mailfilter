@@ -102,7 +102,7 @@ char *programMesgTable[] =
 	"E-Mail Adresses: From",
 	"E-Mail Adresses: To",
 	"Schedule: On",
-	"Schedule-Time:",
+	"Schedule Times:",
 	"Schedule: Off",
 	"Size",
 	"Relay Blacklisted",
@@ -127,5 +127,6 @@ char *programMesgTable[] =
 	"         Password:",
 	"Login",
 	"You have selected both of Restore and Re-Check. Only one selection is possible.\nPlease open this mail again and select your real choice!",
-	"Virus Scan"
+	"Virus Scan",
+	"Basic Configuration"
 };

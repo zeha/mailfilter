@@ -1017,6 +1017,7 @@ static void MFConfig_EditConfig()
   	BOOL	newEnablePFA = (BOOL)MF_GlobalConfiguration.EnablePFAFunctionality;
   	BOOL	newEnableNRMThread = (BOOL)MF_GlobalConfiguration.EnableNRMThread;
   	BOOL	newEnableNRMRestore = (BOOL)MF_GlobalConfiguration.EnableNRMRestore;
+	BOOL	newPassOnNonStandardAttachments = (BOOL)MF_GlobalConfiguration.PassOnNonStandardAttachments;
 
 	NWSPushList(MF_NutInfo);
 	NWSInitForm(MF_NutInfo);
@@ -1059,6 +1060,14 @@ static void MFConfig_EditConfig()
 	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newEmailMailFilter, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z@_-+!<>.0..9", EF_SET, NULL, MF_NutInfo); 
 	line++;
 
+	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"General E-Mail Address without Domain Names:", MF_NutInfo);
+	NWSAppendCommentField (line, 61, (_MF_NUTCHAR)"(blank=disabled)", MF_NutInfo);
+	strcpy (newEmailOffice, MF_GlobalConfiguration.Multi2One.c_str());
+	NWSAppendStringField (line+1, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newEmailOffice, (_MF_NUTCHAR)"A..Za..z_-+!.0..9", EF_SET, MF_NutInfo);
+	line += 2;
+	
+	line++;
+	
 	// username+password
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_LOGIN_USERNAME], MF_NutInfo);
 	strcpy (newLoginUsername, MF_GlobalConfiguration.LoginUserName.c_str());
@@ -1070,21 +1079,23 @@ static void MFConfig_EditConfig()
 	NWSAppendPasswordField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newLoginPassword, MAILFILTER_CONFIGURATION_LENGTH, NULL, true, NULL, '*', MF_NutInfo);
 	line++;
 
+	line++;
+
 	// schedule
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_BWL_SCHEDULETIME], MF_NutInfo);
 	strcpy (newScheduleTime, MF_GlobalConfiguration.BWLScheduleTime.c_str());
-	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newScheduleTime, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"0..9-:,", EF_SET, NULL, MF_NutInfo); 
+	NWSAppendScrollableStringField (line, 50, 25, NORMAL_FIELD, (_MF_NUTCHAR)newScheduleTime, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"0..9-:,", EF_SET, NULL, MF_NutInfo); 
 	line++;
-	
-	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"General E-Mail Address w/o Domain", MF_NutInfo);
-	NWSAppendCommentField (line, 61, (_MF_NUTCHAR)"(blank=disabled)", MF_NutInfo);
-	strcpy (newEmailOffice, MF_GlobalConfiguration.Multi2One.c_str());
-	NWSAppendStringField (line+1, 3, 50, NORMAL_FIELD, (_MF_NUTCHAR)newEmailOffice, (_MF_NUTCHAR)"A..Za..z_-+!.0..9", EF_SET, MF_NutInfo);
-	line += 2;
-	
+
+	// other stuff
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"GWIA Mode/Version: (see manual)", MF_NutInfo);
 	newGwiaVersion = (unsigned long)MF_GlobalConfiguration.GWIAVersion;
 	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newGwiaVersion, 550, 600, NULL, MF_NutInfo);
+	line++;
+
+	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Number of Mail Queues:", MF_NutInfo);
+	newScanDirNum = (unsigned long)MF_GlobalConfiguration.MailscanDirNum;
+	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newScanDirNum, 0, 50, NULL, MF_NutInfo);
 	line++;
 
 /*	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"MailFilter Control/Config Password:", MF_NutInfo);
@@ -1096,7 +1107,7 @@ static void MFConfig_EditConfig()
 	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnablePFA, NULL, MF_NutInfo);
 	line++;
 
-	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable Incoming Rcpt Rule Check:", MF_NutInfo);
+	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable Incoming Recipient Rule Check:", MF_NutInfo);
 	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableIncomingRcptCheck, NULL, MF_NutInfo);
 	line++;
 	
@@ -1104,37 +1115,34 @@ static void MFConfig_EditConfig()
 	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableNRMThread, NULL, MF_NutInfo);
 	line++;
 	
-	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable Mail Restore in NRM:", MF_NutInfo);
+	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable Mail Restore in N. Remote Manager:", MF_NutInfo);
 	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableNRMRestore, NULL, MF_NutInfo);
 	line++;
 
-	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Number of Queues:", MF_NutInfo);
-	newScanDirNum = (unsigned long)MF_GlobalConfiguration.MailscanDirNum;
-	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newScanDirNum, 0, 50, NULL, MF_NutInfo);
+	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Notify Postmaster on Log-Cycle Error:", MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminLogs, NULL, MF_NutInfo);
+	line++;
+
+	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Send Daily Status Report to Postmaster:", MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminDailyReport, NULL, MF_NutInfo);
 	line++;
 
 	line++;
 
-	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Real-Time Virus Scanner Integration:", MF_NutInfo);
+	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Virus Scanner Integration:", MF_NutInfo);
+	line++;
+
+	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Unpack Mails for Virus Scanner:", MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableAttachmentDecoder, NULL, MF_NutInfo);
+	line++;
+
+	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Ignore Invalid/Broken Attachments:", MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newPassOnNonStandardAttachments, NULL, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Seconds to wait for Real Time Scan:", MF_NutInfo);
 	newScanDirWait = (unsigned long)MF_GlobalConfiguration.MailscanTimeout;
 	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newScanDirWait, 0, 600, NULL, MF_NutInfo);
-	line++;
-
-	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Decode Attachments for VScan:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableAttachmentDecoder, NULL, MF_NutInfo);
-	line++;
-
-	line++;
-
-	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Notify Admin On Log Cycle Error:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminLogs, NULL, MF_NutInfo);
-	line++;
-
-	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Send Admin Daily Status Report:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminDailyReport, NULL, MF_NutInfo);
 	line++;
 
 	line++;
@@ -1152,7 +1160,7 @@ static void MFConfig_EditConfig()
 	NWSAppendCommentField (line, 65, (_MF_NUTCHAR)"(0=disabled)", MF_NutInfo);
 	line++;
 
-	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Notify Admin On Cleanup:", MF_NutInfo);
+	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Notify Postmaster On Cleanup:", MF_NutInfo);
 	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminMailsKilled, NULL, MF_NutInfo);
 	line++;
 
@@ -1188,7 +1196,7 @@ static void MFConfig_EditConfig()
 
 
 	formSaved = NWSEditForm (
-		NULL,		//headernum	//0
+		MSG_CONFIGAPP_EDITCONFIG_HDR,	//headernum
 		1,		//line
 		0,		//col
 		23,		//portalHeight
