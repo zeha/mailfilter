@@ -1,3 +1,4 @@
 MODULE LIBC.NLM
 IMPORT @E:/Novell/NDK/libc/imports/libc.imp
 IMPORT @E:/Novell/NDK/libc/imports/netware.imp
+IMPORT DeRegisterSetableParameter RegisterSetableParameter

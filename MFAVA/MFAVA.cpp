@@ -10,18 +10,22 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "MFAVA.h"		// in reality, nothing from it ever gets used in MFAVA itself.
 #include "library.h"
 
 
 int					 gLibId        = -1;
-FILE				*gSysLogFile   = (FILE *) NULL;
 void				*gModuleHandle = (void *) NULL;
 scr_t				 gLibScreen     = NULL;
 rtag_t				 gLibAllocRTag  = NULL,
-					 sDownEventRTag = NULL;
-event_handle_t		 sDownEventHandle = 0;
+					 gDownEventRTag = NULL,
+					 gDebugSetCmdRTag = NULL; 
+event_handle_t		 gDownEventHandle = 0;
+int					 gDebugSetCmd	= FALSE;
+settableparms_t		 gDebugSetCmdStruct;
+
 
 void   *gRef_MFAVA_Init = (void *) NULL;
 void   *gRef_MFAVA_DeInit = (void *) NULL;
@@ -311,7 +315,6 @@ int DllMain								// returns TRUE (things okay), FALSE (failure)
 		case DLL_PROCESS_ATTACH :	// (have per-NLM data)
 			return TRUE;
 		case DLL_PROCESS_DETACH :	// (ibid)
-printf("DLL_PROCESS_DETACH called.\n");
 //			appdata_t* app = GetOrSetAppData();
 //			DisposeAppData((void*)app);
 			return TRUE;
@@ -337,14 +340,14 @@ printf("DLL_PROCESS_DETACH called.\n");
 			}
 
 			
-			if (!(sDownEventRTag = AllocateResourceTag(gModuleHandle, "NetWare Shutdown Event Notification", EventSignature)))
+			if (!(gDownEventRTag = AllocateResourceTag(gModuleHandle, "NetWare Shutdown Event Notification", EventSignature)))
 			{
 				OutputToScreen(0, "MFAVA: Could not register Shutdown Notification!\n\tTerminating!\n");
 				return FALSE;
 			}
 
 
-			sDownEventHandle = RegisterForEventNotification(sDownEventRTag,
+			gDownEventHandle = RegisterForEventNotification(gDownEventRTag,
 											EVENT_PRE_DOWN_SERVER, EVENT_PRIORITY_APPLICATION,
 											DownWarning, (Report_t) NULL, (void *) NULL);
 											
@@ -353,6 +356,18 @@ printf("DLL_PROCESS_DETACH called.\n");
 				OutputToScreen(0, "MFAVA: Could not allocate resource tag!\n\tTerminating!\n");
 				return FALSE;
 			}
+
+			gDebugSetCmdRTag = AllocateResourceTag(getnlmhandle(), "MFAVA Debug", SettableParameterSignature);
+			memset(&gDebugSetCmdStruct, 0, sizeof(gDebugSetCmdStruct));
+			gDebugSetCmdStruct.value = &gDebugSetCmd;
+			gDebugSetCmdStruct.rTag = gDebugSetCmdRTag;
+			gDebugSetCmdStruct.name = "MFAVA Debug";
+			gDebugSetCmdStruct.type = SP_TYPE_BOOLEAN;
+			gDebugSetCmdStruct.flags = SP_HIDE;
+			gDebugSetCmdStruct.category = SP_MISCELLANEOUS;
+			gDebugSetCmdStruct.callback = NULL;
+			gDebugSetCmdStruct.description = "Enable Debug Messages for MFAVA";
+			RegisterSettableParameter(&gDebugSetCmdStruct);
 
 			register_destructor((int) hinstDLL, DisposeAppData);
 			
@@ -381,7 +396,9 @@ printf("DLL_PROCESS_DETACH called.\n");
 			if (nlmisloadedprotected())
 				return TRUE;
 			
-			UnRegisterEventNotification(sDownEventHandle);
+			DeRegisterSettableParameter(&gDebugSetCmdStruct);
+			
+			UnRegisterEventNotification(gDownEventHandle);
 
 			UnImportPublicObject(getnlmhandle(),"MFAVA@MailFilter_AVA_Init");
 			UnImportPublicObject(getnlmhandle(),"MFAVA@MailFilter_AVA_DeInit");

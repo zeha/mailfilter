@@ -24,4 +24,4 @@ int eTrust7_PreInit();
 
 
 extern void				*gModuleHandle;
-
+extern int				gDebugSetCmd;
