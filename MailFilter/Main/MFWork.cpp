@@ -834,6 +834,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 			char szAttachmentFile[MAX_PATH];
 			bool bFoundVirus = false;
 			int iVirusType;
+			int avaRc = 0;
 			
 			if ( (m->iNumOfAttachments > 0) && MFC_MAILSCAN_Enabled )
 			{
@@ -843,7 +844,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 					szVirusName[0] = 0;
 					iVirusType = 0;
 					
-					if (MailFilter_AV_ScanFile(szAttachmentFile, szVirusName, MAX_PATH, iVirusType) == 0)
+					if ((avaRc = MailFilter_AV_ScanFile(szAttachmentFile, szVirusName, MAX_PATH, iVirusType)) == 0)
 					{
 						if (iVirusType != 0)
 						{
@@ -865,7 +866,10 @@ int MF_RuleExec( MailFilter_MailData* m )
 							MFD_Out(MFD_SOURCE_VSCAN,"AVA %i: clean.\n",i);
 						}
 					} else {
-						MFD_Out(MFD_SOURCE_VSCAN,"AVA %i: error while scanning.\n",i);
+						if (avaRc != ENOCONTEXT)
+						{	// dont care if we have no av nlm loaded
+							MF_StatusText("AntiVirus: ERROR while scanning attachment!");
+						}
 					}
 
 				}
