@@ -22,7 +22,7 @@
 namespace MailFilter_Configuration
 {
 
-enum FilterField { always = 0, attachment = 1, email = 2, subject = 3, size = 4, emailFrom = 5, emailTo = 6, blacklist = 7, ipUnresolvable = 8 }; 
+enum FilterField { always = 0, attachment = 1, email = 2, subject = 3, size = 4, emailFrom = 5, emailTo = 6, blacklist = 7, ipUnresolvable = 8, archiveContentName = 9, archiveContentCount = 10 }; 
 enum FilterAction { noAction = 0, dropMail = 1, moveMail = 2, rescan = 4, pass = 8, schedule = 0x10, noschedule = 0x20, copy = 0x40 };
 enum Notification { noNotification = 0, adminIncoming = 1, adminOutgoing = 2, senderIncoming = 4, senderOutgoing = 8, recipientIncoming = 0x10, recipientOutgoing = 0x20 };
 enum FilterType { match = 0, noMatch = 1 };

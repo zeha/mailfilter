@@ -27,7 +27,6 @@ typedef struct
 	char type;
 	char notify;
 	char action;
-//	char action2[1000];
 } MailFilter_Filter;
 
 
@@ -100,20 +99,3 @@ typedef struct
 
 #undef _MFCS
 
-	//
-	// MailFilter Filter Cache
-#ifndef _MAILFILTER_MFCONFIG_DONTWANTFILTERCACHE
-	
-/*	static char MFT_Filter_ListAttachments[MFT_Filter_ListAttachments_MAX][50];
-//	static char (*MFT_Filter_ListAttachments)[MFT_Filter_ListAttachments_MAX]	= NULL;		// Max.  150 Attachments.
-
-	static char MFT_Filter_ListSubjects[MFT_Filter_ListSubjects_MAX][75];
-//	static char (*MFT_Filter_ListSubjects)[MFT_Filter_ListSubjects_MAX]			= NULL;		// Max. 1000 Subjects.
-
-	static char MFT_Filter_ListSenders[MFT_Filter_ListSenders_MAX][50];
-//	static char (*MFT_Filter_ListSenders)[MFT_Filter_ListSenders_MAX]			= NULL;		// Max. 150 Senders.
-*/
-//	static char MFT_ModifyInt_ListFrom[MFT_ModifyInt_ListFrom_MAX][50];
-//	static char (*MFT_ModifyInt_ListFrom)[MFT_ModifyInt_ListFrom_MAX]			= NULL;
-
-#endif //_MAILFILTER_MFCONFIG_DONTWANTFILTERCACHE

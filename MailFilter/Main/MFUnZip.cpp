@@ -131,3 +131,44 @@ int MFUnZip::ExtractFile(const char* innerFilename, const char* localFilename)
 	return this->ExtractCurrentFile(localFilename);
 }
 
+iXList* MFUnZip::ReadZipContents()
+{
+	iXList* lst = new iXList();
+	
+	unsigned long i;
+	MFUnZip_GlobalInfo gi;
+	int err;
+
+	err = unzGetGlobalInfo (this->zipFile,&gi);
+	if (err!=MFUnZip_OK)
+	{
+		MFD_Out(MFD_SOURCE_ZIP,"ERROR: zipfile prob (%d) in unzGetGlobalInfo\n",err);
+	}
+	for (i=0;i<gi.number_entry;i++)
+	{
+		char filename_inzip[256];
+		MFUnZip_Fileinfo file_info;
+		unsigned long ratio=0;
+		err = unzGetCurrentFileInfo(this->zipFile,&file_info,filename_inzip,sizeof(filename_inzip),NULL,0,NULL,0);
+		if (err!=MFUnZip_OK)
+		{
+//			printf("error %d with zipfile in unzGetCurrentFileInfo\n",err);
+			break;
+		}
+
+		lst->AddValueBool(filename_inzip,false);
+
+		if ((i+1)<gi.number_entry)
+		{
+			err = unzGoToNextFile(this->zipFile);
+			if (err!=MFUnZip_OK)
+			{
+				MFD_Out(MFD_SOURCE_ZIP,"ERROR: zipfile prob (%d) in unzGoToNextFile\n",err);
+				break;
+			}
+		}
+	}
+	
+	return lst;
+}
+

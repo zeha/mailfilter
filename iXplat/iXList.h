@@ -15,7 +15,7 @@ struct iXList_Storage
 {
 	int id;
 	int displayid;
-	const char* name;
+	/*const*/ char* name;
 	void* data;
 	iXList_DataType type;
 	iXList_Storage* prev;

@@ -25,29 +25,6 @@ char* MFT_Local_ServerName = NULL;
 
 namespace MailFilter_Configuration {
 
-/*std::string MF_ConfigReadFile(const char* FileName, long iBufLen)
-{
-	FILE* cfgFile;
-	size_t dRead;
-	char* szDestination = (char*)malloc(iBufLen);
-	
-	szDestination[0] = 0;
-	
-	cfgFile = fopen(FileName,"rb");
-	if (cfgFile == NULL)
-		return -2;
-	
-	dRead = fread(szDestination,sizeof(char),(unsigned int)(iBufLen-1),cfgFile);
-	fclose(cfgFile);
-	
-	szDestination[dRead]=0;
-	szDestination[iBufLen-1]=0;
-	
-	return szDestination;
-
-}*/
-
-
 std::string MF_ConfigReadString(std::string ConfigFile, const int Entry)
 {
 	FILE* cfgFile;

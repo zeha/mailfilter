@@ -59,6 +59,14 @@ typedef struct
     tm_unz tmu_date;
 } MFUnZip_Fileinfo;
 
+typedef struct 
+{
+	unsigned long number_entry;         /* total number of entries in
+				       the central dir on this disk */
+	unsigned long size_comment;         /* size of the global comment of the zipfile */
+} MFUnZip_GlobalInfo;
+
+
 /*
    Compare two filename (fileName1,fileName2).
    If iCaseSenisivity = 1, comparision is case sensitivity (like strcmp)
@@ -71,6 +79,8 @@ typedef struct
 
 extern "C" {
 extern unzFile unzOpen (const char *pathname);
+
+extern int unzGetGlobalInfo (unzFile file, MFUnZip_GlobalInfo *pglobal_info);
 
 extern int unzGoToFirstFile (unzFile file);
 extern int unzGoToNextFile (unzFile file);
@@ -106,12 +116,15 @@ public:
 	MFUnZip(const char* zipFilename);
 	/* innerfilename: how the file gets called, local: filename on local system */
 	int ExtractFile(const char* innerFilename, const char* localFilename);
+	/* read filenames in zip */
+	iXList* ReadZipContents();
 	/* don't forget to call the destructor; it closes the zip file */
 	virtual ~MFUnZip();
-	int ExtractCurrentFile(const char* localFilename);
 
 protected:
 	unzFile zipFile;
+	/* extract the currently selected file */
+	int ExtractCurrentFile(const char* localFilename);
 };
 
 #endif	// MFUnZip_H
