@@ -12,6 +12,7 @@
 #define IDD_PROGRESS                    107
 #define IDD_WELCOME                     108
 #define IDD_LICENSEDLG                  109
+#define IDD_INSTALL                     110
 #define IDR_MAINFRAME                   128
 #define IDB_BITMAP1                     129
 #define IDB_WIZHEADER                   129
@@ -40,6 +41,8 @@
 #define IDC_SERVERLIST                  1018
 #define IDC_SELECTGWIACFG               1020
 #define IDC_SERVERVERSION               1021
+#define IDC_CHECK1                      1023
+#define IDC_SERVER                      1024
 
 // Next default values for new objects
 // 
@@ -47,7 +50,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        134
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1023
+#define _APS_NEXT_CONTROL_VALUE         1025
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

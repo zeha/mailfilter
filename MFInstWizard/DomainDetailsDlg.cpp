@@ -47,18 +47,11 @@ END_MESSAGE_MAP()
 
 // DomainDetailsDlg-Meldungshandler
 
-BOOL DomainDetailsDlg::OnWizardFinish(void)
+LRESULT DomainDetailsDlg::OnWizardNext(void)
 {
 	this->UpdateData(TRUE);
-	return CPropertyPage::OnWizardFinish();
-}
 
-BOOL DomainDetailsDlg::OnSetActive(void)
-{
-	CPropertySheet* psheet = (CPropertySheet*) GetParent();   
 	CInstApp* app = ((CInstApp*)AfxGetApp());
-
-
 	if (app->mf_GwiaSmtpHome != "")
 	{
 		CString tmp = app->mf_GwiaDHome;
@@ -70,14 +63,17 @@ BOOL DomainDetailsDlg::OnSetActive(void)
 			// where servername\ was prepended to dhome path
 			tmp = app->mf_ServerName + "\\" + tmp;
 			if (tmp.CompareNoCase(app->mf_GwiaSmtpHome) != 0)
-				psheet->SetWizardButtons(PSWIZB_BACK|PSWIZB_NEXT);
-			else
-				psheet->SetWizardButtons(PSWIZB_BACK|PSWIZB_FINISH);
+				return CPropertyPage::OnWizardNext();
 		}
-		else
-			psheet->SetWizardButtons(PSWIZB_BACK|PSWIZB_FINISH);
-	} else
-		psheet->SetWizardButtons(PSWIZB_BACK|PSWIZB_FINISH);
+	}
+
+	return IDD_INSTALL;
+}
+
+BOOL DomainDetailsDlg::OnSetActive(void)
+{
+	CPropertySheet* psheet = (CPropertySheet*) GetParent();   
+	psheet->SetWizardButtons(PSWIZB_BACK|PSWIZB_NEXT);
 
 	return CPropertyPage::OnSetActive();
 }

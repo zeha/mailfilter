@@ -10,6 +10,7 @@
 #include "WelcomeDlg.h"
 #include "ProgressDlg.h"
 #include "LicenseDlg.h"
+#include "InstallDlg.h"
 #include "netwareapi.h"
 
 #include <iostream>
@@ -23,7 +24,7 @@
 // CInstApp
 
 BEGIN_MESSAGE_MAP(CInstApp, CWinApp)
-	ON_COMMAND(ID_HELP, CWinApp::OnHelp)
+//	ON_COMMAND(ID_HELP, CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -35,6 +36,7 @@ CInstApp::CInstApp()
 	this->mf_AppDir = "SYS:MAILFLT";
 	this->mf_InstallLegacyVersion = FALSE;
 	this->mf_GroupwiseVersion6 = TRUE;
+	this->mf_LoadMailFilter = TRUE;
 
 	NetwareApi api;
 	api.GetPrimaryServerName(&this->mf_ServerName);	
@@ -86,6 +88,7 @@ static unsigned int MF_CopyFile(CProgressCtrl *progressCtrl, CString sourcePath,
 	char szTemp[40];
 
 	progressCtrl->SetPos(progressCtrl->GetPos()+1);
+
 	WriteLog(" Copy file " + fileName + " from " + sourcePath + " to " + destPath);
 	rc = CopyFile(sourcePath + "\\" + fileName, destPath + "\\" + fileName, FALSE);
 	
@@ -147,7 +150,9 @@ BOOL CInstApp::InitInstance()
 	hIcon = CWinApp::LoadIcon(IDR_MAINFRAME);
 
 	bool bErrors = false;
+	bool bNonFatalErrors = false;
 	CString szError = "";
+	CString szNonFatalError = "";
 
 	do
 	{
@@ -155,6 +160,9 @@ BOOL CInstApp::InitInstance()
 	szError = "";
 	// "ui" wizard = ask user bleh and blah
 	{
+		bNonFatalErrors = false;
+		szNonFatalError = "";
+
 		CPropertySheet wizard("MailFilter Installation Wizard",NULL, 0, bmpWizSpecial, NULL, bmpWizHeader);
 		wizard.SetWizardMode();
 		// 0x198128|
@@ -169,6 +177,7 @@ BOOL CInstApp::InitInstance()
 		FoldersDlg foldersDlg;
 		DomainDetailsDlg domainDlg;
 		SmtpHomeDlg smtpHomeDlg;
+		InstallDlg installDlg;
 
 		wizard.AddPage(&welcomeDlg);
 		wizard.AddPage(&serverDlg);
@@ -176,6 +185,7 @@ BOOL CInstApp::InitInstance()
 		wizard.AddPage(&foldersDlg);
 		wizard.AddPage(&domainDlg);
 		wizard.AddPage(&smtpHomeDlg);
+		wizard.AddPage(&installDlg);
 
 		if (wizard.DoModal() == ID_WIZFINISH)
 		{
@@ -195,8 +205,8 @@ BOOL CInstApp::InitInstance()
 			progress.SetWizardButtons(PSWIZB_DISABLEDFINISH);
 
 			CProgressCtrl *progressCtrl = &((ProgressDlg*)progress.GetPage(0))->m_ProgressCtrl;
-			progressCtrl->SetRange(0,100);
-			progressCtrl->SetPos(30);
+			progressCtrl->SetRange(0,60);
+			progressCtrl->SetPos(5);
 			CStatic* progressTextCtrl = (CStatic*)((ProgressDlg*)progress.GetPage(0))->GetDlgItem(IDC_PROGRESSTEXT);
 			progress.UpdateWindow();
 
@@ -209,6 +219,12 @@ BOOL CInstApp::InitInstance()
 			WriteLog("***************************************************************");
 			WriteLog("New Installation to server " + this->mf_ServerName + ", AppDir: " + this->mf_AppDir);
 			WriteLog("Gwia.Cfg: " + this->mf_GwiaCfgPath);
+			WriteLog("License Key: " + this->mf_LicenseKey);
+
+			if (this->mf_GwiaResetSmtpHome)
+				WriteLog("Gwia.Cfg shall be patched");
+			else
+				WriteLog("Gwia.Cfg shall not be patched");
 
 			unsigned int server_majorVersion;
 			unsigned int server_minorVersion;
@@ -265,7 +281,6 @@ BOOL CInstApp::InitInstance()
 					WriteLog("Installing LEGACY Version");
 				else
 					WriteLog("Installing LIBC Version");
-				WriteLog("License Key: " + this->mf_LicenseKey);
 			}
 
 			CString szAppConfigDest = "";
@@ -440,27 +455,27 @@ BOOL CInstApp::InitInstance()
 					{
 						installCfg << "# created by MFInstallWizard" << std::endl;
 						installCfg << "/domain=" << this->mf_DomainName << std::endl;
-							WriteLog("  /domain="+this->mf_DomainName+"\n");
+							WriteLog("  /domain="+this->mf_DomainName);
 						installCfg << "/hostname=" << this->mf_HostName << std::endl;
-							WriteLog("  /hostname="+this->mf_HostName+"\n");
+							WriteLog("  /hostname="+this->mf_HostName);
 						installCfg << "/config-directory=" << szAppConfigDest << std::endl;
-							WriteLog("  /config-directory="+szAppConfigDest+"\n");
+							WriteLog("  /config-directory="+szAppConfigDest);
 						installCfg << "/gwia-version=" << (this->mf_GroupwiseVersion6 ? 600 : 550) << std::endl;
-							WriteLog(this->mf_GroupwiseVersion6 ? "  /gwia-version=600\n" : "  /gwia-version=550\n");
+							WriteLog(this->mf_GroupwiseVersion6 ? "  /gwia-version=600" : "  /gwia-version=550");
 						installCfg << "/home-gwia=" << this->mf_GwiaDHome << std::endl;
-							WriteLog("  /home-gwia="+this->mf_GwiaDHome+"\n");
+							WriteLog("  /home-gwia="+this->mf_GwiaDHome);
 						installCfg << "/home-mailfilter=" << this->mf_GwiaSmtpHome << std::endl;
-							WriteLog("  /home-mailfilter="+this->mf_GwiaSmtpHome+"\n");
+							WriteLog("  /home-mailfilter="+this->mf_GwiaSmtpHome);
 						installCfg << "/licensekey=" << this->mf_LicenseKey << std::endl;
-							WriteLog("  /licensekey="+this->mf_LicenseKey+"\n");
+							WriteLog("  /licensekey="+this->mf_LicenseKey);
 						installCfg << "/config-importfilterfile=" << szAppConfigDest + "\\FILTERS.BIN" << std::endl;
-							WriteLog("  /config-importfilterfile="+ szAppConfigDest + "\\FILTERS.BIN" +"\n");
+							WriteLog("  /config-importfilterfile="+ szAppConfigDest + "\\FILTERS.BIN");
 						installCfg << "/config-deleteinstallfile=yes" << std::endl;
-							WriteLog("  /config-deleteinstallfile=yes\n");
+							WriteLog("  /config-deleteinstallfile=yes");
 						installCfg.close();
 
 						progressCtrl->SetPos(progressCtrl->GetPos()+1);
-						progressTextCtrl->SetWindowText("Contacting Server to create Configuration file...");
+						progressTextCtrl->SetWindowText("Contacting Server Agent ...");
 						WriteLog("Executing NCF: " + szServerAppBaseDest + "\\MFINST.NCF");
 						if (!api.ExecuteNCF(szServerAppBaseDest + "\\MFINST.NCF"))
 						{
@@ -480,31 +495,81 @@ BOOL CInstApp::InitInstance()
 			{
 				// 5: patch autoexec.ncf
 				WriteLog("5 - patch autoexec.ncf.");
+				CString szAutoexec = "\\\\" + this->mf_ServerName + "\\SYS\\AUTOEXEC.NCF";
+				CString szAutoexecBackup = szAutoexec + ".MFOLD";
+				WriteLog(" Using Autoexec.ncf from " + szAutoexec);
+				WriteLog(" Saving copy to " + szAutoexecBackup);
+
+				// make backup
+				CopyFile(szAutoexec,szAutoexecBackup, FALSE);
+
+				std::ofstream autoexecFile(szAutoexec,std::ios_base::app);
+				autoexecFile << std::endl;
+				autoexecFile << "# Added to load MailFilter" << std::endl;
+
+				CString theLine = szServerAppBaseDest + "\\MFSTART.NCF";
+				WriteLog(" Adding command: " + theLine);
+				autoexecFile << theLine << std::endl;
+
+				autoexecFile << std::endl;
+				autoexecFile.close();
+
 			}
 
 			if (!bErrors)
 			{
 				// 6: patch gwia.cfg
 				WriteLog("6 - patch gwia.ncf.");
+				
+			}
+
+			if (!bErrors)
+			{
+				// 7: load mailfilter if yes
+				WriteLog("7 - load mailfilter if yes");
+				progressCtrl->SetPos(progressCtrl->GetPos()+1);
+				if (this->mf_LoadMailFilter == TRUE)
+				{
+					progressTextCtrl->SetWindowText("Starting MailFilter");
+					WriteLog("  -> yes");
+					if (!api.ExecuteNCF(szServerAppBaseDest + "\\MFSTART.NCF"))
+					{
+						WriteLog("   -> ExecuteNCF returned error?");
+						bNonFatalErrors = true;
+						szNonFatalError = "MailFilter could not be started on the Server. Please check the System Console/Logger Screen for errors.";
+					}
+				}
 			}
 
 			// Done.
 
 			if (!bErrors)
 			{
-				WriteLog("----- -------------------------------------------------");
-				WriteLog("----- Installation Finished successfully.");
-				WriteLog("----- -------------------------------------------------");
-
 				// present finish dialog
 				int nLower; int nUpper;	progressCtrl->GetRange(nLower,nUpper);
 				progressCtrl->SetPos(nUpper);
-				progressTextCtrl->SetWindowText("Finished.");
+				progressTextCtrl->SetWindowText("Completed.");
 				progress.UpdateWindow();
+
+				WriteLog("----- -------------------------------------------------");
+				if (bNonFatalErrors)
+				{
+					WriteLog("----- -------------------------------------------------");
+					WriteLog("----- Non-Fatal Error: ");
+					WriteLog("----- " + szNonFatalError);
+					AfxMessageBox(szNonFatalError, MB_ICONEXCLAMATION);
+				}
+
+				WriteLog("----- Installation Finished successfully.");
+				WriteLog("----- -------------------------------------------------");
+
 				progress.SetWizardButtons(PSWIZB_FINISH);
 				progress.RunModalLoop(MLF_SHOWONIDLE);
 
+
+
 			} else {
+				progressTextCtrl->SetWindowText("Aborted.");
 				WriteLog("----- -------------------------------------------------");
 				WriteLog("----- Installation aborted:");
 				WriteLog("----- " + szError);

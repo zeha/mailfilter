@@ -22,7 +22,7 @@
 
   !include "MUI.nsh"
 
-  SetCompressor bzip2
+  SetCompressor lzma
   SetDateSave on
   SetOverwrite on
   SetCompress auto
@@ -53,21 +53,21 @@
 ;  !insertmacro MUI_RESERVEFILE_WELCOMEFINISHPAGE
   !insertmacro MUI_PAGE_WELCOME
   !insertmacro MUI_PAGE_DIRECTORY
-  !insertmacro MUI_PAGE_COMPONENTS
+;  !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_INSTFILES
   !insertmacro MUI_PAGE_FINISH
   
-  !insertmacro MUI_RESERVEFILE_LANGDLL
+;  !insertmacro MUI_RESERVEFILE_LANGDLL
 
   !insertmacro MUI_UNPAGE_CONFIRM
   !insertmacro MUI_UNPAGE_INSTFILES
 
 
   !insertmacro MUI_LANGUAGE "English"
-  LangString NAME_Section_Base ${LANG_English} "Server Binaries (NLMs)"
-  LangString NAME_Section_Installer ${LANG_English} "Installation Wizard"
-  LangString NAME_Section_Docs ${LANG_English} "Documentation"
-  LangString NAME_Section_ConfigW32 ${LANG_English} "Configuration Editor for Windows"
+;  LangString NAME_Section_Base ${LANG_English} "Server Binaries (NLMs)"
+;  LangString NAME_Section_Installer ${LANG_English} "Installation Wizard"
+;  LangString NAME_Section_Docs ${LANG_English} "Documentation"
+;  LangString NAME_Section_ConfigW32 ${LANG_English} "Configuration Editor for Windows"
 
 ;  !insertmacro MUI_LANGUAGE "German"
 ;
@@ -76,12 +76,10 @@
 ;  LangString NAME_Section_Docs ${LANG_German} "Dokumentation"
 ;  LangString NAME_Section_ConfigW32 ${LANG_German} "Konfigurationseditor für Windows"
 
-Function .onInit
-
-FunctionEnd
 
 ; The stuff to install
-Section $(NAME_Section_Base) Section_Base
+;Section $(NAME_Section_Base) Section_Base
+Section All
   SetShellVarContext all
   SectionIn 1 RO
   SetOverwrite on
@@ -176,11 +174,9 @@ Section $(NAME_Section_Base) Section_Base
 
 ;  WriteRegStr HKLM "SOFTWARE\MailFilter\${PROD_VERSION}" "AdminInstallDir" $INSTDIR
   WriteUninstaller "uninstall.exe"
-SectionEnd
-
-
-Section $(NAME_Section_Installer) Section_Installer
-  SectionIn 1
+;SectionEnd
+;Section $(NAME_Section_Installer) Section_Installer
+;  SectionIn 1
   SetOutPath "$INSTDIR"
 
   File "..\MailFilter\out\MFInstallWizard.exe"
@@ -189,11 +185,9 @@ Section $(NAME_Section_Installer) Section_Installer
   SetOutPath "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}"
   SetOutPath "$INSTDIR"
   CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\ Installation Wizard.lnk" '"$INSTDIR\MFInstallWizard.exe"'
-SectionEnd
-
-
-Section $(NAME_Section_Docs) Section_Docs
-  SectionIn 1
+;SectionEnd
+;Section $(NAME_Section_Docs) Section_Docs
+;  SectionIn 1
   SetOutPath "$INSTDIR"
 
   File ".\src\Administrators Guide EN.pdf"

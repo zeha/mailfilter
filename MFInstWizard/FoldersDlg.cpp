@@ -18,8 +18,8 @@ FoldersDlg::FoldersDlg()
 {
 	m_pPSP->dwFlags |= PSP_DEFAULT|PSP_USEHEADERTITLE|PSP_USEHEADERSUBTITLE;
 	m_pPSP->dwFlags &= ~PSP_HASHELP;
-	m_pPSP->pszHeaderTitle = "Folder Selection";
-	m_pPSP->pszHeaderSubTitle = "Please select the installation folders.";
+	m_pPSP->pszHeaderTitle = "Choose Install Location";
+	m_pPSP->pszHeaderSubTitle = "Choose the folder in which to install MailFilter Server.";
 }
 
 FoldersDlg::~FoldersDlg()

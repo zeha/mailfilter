@@ -15,7 +15,7 @@ ProgressDlg::ProgressDlg()
 	m_pPSP->dwFlags |= PSP_DEFAULT|PSP_USEHEADERTITLE|PSP_USEHEADERSUBTITLE;
 	m_pPSP->dwFlags &= ~PSP_HASHELP;
 	m_pPSP->pszHeaderTitle = "MailFilter Server Installation";
-	m_pPSP->pszHeaderSubTitle = "Progress";
+	m_pPSP->pszHeaderSubTitle = "Installation Progress";
 }
 
 ProgressDlg::~ProgressDlg()

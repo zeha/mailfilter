@@ -16,7 +16,7 @@ LicenseDlg::LicenseDlg()
 	m_pPSP->dwFlags |= PSP_DEFAULT|PSP_USEHEADERTITLE|PSP_USEHEADERSUBTITLE;
 	m_pPSP->dwFlags &= ~PSP_HASHELP;
 	m_pPSP->pszHeaderTitle = "License Details";
-	m_pPSP->pszHeaderSubTitle = "Please enter your MailFilter Server License Key.";
+	m_pPSP->pszHeaderSubTitle = "Enter your MailFilter Server License Key.";
 }
 
 LicenseDlg::~LicenseDlg()

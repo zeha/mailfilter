@@ -47,6 +47,7 @@ BOOL SmtpHomeDlg::OnSetActive(void)
 {
 	CPropertySheet* psheet = (CPropertySheet*) GetParent();   
 	psheet->SetWizardButtons(PSWIZB_BACK|PSWIZB_FINISH);
+	psheet->SetFinishText("Install");
 
 	return CPropertyPage::OnSetActive();
 }

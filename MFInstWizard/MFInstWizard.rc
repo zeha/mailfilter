@@ -146,11 +146,9 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Progress"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "",IDC_PROGRESSBAR,"msctls_progress32",0x1,24,60,270,16
+    CONTROL         "",IDC_PROGRESSBAR,"msctls_progress32",0x1,24,36,270,16
     LTEXT           "Calculating configuration data ...",IDC_PROGRESSTEXT,24,
-                    42,270,12
-    LTEXT           "MailFilter is now being installed to the target server. Please wait ...",
-                    IDC_STATIC,24,12,270,18
+                    24,270,12
 END
 
 IDD_WELCOME DIALOGEX 0, 0, 308, 215
@@ -177,6 +175,20 @@ BEGIN
     LTEXT           "If you do not enter a License Key, MailFilter will run in evaluation mode for 30 days.",
                     -1,24,150,270,18
     PUSHBUTTON      "Import License &File",IDC_READLICFILE,222,42,72,18
+END
+
+IDD_INSTALL DIALOGEX 0, 0, 308, 215
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "MailFilter Installation Wizard"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    LTEXT           "Finish Installation",IDC_TITLE,120,12,174,24
+    LTEXT           "Server:",-1,120,84,58,12
+    LTEXT           "Statisch",IDC_SERVER,180,84,102,12
+    CONTROL         "Load MailFilter after installation",IDC_CHECK1,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,120,108,112,10
+    LTEXT           "This wizard will now install MailFilter on the selected server.",
+                    -1,120,54,174,24
 END
 
 
@@ -250,6 +262,14 @@ BEGIN
         RIGHTMARGIN, 300
         TOPMARGIN, 7
         BOTTOMMARGIN, 164
+    END
+
+    IDD_INSTALL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 301
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 208
     END
 END
 #endif    // APSTUDIO_INVOKED

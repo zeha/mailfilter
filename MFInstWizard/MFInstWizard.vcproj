@@ -143,6 +143,9 @@
 				RelativePath=".\FoldersDlg.cpp">
 			</File>
 			<File
+				RelativePath=".\InstallDlg.cpp">
+			</File>
+			<File
 				RelativePath=".\LicenseDlg.cpp">
 			</File>
 			<File
@@ -188,6 +191,9 @@
 			</File>
 			<File
 				RelativePath=".\FoldersDlg.h">
+			</File>
+			<File
+				RelativePath=".\InstallDlg.h">
 			</File>
 			<File
 				RelativePath=".\LicenseDlg.h">

@@ -19,6 +19,6 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-	BOOL OnWizardFinish(void);
+	LRESULT OnWizardNext(void);
 	BOOL OnSetActive(void);
 };
