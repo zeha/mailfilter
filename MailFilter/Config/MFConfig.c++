@@ -322,9 +322,12 @@ bool Configuration::ReadFilterList(std::string filterFile, long startAt)
 			if (flt.expression == "")
 			{
 				break;
+			} else {
+				if (flt.expression != "relays.osirusoft.com")
+				{
+					this->filterList.push_back(flt);
+				}
 			}
-			
-			this->filterList.push_back(flt);
 			
 			fgetc(fFile);
 		}
