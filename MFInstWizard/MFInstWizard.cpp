@@ -318,7 +318,7 @@ BOOL CInstApp::InitInstance()
 
 			if (!bErrors)
 			{
-				if (this->mf_SharedInstallation == TRUE)
+				if (this->mf_SharedInstallation == FALSE)
 				{
 					szAppBaseDest = "\\\\" + this->mf_ServerName;
 					szAppBaseDest += "\\" + this->mf_AppDir;
