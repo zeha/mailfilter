@@ -557,7 +557,7 @@ int MF_ConfigReadString(char ConfigFile[MAX_PATH], int Entry, char Value[]);
 void MF_ExitProc(void);
 void MF_StatusText( const char *newText );
 void MF_MakeValidPath(char* thePath);
-void MF_GetServerName(char* serverName);
+void MF_GetServerName(char* serverName, unsigned long bufSize);
 void MF_StatusUI_Update(const char* newText);
 void MF_StatusUI_UpdateLog(const char* newText);
 #ifdef __cplusplus
@@ -593,7 +593,6 @@ void MF_SMTP_Startup(void *dummy);
 DWORD WINAPI MF_Work_Startup(void *dummy);
 DWORD WINAPI MF_SMTP_Startup(void *dummy);
 #endif // WIN32
-
 
 #define ERROR_SUCCESS	0
 

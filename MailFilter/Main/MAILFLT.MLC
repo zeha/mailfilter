@@ -21,7 +21,7 @@ char *programMesgTable[] =
      "MailFilter Work",
      "MailFilter/ax: Register Event DOWN_SERVER Failure!\n",
      "\r  http://www.mailfilter.cc/\n  order@mailfilter.cc\n",
-     "   F5 - Show Configuration                     F7 - Exit   F8 - Show Version",
+     "   F5 - Show Configuration    F6 - Restart    F7 - Exit    F8 - Show Version",
      "MailFilter/ax: *** INVALID CONFIGURATION FILE FORMAT ***\n 	 Check that MFConfig Version matches MailFilter/ax NLM!\n",
      "MailFilter/ax: *** NO (VALID) Configuration ? ***\n",
      "MailFilter/ax: *** NO (VALID) Filter List ? ***\n",

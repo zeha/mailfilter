@@ -226,14 +226,19 @@ bool MF_Util_MakeUniqueFileName(char* fileName,int addVal)
 	return true;
 }
 
+#ifdef N_PLAT_NLM
+extern "C" unsigned long ReturnFileServerName(char *nameBuffer);
+#endif
+
 //
 //  Get's a servername from a path
 //
 //	* Pass NULL to sourcePath to get the local servername
 //
-void MF_GetServerName(char* serverName)	//, char* sourcePath)
+void MF_GetServerName(char* serverName, unsigned long bufSize)	//, char* sourcePath)
 {
 #ifdef N_PLAT_NLM
+/*
 #ifndef __NOVELL_LIBC__
 	char *volume;
 	char *dir;
@@ -242,21 +247,34 @@ void MF_GetServerName(char* serverName)	//, char* sourcePath)
 	volume = (char*)malloc(_MAX_VOLUME);
 	dir = (char*)malloc(_MAX_DIR);
 	
-//	if (sourcePath == NULL)
 		ParsePath ( "SYS:" , serverName, volume, dir );		// returns local name
-/*	else
-		ParsePath ( sourcePath , serverName, volume, dir );	// returns from orig. path
-*/
 	free(dir);
 	free(volume);
 #else
 	struct utsname u;
 	uname(&u);
-	strcpy(serverName,u.servername);
+	strncpy(serverName,u.servername,bufSize);
 #endif
+*/
+	// ReturnFileServerName gets called by both uname and ParsePath
+	// so we just call it oureselves and that's fine.
+	//
+	// from http://developer.novell.com/ndk/doc/samplecode/smscomp_sample/NLM_tsatest/TSATest.h.html
+	ReturnFileServerName(serverName);
+	
+	if (serverName[0] == 0)
+	{
+		// damn
+		// ReturnFileServerName doesn't always return useful stuff (in autoexec.ncf!)
+		// 
+		// now try with gethostname
+		
+		gethostname (serverName,(int)bufSize);
+	}	
+
 #endif
 #ifdef WIN32
-	unsigned long bufSize = _MAX_SERVER;
+//	unsigned long bufSize = _MAX_SERVER;
 	GetComputerName(serverName, &bufSize); 
 #endif
 }

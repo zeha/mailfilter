@@ -355,10 +355,14 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 		goto MF_ConfigRead_ERR;	
 	}
 
+	// get servername
 
-	char* szServerName = (char*)_mfd_malloc(_MAX_SERVER,"Config:Server");
-	MF_GetServerName ( szServerName ); //MFT_Local_ServerName );
+	unsigned long iServerNameSize = 512;
+	char* szServerName = (char*)_mfd_malloc(iServerNameSize,"Config:Server");
+	
+	MF_GetServerName ( szServerName , iServerNameSize);
 	this->ServerName = szServerName;
+	
 	_mfd_free( szServerName , "Config:Server" );
 	
 	
@@ -367,7 +371,7 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 	{
 		MFT_Local_ServerName = (char*)_mfd_malloc(_MAX_SERVER,"Config:LocalServer");
 	}
-	MF_GetServerName ( MFT_Local_ServerName );
+	MF_GetServerName ( MFT_Local_ServerName, _MAX_SERVER );
 
 	this->GWIARoot = MF_MakeValidPath(MF_ConfigReadString(pConfigFile, 1));
 	if (this->GWIARoot == "") {	rc = 303;	goto MF_ConfigRead_ERR;	}
