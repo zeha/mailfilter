@@ -9,7 +9,7 @@
 ; *** UPDATE BUILD NUMBERS *HERE* ***
   !define PROD_VERSION_MAJOR 1
   !define PROD_VERSION_MINOR 5
-  !define PROD_VERSION_BUILD 1123
+  !define PROD_VERSION_BUILD 1125plus
 ;
 ;
 
@@ -48,7 +48,7 @@
   !define MUI_FINISHPAGE_RUN_NOTCHECKED
   !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\relnotes.html"
 
-  !insertmacro MUI_RESERVEFILE_WELCOMEFINISHPAGE
+;  !insertmacro MUI_RESERVEFILE_WELCOMEFINISHPAGE
   !insertmacro MUI_PAGE_WELCOME
   !insertmacro MUI_PAGE_DIRECTORY
   !insertmacro MUI_PAGE_COMPONENTS
@@ -132,6 +132,7 @@ Section $(NAME_Section_Base) Section_Base
 
   SetOutPath "$INSTDIR\NLM\LibC"
   File "..\MailFilter\out\libc\MailFlt.nlm"
+  File "..\MailFilter\out\libc\MFConfig.nlm"
 
   SetOutPath "$INSTDIR\NLM\SYSTEM"
   File "..\MailFilter\out\MailFlt.nlm"
@@ -139,6 +140,10 @@ Section $(NAME_Section_Base) Section_Base
   File "..\MailFilter\out\MFConfig.nlm"
   File "..\MailFilter\out\MFUpgr.nlm"
   File "..\MailFilter\out\MFRest.nlm"
+
+  File "..\MailFilter\out\libc\MFBUG.NLM"
+  File "..\MailFilter\out\libc\MFPACK.NLM"
+
   File ".\src\NLM\SYSTEM\mfstart.ncf"
   File ".\src\NLM\SYSTEM\mfstop.ncf"
 
