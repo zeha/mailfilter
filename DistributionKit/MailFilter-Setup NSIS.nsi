@@ -162,7 +162,7 @@ Section All
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "NoModify" 1
 
 
-;  WriteRegStr HKLM "SOFTWARE\MailFilter\${PROD_VERSION}" "AdminInstallDir" $INSTDIR
+  WriteRegStr HKLM "SOFTWARE\MailFilter\${PROD_VERSION}" "" "$INSTDIR"
   WriteUninstaller "uninstall.exe"
 ;SectionEnd
 ;Section $(NAME_Section_Installer) Section_Installer
