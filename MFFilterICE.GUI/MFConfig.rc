@@ -1,0 +1,344 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Englisch (USA) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 394, 265
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "About"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "Version",IDC_VERSION,6,246,378,11,SS_CENTERIMAGE,
+                    WS_EX_TRANSPARENT
+    CONTROL         160,IDC_BITMAP,"Static",SS_BITMAP | SS_REALSIZEIMAGE | 
+                    SS_SUNKEN,6,6,381,220
+    LTEXT           "MailFilter Import/Convert/Export Utility",IDC_STATIC,6,
+                    234,150,12,0,WS_EX_TRANSPARENT
+END
+
+IDD_FILTERLIST DIALOGEX 0, 0, 432, 234
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | 
+    WS_THICKFRAME
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "MailFilter Filter Editor"
+MENU IDR_RULEMENU
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_CONFIGLIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | 
+                    LVS_NOSORTHEADER | WS_TABSTOP,7,7,417,220,
+                    WS_EX_STATICEDGE
+END
+
+IDD_FILTEREDIT DIALOGEX 0, 0, 328, 193
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "General"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    EDITTEXT        IDC_FILTERNAME,72,12,246,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FILTEREXPRESSION,72,30,246,12,ES_AUTOHSCROLL
+    LTEXT           "Name:",IDC_STATIC,12,12,54,12
+    LTEXT           "Expression:",IDC_STATIC,12,30,54,12
+    COMBOBOX        IDC_MATCHFIELD,72,48,132,12,CBS_DROPDOWN | WS_TABSTOP
+    LTEXT           "Field:",IDC_STATIC,12,48,54,12
+    COMBOBOX        IDC_MATCHACTION,72,66,132,12,CBS_DROPDOWNLIST | 
+                    WS_TABSTOP
+    LTEXT           "Action:",IDC_STATIC,12,66,54,12
+    COMBOBOX        IDC_MATCHTYPE,72,84,132,12,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Type:",IDC_STATIC,12,84,54,12
+    LTEXT           "Enabled:",IDC_STATIC,12,102,54,12
+    CONTROL         "Incoming",IDC_ENABLED_IN,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,72,102,66,12
+    CONTROL         "Outgoing",IDC_ENABLED_OUT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,138,102,66,12
+    LTEXT           "Notification:",IDC_STATIC,12,126,54,12
+    LTEXT           "Administrator:",IDC_STATIC,18,138,48,12
+    CONTROL         "Incoming",IDC_NOTIFY_IN_ADMIN,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,72,138,66,12
+    CONTROL         "Outgoing",IDC_NOTIFY_OUT_ADMIN,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,138,138,66,12
+    LTEXT           "Sender:",IDC_STATIC,18,150,48,12
+    CONTROL         "Incoming",IDC_NOTIFY_IN_SENDER,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,72,150,66,12
+    CONTROL         "Outgoing",IDC_NOTIFY_OUT_SENDER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,138,150,66,12
+    LTEXT           "Recipient:",IDC_STATIC,18,162,48,12
+    CONTROL         "Incoming",IDC_NOTIFY_IN_RECIPIENT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,72,162,66,12
+    CONTROL         "Outgoing",IDC_NOTIFY_OUT_RECIPIENT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,138,162,66,12
+END
+
+IDD_WIZ_EXPORT DIALOGEX 0, 0, 307, 154
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Export Settings"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    EDITTEXT        IDC_EXPORTPATH,29,33,208,12,ES_AUTOHSCROLL
+    LTEXT           "Export to File:",IDC_STATIC,6,18,154,11
+    LTEXT           "Export File Type:",IDC_STATIC,6,54,154,11
+    CONTROL         "Tabulator Delimited (TAB)",IDC_TYPE_TAB,"Button",
+                    BS_AUTORADIOBUTTON,30,78,164,8
+    CONTROL         "Comma Seperated (CSV)",IDC_TYPE_CSV,"Button",
+                    BS_AUTORADIOBUTTON | WS_DISABLED,30,90,164,8
+    PUSHBUTTON      "...",IDC_SELECTPATH,240,32,14,13,WS_DISABLED
+    CONTROL         "MailFilter Rule Exchange File (BIN)",IDC_TYPE_BIN,
+                    "Button",BS_AUTORADIOBUTTON,30,66,261,8
+END
+
+IDD_WIZ_IMPORT DIALOGEX 0, 0, 307, 154
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Import Settings"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    EDITTEXT        IDC_IMPORTPATH,29,33,208,12,ES_AUTOHSCROLL
+    LTEXT           "Import from File:",IDC_STATIC,6,18,154,11
+    LTEXT           "Input File Type:",IDC_STATIC,6,54,154,11
+    CONTROL         "Tabulator Delimited (TAB)",IDC_TYPE_TAB,"Button",
+                    BS_AUTORADIOBUTTON,30,78,164,8
+    CONTROL         "Comma Seperated (CSV)",IDC_TYPE_CSV,"Button",
+                    BS_AUTORADIOBUTTON | WS_DISABLED,30,90,255,8
+    CONTROL         "Delete all rules before import.",IDC_DELETEALL,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,30,102,184,9
+    CONTROL         "Ignore notification settings in the import file.",
+                    IDC_IGNORENOTIFY,"Button",BS_AUTOCHECKBOX | WS_DISABLED | 
+                    WS_TABSTOP,30,115,184,9
+    PUSHBUTTON      "...",IDC_SELECTPATH,240,32,14,13,WS_DISABLED
+    CONTROL         "MailFilter Rule Exchange File (BIN)",IDC_TYPE_BIN,
+                    "Button",BS_AUTORADIOBUTTON,30,66,261,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,5,8,0
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "Christian Hofstädtler"
+            VALUE "FileDescription", "MailFilter Filter Editor"
+            VALUE "FileVersion", "1.5.8"
+            VALUE "InternalName", "FilterICE.exe"
+            VALUE "LegalCopyright", "Copyright © 2000-2004 Christian Hofstädtler. All Rights Reserved."
+            VALUE "OriginalFilename", "FilterICE.exe"
+            VALUE "ProductName", "MailFilter professional"
+            VALUE "ProductVersion", "1.5.8"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        RIGHTMARGIN, 380
+        BOTTOMMARGIN, 218
+    END
+
+    IDD_FILTERLIST, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 424
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 227
+    END
+
+    IDD_FILTEREDIT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 321
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 186
+    END
+
+    IDD_WIZ_EXPORT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 300
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 147
+    END
+
+    IDD_WIZ_IMPORT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 300
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 147
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// RT_MANIFEST
+//
+
+IDR_MANIFEST            RT_MANIFEST             "res\\MFConfig.manifest"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_RULEMENU MENU 
+BEGIN
+    POPUP "&List"
+    BEGIN
+        MENUITEM "&Open ...",                   ID_LIST_IMPORT
+        MENUITEM "&Save as ...",                ID_LIST_EXPORT
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_LIST_CLOSE
+    END
+    POPUP "E&ntry"
+    BEGIN
+        MENUITEM "Add ...",                     ID_ENTRY_ADD
+        MENUITEM "Delete",                      ID_ENTRY_DELETE
+    END
+    POPUP "&?"
+    BEGIN
+        MENUITEM "&About ...",                  ID_HELP_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_SPLASH              BITMAP                  "..\\Graphics\\mailfilterax-splash_export.BMP"
+#endif    // Englisch (USA) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Deutsch (Österreich) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\MFConfig.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "..\\Graphics\\MailFilter.ico"
+#endif    // Deutsch (Österreich) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "res\MFConfig.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
