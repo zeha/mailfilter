@@ -5,6 +5,7 @@
 #include <cstddef>
 #include "../MailFilter/Config/MFConfig-Filter.h++"
 #include "../MailFilter/Config/MFConfig-defines.h"
+#include "../MailFilter/Main/mftools.h"
 
 
 std::vector<MailFilter_Configuration::Filter> MFC_FilterList;
@@ -90,9 +91,9 @@ public:
 	}
 	void startfile()
 	{
-		fprintf(fFile,"MAILFILTER_FILTER_EXCHANGEFILE");
+		fprintf(fFile,MFFLTSIG);
 		fputc(0,fFile);
-		fprintf(fFile,MAILFILTER_CONFIGURATION_SIGNATURE);
+		fprintf(fFile,MFCSIG);
 		fputc(0,fFile);
 		fputc(0,fFile);
 		fputc(0,fFile);
@@ -142,8 +143,8 @@ public:
 			fclose(fFile);
 			return -3;
 		}
-		fread(szTemp,sizeof(char),strlen(MAILFILTER_CONFIGURATION_SIGNATURE)+1,fFile);
-		if (strcmp(szTemp,MAILFILTER_CONFIGURATION_SIGNATURE) != 0)
+		fread(szTemp,sizeof(char),strlen(MFCSIG)+1,fFile);
+		if (strcmp(szTemp,MFCSIG) != 0)
 		{
 			fclose(fFile);
 			return -4;
@@ -297,29 +298,35 @@ public:
 		char szTemp[MAX_BUF];
 		while (!feof(fFile))
 		{
-			// a bit old-school ;-)
-			MailFilter_Configuration::OldC_FilterStruct mfi;
+			int matchfield;
+			int notify;
+			int type;
+			int action;
+			int enabled;
+			int enabledIn;
+			int enabledOut;
+
 			// and the new style
 			MailFilter_Configuration::Filter* flt = new MailFilter_Configuration::Filter();
 
 			int rc = fscanf(fFile," 0x%hhx %*[,] 0x%hhx %*[,] 0x%hhx %*[,] 0x%hhx %*[,] %hhd %*[,] %hhd %*[,] %hhd %*[,]",// %*[\"]%[abcdefghijklmnopqrstuvwxyzABCDEFQRSTUVWXYZ -_.,;:@!"§$%&/()=?0123456789]%*[\"] %*[,] %*[\"]%s%*[\"] \n",
-				&mfi.matchfield,
-				&mfi.notify,
-				&mfi.type,
-				&mfi.action,
-				&mfi.enabled,
-				&mfi.enabledIncoming,
-				&mfi.enabledOutgoing);
+				&matchfield,
+				&notify,
+				&type,
+				&action,
+				&enabled,
+				&enabledIn,
+				&enabledOut);
 
 			// this is to prevent the possible page faults from fscanf
 			// TODO: replace fscanf with a C++ solution
-			flt->matchfield = (MailFilter_Configuration::FilterField)(mfi.matchfield);
-			flt->notify = (MailFilter_Configuration::Notification)(mfi.notify);
-			flt->type = (MailFilter_Configuration::FilterType)(mfi.type);
-			flt->action = (MailFilter_Configuration::FilterAction)(mfi.action);
-			flt->enabled = (bool)(mfi.enabled);
-			flt->enabledIncoming = (bool)(mfi.enabledIncoming);
-			flt->enabledOutgoing = (bool)(mfi.enabledOutgoing);
+			flt->matchfield = (MailFilter_Configuration::FilterField)(matchfield);
+			flt->notify = (MailFilter_Configuration::Notification)(notify);
+			flt->type = (MailFilter_Configuration::FilterType)(type);
+			flt->action = (MailFilter_Configuration::FilterAction)(action);
+			flt->enabled = (bool)(enabled);
+			flt->enabledIncoming = (bool)(enabledIn);
+			flt->enabledOutgoing = (bool)(enabledOut);
 
 			szTemp[0]=0;
 			fgets(szTemp,1000,fFile);

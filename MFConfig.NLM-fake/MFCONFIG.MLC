@@ -6,6 +6,6 @@
 char *programMesgTable[] =
 {
      "MailFilter Configuration",
-     "1.5[1132]",
+     "1.6",
      "MFCONFIG.NLM has been replaced by the command \"mailflt.nlm -t config\". You can also access the MailFilter Configuration Editor using the F10 key in the MailFilter main screen. This has the advantage that the changed configuration gets active as soon as possible."
 };

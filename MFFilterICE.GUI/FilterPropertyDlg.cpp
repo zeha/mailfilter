@@ -5,6 +5,7 @@
 #include "MFConfig.h"
 #include "FilterPropertyDlg.h"
 #include "filterice.hxx"
+#include "../MailFilter/Main/mftools.h"
 
 // CFilterPropertyDlg dialog
 

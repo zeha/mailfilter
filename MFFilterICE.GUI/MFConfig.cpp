@@ -6,6 +6,7 @@
 //#include "MFConfigDlg.h"
 #include "FilterlistDlg.h"
 #include <sys/stat.h>
+#include "../MailFilter/Main/MFVersion.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -43,7 +44,7 @@ BOOL CMFConfigApp::InitInstance()
 
 	CWinApp::InitInstance();
 
-	this->szVersion = "Version 1.5.8";
+	this->szVersion = "Version "MAILFILTERVERNUM;
 
 	AfxEnableControlContainer();
 

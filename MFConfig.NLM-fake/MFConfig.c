@@ -187,7 +187,7 @@ void main(void)
 
 	NLM_Initialize();
 	
-	NWSDisplayErrorText ( FAKEERRORMESSAGE , SEVERITY_FATAL , NLM_nutHandle , "" );
+	NWSDisplayErrorText ( FAKEERRORMESSAGE , NUT_SEVERITY_FATAL , NLM_nutHandle , "" );
 	
 	NLM_ShutDown();
 	

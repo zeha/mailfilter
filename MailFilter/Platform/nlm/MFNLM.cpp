@@ -7,10 +7,6 @@
  +
  +		
  +		Copyright 2001-2004 Christian Hofstädtler.
- +		
- +		
- +
- +
  +
  +		
  */
@@ -1106,7 +1102,7 @@ MF_MAIN_RUNLOOP:
 
 MF_MAIN_TERMINATE:
 	MailFilterApp_Server_LogoutFromServer();
-
+	MF_DisplayCriticalError("MAILFILTER: Exiting: %d\n",MFT_NLM_Exiting);
 	return 0;
 }
 
@@ -1216,7 +1212,10 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 
 	int rc = 0;
 	
+	unlink("SYS:\\SYSTEM\\MFINST.NLM");
 	unlink("SYS:\\SYSTEM\\MFREST.NLM");
+	unlink("SYS:\\SYSTEM\\MFNRM.NLM");
+	unlink("SYS:\\SYSTEM\\MFUPGR.NLM");
 
 	switch (MF_GlobalConfiguration.ApplicationMode)
 	{
@@ -1236,7 +1235,7 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		}
 		
 		rc = MailFilter_Main_RunAppServer(argv[0]);
-		
+		MF_DisplayCriticalError("MAILFILTER: RunAppServer rc: %d\n",rc);
 		break;
 		
 	case MailFilter_Configuration::CONFIG:

@@ -143,8 +143,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,50,0,0
- PRODUCTVERSION 1,5,8,0
+ FILEVERSION 1,60,0,0
+ PRODUCTVERSION 1,6,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -161,12 +161,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Christian Hofstädtler"
             VALUE "FileDescription", "MailFilter Filter Editor"
-            VALUE "FileVersion", "1.50"
+            VALUE "FileVersion", "1.60"
             VALUE "InternalName", "FilterEdit.exe"
-            VALUE "LegalCopyright", "Copyright © 2000-2004 Christian Hofstädtler. All Rights Reserved."
+            VALUE "LegalCopyright", "Copyright © 2001-2004 Christian Hofstädtler. All Rights Reserved."
             VALUE "OriginalFilename", "FilterEdit.exe"
             VALUE "ProductName", "MailFilter professional -- www.mailfilter.cc"
-            VALUE "ProductVersion", "1.5.8"
+            VALUE "ProductVersion", "1.6.0"
         END
     END
     BLOCK "VarFileInfo"

@@ -29,8 +29,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,50,0,0
- PRODUCTVERSION 1,5,8,0
+ FILEVERSION 1,60,0,0
+ PRODUCTVERSION 1,6,0,0
  FILEFLAGSMASK 0x1fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -47,12 +47,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Christian Hofstädtler"
             VALUE "FileDescription", "MailFilter Rule Package Tool"
-            VALUE "FileVersion", "1.50"
+            VALUE "FileVersion", "1.60"
             VALUE "InternalName", "MFFilterICE.exe"
             VALUE "LegalCopyright", "Copyright © 2000-2004 Christian Hofstädtler. All Rights Reserved."
             VALUE "OriginalFilename", "MFFilterICE.exe"
             VALUE "ProductName", "MailFilter professional -- www.mailfilter.cc"
-            VALUE "ProductVersion", "1.5.8"
+            VALUE "ProductVersion", "1.6.0"
         END
     END
     BLOCK "VarFileInfo"

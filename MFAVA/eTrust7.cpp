@@ -348,7 +348,7 @@ int eTrust7_Init(MFAVA_HANDLE &hAVA)
 	hAVA = (MFAVA_HANDLE)ETRUST7_MAGIC;
 		
 //	long arcTypes[20];
-	struct actionConfig actionConf = { 3, "SYS:eTrustAV\AVEngine", "SYS:eTrustAV\AVEngine", 0 };
+	struct actionConfig actionConf = { 3, "SYS:eTrustAV\\AVEngine", "SYS:eTrustAV\\AVEngine", 0 };
 	struct inoConfig2 cf2 = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	struct inoConfig cf = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	
