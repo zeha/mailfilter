@@ -343,7 +343,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 
 void MF_OutOfMemoryHandler()
 {
-	MF_DisplayCriticalError("MAILFLT:	OUT OF MEMORY!\n	MailFilter is out of memory. Operation cancelled.\n");
+	MF_DisplayCriticalError("MAILFILTER:	OUT OF MEMORY!\n	MailFilter is out of memory. Operation cancelled.\n");
 }
 
 //

@@ -27,7 +27,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+/*
 long MailFilter_API_GetStats(int statID, int statSubID)
 {
 	MFAPI_EXPORT_FUNC_DECLARE;
@@ -74,7 +74,7 @@ long MailFilter_API_GetStats(int statID, int statSubID)
 
 	return ret;
 }
-
+*/
 //
 // Checks the passed String for block ...
 //

@@ -1079,7 +1079,12 @@ MF_MAIN_RUNLOOP:
 				MailFilter_NRM_sigterm();
 			} else {
 				if (mf_nlmisloadedprotected())
-					system("UNLOAD ADDRESS SPACE = OS MAILFLT.NLM");
+				{
+					char szCmdLine[MAX_PATH];
+					sprintf(szCmdLine,"UNLOAD ADDRESS SPACE = OS %s",szProgramName);
+					system(szCmdLine);
+					//TODO ActivateScreen
+				}
 			}
 #endif
 

@@ -1016,7 +1016,6 @@ static void MFConfig_EditConfig()
 	LONG	newScanDirWait = 0;
 	LONG	newGwiaVersion = 0;
 	char	newControlPassword[MAILFILTER_CONFIGURATION_LENGTH];
-	BOOL	newEnableIncomingRcptCheck = (BOOL)MF_GlobalConfiguration.EnableIncomingRcptCheck;
   	BOOL	newEnableAttachmentDecoder = (BOOL)MF_GlobalConfiguration.EnableAttachmentDecoder;
   	BOOL	newEnablePFA = (BOOL)MF_GlobalConfiguration.EnablePFAFunctionality;
   	BOOL	newEnableNRMThread = (BOOL)MF_GlobalConfiguration.EnableNRMThread;
@@ -1113,10 +1112,6 @@ static void MFConfig_EditConfig()
 	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnablePFA, NULL, MF_NutInfo);
 	line++;
 
-	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable Incoming Recipient Rule Check:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableIncomingRcptCheck, NULL, MF_NutInfo);
-	line++;
-	
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Drop Broken Messages:", MF_NutInfo);
 	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newDropBrokenMessages, NULL, MF_NutInfo);
 	line++;
@@ -1269,7 +1264,6 @@ static void MFConfig_EditConfig()
 		MF_GlobalConfiguration.EnablePFAFunctionality		=(bool)newEnablePFA;
 		MF_GlobalConfiguration.EnableNRMThread				=(bool)newEnableNRMThread;
 		MF_GlobalConfiguration.EnableNRMRestore				=(bool)newEnableNRMRestore;
-		MF_GlobalConfiguration.EnableIncomingRcptCheck		=(bool)newEnableIncomingRcptCheck;
 		MF_GlobalConfiguration.DropBrokenMessages 			=(bool)newDropBrokenMessages;
 		MF_GlobalConfiguration.DropPartialMessages 			=(bool)newDropPartialMessages;
 		MF_GlobalConfiguration.RequireAVA					=(bool)newRequireAVA;

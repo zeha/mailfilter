@@ -71,7 +71,6 @@ public:
 	unsigned int ProblemDirMaxSize;
 	unsigned int ProblemDirMaxAge;
 	unsigned int GWIAVersion;
-	bool EnableIncomingRcptCheck;
 	bool EnableAttachmentDecoder;
 	bool EnablePFAFunctionality;
 	bool EnableNRMThread;

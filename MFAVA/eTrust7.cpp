@@ -315,7 +315,10 @@ int eTrust7_DeInit(MFAVA_HANDLE hAVA)
 
 	app->eTrust_InitComplete = 0;
 
-	if ((hAVA != NULL) && (hAVA != (MFAVA_HANDLE)ETRUST7_MAGIC))
+	if (hAVA != NULL)
+		return ENOMEM;
+
+	if (hAVA != (MFAVA_HANDLE)ETRUST7_MAGIC)
 	{
 		if (app->Debug)
 			printf("MFAVADebug: %X eTrust7: not doing DeInit, magic wrong\n",hAVA);
@@ -340,6 +343,8 @@ int eTrust7_DeInit(MFAVA_HANDLE hAVA)
 	rc = FreeLibrary_sym(app->eTrust_hLibLibWinC);
 	if (app->Debug)
 		printf("MFAVADebug: %X FreeLibrary LIBWINC: %x\n",hAVA,rc);
+	
+	printf("MFAVA: Terminated!\n");
 	
 	return ESUCCESS;
 }

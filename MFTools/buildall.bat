@@ -56,4 +56,5 @@ REM %CMDIDE% mfrestore mfrestore.mcp
 
 %CMDIDE% mailfilter\platform\nlm mailfilter-clib.mcp /t "NLMRelease"
 %CMDIDE% mailfilter\platform\nlm-libc mailfilter-libc.mcp /t "NLMRelease"
+%CMDIDE% mailfilter\platform\nlm-libc mailfilter-libc.mcp /t "NLMSymbols"
 

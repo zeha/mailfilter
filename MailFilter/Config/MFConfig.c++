@@ -170,7 +170,6 @@ int Configuration::setDefaults(std::string directory, std::string domainname)
 	this->NotificationAdminMailsKilled = true;
 	this->NotificationAdminDailyReport = true;
 	
-	this->EnableIncomingRcptCheck = false;
 	this->EnableAttachmentDecoder = true;
 	this->EnablePFAFunctionality = false;
 	this->EnableNRMThread = false;
@@ -877,9 +876,6 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 							if (param == "sendadmin-dailyreport")
 								this->NotificationAdminDailyReport = mkBoolFromStr(value);
 
-							if (param == "check-incomingrecipients")
-								this->EnableIncomingRcptCheck = mkBoolFromStr(value);
-
 							if (param == "scan-attachments")
 								this->EnableAttachmentDecoder = mkBoolFromStr(value);
 								
@@ -962,9 +958,6 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 			this->GWIAVersion = (unsigned int)
 				MF_ConfigReadInt(pConfigFile, iIntegerBase+35);
 
-			this->EnableIncomingRcptCheck = (bool)
-				MF_ConfigReadInt(pConfigFile, iIntegerBase+39);
-				
 			this->EnableAttachmentDecoder = (bool)
 				MF_ConfigReadInt(pConfigFile, iIntegerBase+41);
 				
@@ -1172,7 +1165,6 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 	fprintf(cfgFile,"/problemdir-maxage=%d\n", this->ProblemDirMaxAge);
 	fprintf(cfgFile,"/problemdir-maxsize=%d\n", this->ProblemDirMaxSize);
 
-	fprintf(cfgFile,"/check-incomingrecipients=%s\n",this->EnableIncomingRcptCheck == 0 ? "0" : "1");
 	fprintf(cfgFile,"/scan-attachments=%s\n",this->EnableAttachmentDecoder == 0 ? "0" : "1");
 	fprintf(cfgFile,"/scan-requireava=%s\n",this->RequireAVA == 0 ? "0" : "1");
 
