@@ -80,19 +80,29 @@ static bool outputMailList(HINTERNET hndl, int startPage)
 	szHttpPath = szScanPath;
 
 	MFD_Out(MFD_SOURCE_GENERIC,"NRM: have root: %s\n",szScanPath.c_str());
-	
-//	std::string::size_type iR = szHttpPath.find(":");
-//	while (std::string::size_type iR = szHttpPath.find(":"))
-//		szHttpPath.replace(iR, 1, "/");
 
-	MFD_Out(MFD_SOURCE_GENERIC,"NRM: still here\n");
+/*						pos = line.find("=");
+						if (pos != -1)
+						{
+							param = line.substr(1,pos-1);
+							if (line.size() > pos)
+								value = line.substr(pos+1);
+							else
+								value = "";
+*/							
 
-//	std::string::size_type iR = szHttpPath.find("\\");
-//	while (std::string::size_type iR = szHttpPath.find("\\"))
-//		szHttpPath.replace(iR, 1, "/");
+//	int pos = szHttpPath.find(":");
+	unsigned int pos;
+	while ((pos = szHttpPath.find(":")) != -1)
+		szHttpPath.replace(pos, 1, "/");
 
-	MFD_Out(MFD_SOURCE_GENERIC,"NRM: still here 2\n");
+	while ((pos = szHttpPath.find("\\")) != -1)
+		szHttpPath.replace(pos, 1, "/");
 
+	while ((pos = szHttpPath.find("//")) != -1)
+		szHttpPath.replace(pos, 2, "/");
+
+	MFD_Out(MFD_SOURCE_GENERIC,"NRM: still here with %s\n",szHttpPath.c_str());
 
 	iXDir dir(szScanPath.c_str());
 	dir.SkipDotFiles = true;
@@ -182,7 +192,7 @@ static bool outputMailList(HINTERNET hndl, int startPage)
 							szFileOut)
 							);
 
-					szLink = "<a href=\""; szLink+=e; szLink+="\">View E-Mail Source</a>";
+					szLink = "<a href=\"" + szHttpPath + e; szLink+="\">View E-Mail Source</a>";
 					DL_HttpSendData(hndl, strprintf("<tr bgcolor=\"#ffffff\"><td colspan=2></td><td>From:</td><td colspan=3>%s</td></tr>\n", m->szMailFrom));
 					DL_HttpSendData(hndl, strprintf("<tr bgcolor=\"#ffffff\"><td colspan=2></td><td>To:</td><td colspan=3>%s</td></tr>\n", m->szMailRcpt));
 					DL_HttpSendData(hndl, strprintf("<tr bgcolor=\"#ffffff\"><td colspan=2></td><td>Subject:</td><td colspan=3>%s</td></tr>\n", m->szMailSubject));
