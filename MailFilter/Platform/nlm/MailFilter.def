@@ -16,7 +16,8 @@ MODULE libc.nlm dsapi.nlm Clib.nlm netdb.nlm clxnlm32.nlm locnlm32.nlm calnlm32.
 #
 
 #
-IMPORT NWSSetFormRepaintFlag ReturnFileServerName NWIsNLMLoadedProtected
+IMPORT NWSSetFormRepaintFlag ReturnFileServerName nlmisloadedprotected
+# NWIsNLMLoadedProtected
 #
 
 #

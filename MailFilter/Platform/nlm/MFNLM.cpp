@@ -79,16 +79,22 @@ extern void MFWorker_SetupPaths();
 //
 //
 
-
+#ifndef __NOVELL_LIBC__
 extern "C" { 
 	extern int NWIsNLMLoadedProtected(void);
+	extern int nlmisloadedprotected (void);
 }
 
-bool mf_nlmisloadedprotected()
+inline bool mf_nlmisloadedprotected()
 {
-	return (bool)NWIsNLMLoadedProtected();
+	return (bool)nlmisloadedprotected();
 }
-
+#else
+inline bool mf_nlmisloadedprotected()
+{
+	return (bool)nlmisloadedprotected();
+}
+#endif
 
 
 //
