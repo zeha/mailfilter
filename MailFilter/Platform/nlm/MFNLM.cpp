@@ -26,7 +26,7 @@
 // Include MailFilter.h
 #include "..\..\Main\MailFilter.h"
 #include "MFZip.h"
-#include "MFBlacklist.h"
+#include "MFRelayHost.h++"
 // Include Version Header
 #include "..\..\Main\MFVersion.h"
 #include <sys/utsname.h>
@@ -206,8 +206,8 @@ void MF_NutHandlerKeyF6 (void *handle)		// Handler F6 = ShowDetails()
 	MF_StatusUI_UpdateLog("Wrote a test ZIP to SYS:\\System\\MailFlt.MFZ.");
 	
 	MF_StatusUI_UpdateLog("Note: DNBL-Test always uses bl.spamcop.net.");
-	MFBlacklist bl("bl.spamcop.net","127.0.0.2");
-	if (bl.Lookup("127.0.0.2"))
+	MFRelayHost bl("127.0.0.2"); //("bl.spamcop.net","127.0.0.2");
+	if (bl.LookupRBL_DNS("bl.spamcop.net","127.0.0.1"))
 		MF_StatusUI_UpdateLog("Test: 127.0.0.2 is blacklisted.");
 		else
 		MF_StatusUI_UpdateLog("Test: 127.0.0.2 is _not_ blacklisted.");
@@ -271,10 +271,17 @@ void MF_NutHandlerKeyF8 (void *handle)		// Handler to display release infos
 }
 
 
-void MF_NutHandlerKeyF9 (void *handle)		// Handler for debugging / future: re-read configuration
+void MF_NutHandlerKeyF9 (void *handle)		// Handler for configuration reread
 {
 	int rc = 0;
 	handle = handle;			// Keep compiler quiet.
+
+	MFT_NLM_Exiting = 254;
+	
+	MF_StatusText("Preparing to restart MailFilter/ax...");
+
+	// We need this to wake the UI thread up ...
+	NWSUngetKey ( K_ESCAPE , 0 , MF_NutInfo );
 
 	return;	// *** TODO ***
 }
@@ -1111,7 +1118,6 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 //	SetCurrentNameSpace (NW_NS_LONG);
 //	SetTargetNameSpace(LONGNameSpace);
 
-#ifndef _MF_CLEANBUILD
 	if (MFT_Verbose)
 	{
 #ifdef __NOVELL_LIBC__
@@ -1125,6 +1131,16 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		MFD_ScreenID = CreateScreen ( "MailFilter/ax Debug", DONT_AUTO_ACTIVATE | DONT_CHECK_CTRL_CHARS ); 	// | AUTO_DESTROY_SCREEN
 #endif
 	}
+
+#ifndef __NOVELL_LIBC__
+	// Register Event Handle for Shutdown
+	eventHandleShutDown = RegisterForEvent(EVENT_DOWN_SERVER,	eventShutDownReport,	eventShutDownWarn);
+	if(eventHandleShutDown == -1)
+	{
+		ConsolePrintf(MF_Msg(CONMSG_MAIN_ERRREGSHUTDOWNHANDLER));
+		goto MF_MAIN_TERMINATE;
+	}
+	SetAutoScreenDestructionMode(true);
 #endif
 
 
@@ -1143,20 +1159,9 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 	signal(	SIGTERM	, NLM_SignalHandler	);
 	signal(	SIGINT	, NLM_SignalHandler	);
 	
-#ifndef __NOVELL_LIBC__
-
-	// Register Event Handle for Shutdown
-	eventHandleShutDown = RegisterForEvent(EVENT_DOWN_SERVER,	eventShutDownReport,	eventShutDownWarn);
-	if(eventHandleShutDown == -1)
-	{
-		ConsolePrintf(MF_Msg(CONMSG_MAIN_ERRREGSHUTDOWNHANDLER));
-		goto MF_MAIN_TERMINATE;
-	}
 
 	// Init NWSNut
 	printf(MF_Msg(MSG_BOOT_USERINTERFACE));
-	SetAutoScreenDestructionMode(true);
-#endif
 
 	if (!MF_NutInit())
 		goto MF_MAIN_TERMINATE;
@@ -1165,137 +1170,187 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 	if (!MF_NLM_InitDS())
 		goto MF_MAIN_TERMINATE;
 	
-	MFD_Out(MFD_SOURCE_GENERIC,"Initializing Logging...\n");
-
-	// Init Status
-	if (!MF_StatusInit())
-		goto MF_MAIN_TERMINATE;
-
-	MFD_Out(MFD_SOURCE_GENERIC,"Starting Worker Thread...\n");
-
-
+MF_MAIN_RUNLOOP:
 	{
-		char szStatusMsg[82];
-#ifndef __NOVELL_LIBC__
-		struct utsname un;
-		//NETWARE_PRODUCT_VERSION version;
-//		NWCONN connnum;
-		
-		MFD_Out(MFD_SOURCE_GENERIC,"This is LEGACY MailFilter/ax!\n");
-		MF_StatusText("MailFilter/ax compiled for NetWare 5.0, 5.1SP5");
+		// needed for mf restart
+		MFT_NLM_Exiting = 0;
 
-//		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-//		NWGetConnectionNumber( (NWCONN_HANDLE)MFT_NLM_Connection_HandleCLIB, &connnum );
-		
-		
-		uname(&un);
-		
-		sprintf(szStatusMsg,"Operating System: Novell NetWare %s.%s",un.release,un.version);
+		MFD_Out(MFD_SOURCE_GENERIC,"Initializing Logging...\n");
 
-/*		MFD_Out(MFD_SOURCE_GENERIC,"nwgetnetwareproductversion returned: %d,errno is: %d\n",NWGetNetWareProductVersion(MFT_NLM_DS_Context,&version),errno);
-		sprintf(szStatusMsg,"Novell NetWare OS: %u.%u.%u", version.majorVersion,
-													version.minorVersion,
-													version.revision );			*/
-		MF_StatusText(szStatusMsg);
-		
-#else
-		MFD_Out(MFD_SOURCE_GENERIC,"This is LIBC MailFilter/ax!\n");
-		MF_StatusText("MailFilter/ax compiled for NetWare 5.1SP6/6.0SP3/6.5");
+		// Init Status
+		if (!MF_StatusInit())
+			goto MF_MAIN_TERMINATE;
 
-		struct utsname u;
-		uname(&u);
+		MFD_Out(MFD_SOURCE_GENERIC,"Starting Worker Thread...\n");
 
-		sprintf(szStatusMsg,"Operating System: Novell NetWare %d.%d.%d",
-				u.netware_major,
-				u.netware_minor,
-				u.servicepack);
-		MF_StatusText(szStatusMsg);
 
-#endif
-    }
-    
-	// Start Thread: ** WORK **
-	MF_StatusUI_Update(MSG_BOOT_LOADING);
-#ifdef __NOVELL_LIBC__
-	NXContext_t ctx;
-//	int threaderror = 0;
+		{
+			char szStatusMsg[82];
+	#ifndef __NOVELL_LIBC__
+			struct utsname un;
+			//NETWARE_PRODUCT_VERSION version;
+	//		NWCONN connnum;
+			
+			MFD_Out(MFD_SOURCE_GENERIC,"This is LEGACY MailFilter/ax!\n");
+			MF_StatusText("MailFilter/ax compiled for NetWare 5.0, 5.1SP5");
 
-/*	NX_THREAD_CREATE ( MF_Work_Startup , 
-		NX_THR_JOINABLE|NX_THR_BIND_CONTEXT ,
-		NULL,
-		cntxt,
-		MF_Thread_Work,
-		threaderror);
-	if (threaderror) */
+	//		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
+	//		NWGetConnectionNumber( (NWCONN_HANDLE)MFT_NLM_Connection_HandleCLIB, &connnum );
+			
+			
+			uname(&un);
+			
+			sprintf(szStatusMsg,"Operating System: Novell NetWare %s.%s",un.release,un.version);
 
-	if (NXThreadCreateSx( MF_Work_Startup , 
-		NULL,
-		NX_THR_JOINABLE|NX_THR_BIND_CONTEXT,
-		&ctx, 
-		&MF_Thread_Work
-		))
-#else
-	MF_Thread_Work = BeginThread(MF_Work_Startup,NULL,2*65536,NULL);						// Set 64k Stack for new thread
-	if( MF_Thread_Work == EFAILURE )
-#endif
-	{
-		ConsolePrintf(MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
-		MF_Thread_Work = 0;
-		goto MF_MAIN_TERMINATE;
-	}
-		
-		/*
-#ifndef _MF_CLEANBUILD
-	MFD_Out("Starting SMTP Thread...\n");
+	/*		MFD_Out(MFD_SOURCE_GENERIC,"nwgetnetwareproductversion returned: %d,errno is: %d\n",NWGetNetWareProductVersion(MFT_NLM_DS_Context,&version),errno);
+			sprintf(szStatusMsg,"Novell NetWare OS: %u.%u.%u", version.majorVersion,
+														version.minorVersion,
+														version.revision );			*/
+			MF_StatusText(szStatusMsg);
+			
+	#else
+			MFD_Out(MFD_SOURCE_GENERIC,"This is LIBC MailFilter/ax!\n");
+			MF_StatusText("MailFilter/ax compiled for NetWare 5.1SP6/6.0SP3/6.5");
 
-	// SMTP is enabled only in debug mode as this is not yet released.
-	if (MFT_Debug)
-	{
-		// Start Thread: ** SMTP **
-		MF_Thread_SMTP = BeginThread(MF_SMTP_Startup,NULL,65536,NULL);			// Set 64k Stack for new thread
-		if( MF_Thread_SMTP == EFAILURE )
+			struct utsname u;
+			uname(&u);
+
+			sprintf(szStatusMsg,"Operating System: Novell NetWare %d.%d.%d",
+					u.netware_major,
+					u.netware_minor,
+					u.servicepack);
+			MF_StatusText(szStatusMsg);
+
+	#endif
+	    }
+	    
+		// Start Thread: ** WORK **
+		MF_StatusUI_Update(MSG_BOOT_LOADING);
+	#ifdef __NOVELL_LIBC__
+		NXContext_t ctx;
+	//	int threaderror = 0;
+
+	/*	NX_THREAD_CREATE ( MF_Work_Startup , 
+			NX_THR_JOINABLE|NX_THR_BIND_CONTEXT ,
+			NULL,
+			cntxt,
+			MF_Thread_Work,
+			threaderror);
+		if (threaderror) */
+
+		if (NXThreadCreateSx( MF_Work_Startup , 
+			NULL,
+			NX_THR_JOINABLE|NX_THR_BIND_CONTEXT,
+			&ctx, 
+			&MF_Thread_Work
+			))
+	#else
+		MF_Thread_Work = BeginThread(MF_Work_Startup,NULL,2*65536,NULL);						// Set 64k Stack for new thread
+		if( MF_Thread_Work == EFAILURE )
+	#endif
 		{
 			ConsolePrintf(MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
-			MF_Thread_SMTP = 0;
+			MF_Thread_Work = 0;
 			goto MF_MAIN_TERMINATE;
 		}
-	}
-#endif
-	*/
-	
-	// Switch Back to System Console ...
-	ActivateScreen (SystemConsole);
-
-	// Allow a Thread Switch to occour
-	ThreadSwitch();
-
-	// Lie that we've already exited ...
-	MFT_NLM_ThreadCount--;
-
-	// 
-	LONG tmp_Key_Type;
-	BYTE tmp_Key_Value;
-
-	MF_StatusUI_Update(MSG_BOOT_COMPLETE);
-	MFD_Out(MFD_SOURCE_GENERIC,"Startup Complete.\n");
-
-
-	// Don't exit thread until all other threads are terminated ...
-	while (MFT_NLM_ThreadCount>0)
-	{
-		if (MFT_NLM_Exiting > 0)
-			break;
-
 			
-		if (MFT_NUT_GetKey)
-			NWSGetKey (
-				&tmp_Key_Type,
-				&tmp_Key_Value,
-				MF_NutInfo
-				);
-//			SuspendThread(GetThreadID());		
+			/*
+	#ifndef _MF_CLEANBUILD
+		MFD_Out("Starting SMTP Thread...\n");
+
+		// SMTP is enabled only in debug mode as this is not yet released.
+		if (MFT_Debug)
+		{
+			// Start Thread: ** SMTP **
+			MF_Thread_SMTP = BeginThread(MF_SMTP_Startup,NULL,65536,NULL);			// Set 64k Stack for new thread
+			if( MF_Thread_SMTP == EFAILURE )
+			{
+				ConsolePrintf(MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
+				MF_Thread_SMTP = 0;
+				goto MF_MAIN_TERMINATE;
+			}
+		}
+	#endif
+		*/
 		
+		// Switch Back to System Console ...
+		ActivateScreen (SystemConsole);
+
+		// Allow a Thread Switch to occour
 		ThreadSwitch();
+
+		// Lie that we've already exited ...
+		MFT_NLM_ThreadCount--;
+
+		// 
+		LONG tmp_Key_Type;
+		BYTE tmp_Key_Value;
+
+		MF_StatusUI_Update(MSG_BOOT_COMPLETE);
+		MFD_Out(MFD_SOURCE_GENERIC,"Startup Complete.\n");
+
+
+		// Don't exit thread until all other threads are terminated ...
+		while (MFT_NLM_ThreadCount>0)
+		{
+			if (MFT_NLM_Exiting > 0)
+				break;
+
+				
+			if (MFT_NUT_GetKey)
+				NWSGetKey (
+					&tmp_Key_Type,
+					&tmp_Key_Value,
+					MF_NutInfo
+					);
+	//			SuspendThread(GetThreadID());		
+			
+			ThreadSwitch();
+		}
+		
+		if (MFT_NLM_Exiting == 254)
+		{
+MFD_Out(MFD_SOURCE_GENERIC,"MFNLM: MF Restart detected");
+#ifndef __NOVELL_LIBC__
+			if (MF_Thread_Work > 0)
+				ResumeThread(MF_Thread_Work);
+
+			if (MF_Thread_SMTP > 0)
+				ResumeThread(MF_Thread_SMTP);
+#else
+			if (MF_Thread_Work > 0)
+				NXThreadContinue (MF_Thread_Work);
+
+			if (MF_Thread_SMTP > 0)
+				NXThreadContinue (MF_Thread_SMTP);
+#endif
+
+			MF_StatusText("RESTART IN PROGRESS");
+
+			// wait for other threads to exit
+			// we lied above, anyway.
+			while (MFT_NLM_ThreadCount > 0)
+				NXThreadYield();
+			
+			MFT_NLM_Exiting = 0;
+			
+			// ok... here we go:
+			
+			// * reinit config
+			// Read Configuration from File
+			if (!MF_GlobalConfiguration.ReadFromFile(""))
+			{
+				consoleprintf("MAILFILTER: Restart failed\n");
+				consoleprintf("            Configuration Module reported an unrecoverable error.\n");
+				goto MF_MAIN_TERMINATE;
+			}
+				
+			// increase thread count so we can decrease it above again.
+			MFT_NLM_ThreadCount++;
+
+			goto MF_MAIN_RUNLOOP;
+		}
+
 	}
 
 //	ExitThread(TSR_THREAD,0);

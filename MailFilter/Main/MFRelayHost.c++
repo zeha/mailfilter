@@ -100,11 +100,10 @@ int MFRelayHost::LookupRBL_DNS(std::string holeZone, std::string validResult)
 			host_ipaddress.S_un.S_un_b.s_b1,
 			holeZone.c_str());
 
-	MFD_Out(MFD_SOURCE_SMTP,"Blackhole check for %s\n",fullHost);
 	he = gethostbyname(fullHost);
 	if (!he)
 	{	
-		MFD_Out(MFD_SOURCE_SMTP,"Blacklist result: %d\n",h_errno);
+		MFD_Out(MFD_SOURCE_SMTP,"Blackhole check %s result: %d\n",fullHost,h_errno);
 		rc = 0;
 	} else {
 	

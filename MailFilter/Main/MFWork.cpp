@@ -1188,7 +1188,6 @@ MFD_Out(MFD_SOURCE_RULE,"%s, %s\n",holeZone,validResponse);
 				validResponse[0] = 0;
 				validResponse++;
 			}
-MFD_Out(MFD_SOURCE_RULE,"%s, %s\n",holeZone,validResponse);
 					
 			bOverrideErrorMessage = true;
 			szFieldDescription = (char*)_mfd_malloc(1001,"szFieldDescription");
@@ -1539,77 +1538,6 @@ int MF_MoveFileToDir(const char *fileIn, const char *destDir, int beVerbose)
 	_mfd_free(workingFile,"MoveFile2Dir");
 	return rc;
 }
-
-/*
-
-//
-// Frees the FilterList-Cache
-//
-void MF_Filter_FreeLists()
-{
-}
-
-//
-// Init the Cache (Subject and Attachment Scan)
-//
-bool MF_Filter_InitLists()
-{
-	FILE* cfgFile;
-	long rc1;
-	long rc2;
-	char szTemp[1002];
-	int curItem=0;
-	int curFilter=0;
-	int curPos=-1;
-	int curChr = 0;
-#ifdef _MAILFILTER_WITH_POSIX_REGEXP_H
-	regex_t re;
-#endif
-#ifdef _MAIFILTER_WITH_REGEXP_H
-	pcre *re;
-#endif
-
-
-	// version 8
-	
-	// here we go again ...
-
-	cfgFile = fopen(MF_GlobalConfiguration.config_file.c_str(),"rb");
-	fseek(cfgFile,4000,SEEK_SET);
-
-	for (curItem = 0; curItem<MailFilter_MaxFilters; curItem++)
-	{
-		MFC_Filters[curItem].matchfield = (char)fgetc(cfgFile);
-		MFC_Filters[curItem].notify = (char)fgetc(cfgFile);
-		MFC_Filters[curItem].type = (char)fgetc(cfgFile);
-		MFC_Filters[curItem].action = (char)fgetc(cfgFile);
-		MFC_Filters[curItem].enabled = (char)fgetc(cfgFile);
-		MFC_Filters[curItem].enabledIncoming = (char)fgetc(cfgFile);
-		MFC_Filters[curItem].enabledOutgoing = (char)fgetc(cfgFile);
-		
-		rc1 = (long)fread(szTemp,sizeof(char),1000,cfgFile);
-		fseek(cfgFile,((int)(strlen(szTemp)))-rc1+1,SEEK_CUR);
-		
-		if (strlen(szTemp) > 0) strncpy(MFC_Filters[curItem].expression,szTemp,strlen(szTemp)+1);
-			else MFC_Filters[curItem].expression[0]=0;		
-
-		rc2 = (long)fread(szTemp,sizeof(char),1000,cfgFile);
-		fseek(cfgFile,((int)(strlen(szTemp)))-rc2+1,SEEK_CUR);
-
-		if (strlen(szTemp) > 0) strncpy(MFC_Filters[curItem].name,szTemp,strlen(szTemp)+1);
-			else MFC_Filters[curItem].name[0]=0;
-
-		if (MFC_Filters[curItem].expression[0]==0)
-			break;
-
-	}
-
-	fclose(cfgFile);
-	
-	return true;
-
-}
-	   */
 	   
 static int MFVS_PassMailToVirusScan(MailFilter_MailData* m)//const char* fileName, const char* fileIn, const char* fileOut, char* szScanDir)
 {
@@ -2046,18 +1974,39 @@ if ( feof(mailFile) )
 				/* also copy the (last) received: from header over */
 				if ( ( memicmp(szScanBuffer,"received: from ",15) == 0 ) && ((!m->bHaveReceivedFrom) || (MF_GlobalConfiguration.EnablePFAFunctionality)) )
 				{
-
-					strncpy(szCmpBuffer,szScanBuffer+15,60);
+//TODO
+					// look for ip first
+					// "agw.kmsv.de (asdf [213.69.145.18])"
+					bool bFound = false;
+					int iPos = 15;	// 15 = len("received from")
+					// find [
+					for (; iPos < 245; iPos++)
+					{
+						if (szScanBuffer[iPos] == '[')
+						{
+							++iPos;
+							bFound = true;
+							break;
+						}
+					}
+	
+					if (!bFound)
+						iPos = 15; 		// ok, we didn't find an ip in [brackets], but we still can try the
+										// reported name.
+					
+					// copy next 60 chars
+					strncpy(szCmpBuffer,szScanBuffer+iPos,60);
 					szCmpBuffer[59] = 0;
 
+					// find ] and terminate string there.
 					iFirstNonSpaceCharacter = 0;
 					while ( szCmpBuffer[iFirstNonSpaceCharacter] != 0 )
 					{
 						if ( 
+							(szCmpBuffer[iFirstNonSpaceCharacter] == ']') ||
+							(szCmpBuffer[iFirstNonSpaceCharacter] == ')') ||
 							(iscntrl(szCmpBuffer[iFirstNonSpaceCharacter])) || 
-							(isspace(szCmpBuffer[iFirstNonSpaceCharacter])) ||
-							(szCmpBuffer[iFirstNonSpaceCharacter] == '(') ||
-							(szCmpBuffer[iFirstNonSpaceCharacter] == '[')
+							(isspace(szCmpBuffer[iFirstNonSpaceCharacter]))
 							)
 						{
 							szCmpBuffer[iFirstNonSpaceCharacter] = 0;
@@ -4670,7 +4619,8 @@ MFD_Out(MFD_SOURCE_WORKER,"Check %s\n", MFT_GWIA_RecvDirIn);
 
 		// Defragment Memory.
 #ifdef N_PLAT_NLM
-		//NWGarbageCollect ( MF_NLMHandle );
+		NWGarbageCollect ( MF_NLMHandle );
+		NWGarbageCollect ( MF_NLMHandle );
 #endif
 
 
