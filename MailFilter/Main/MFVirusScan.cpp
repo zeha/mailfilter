@@ -95,7 +95,7 @@ long MFVS_CheckZIPFile(const char* szAttFile, std::string szZipFilename, MailFil
 				// try to extract the file.
 				char szAttFile[MAX_PATH]; sprintf(szAttFile,"%s%i.att",m->szScanDirectory,m->iNumOfAttachments+1);
 				bytes = unzip.ExtractFile(att->name,szAttFile);
-				if (bytes>0)
+				if (bytes>=0)
 				{
 					m->iNumOfAttachments++;
 					m->iTotalAttachmentSize += bytes;

@@ -8,6 +8,7 @@ del filteredit.exe
 del mffilterice.exe
 del mfinstallwizard.exe
 del minimfw32.exe
+del minimfw32-d.exe
 del *.lib
 del *.log
 pause
