@@ -34,11 +34,12 @@
 #include "MFRelayHost.h++"
 #include "MFConfig.h++"
 
-
 #include <sys/utsname.h>
 
 #ifdef __NOVELL_LIBC__
 	#include <nks/netware.h>
+	#include <nks/dirio.h>
+	#include <client.h>
 #endif
 
 
@@ -261,7 +262,7 @@ bool MF_NutInit(void)
 		/*	version				*/	(long)-1,
 		/*	headerType			*/	NO_HEADER,	//SMALL_HEADER,
 		/*	compatibilityType	*/	NUT_REVISION_LEVEL,
-#ifdef __NOVELL_LIBC__		
+#ifdef __NOVELL_LIBC__
 		/*	messageTable		*/	(char **)programMesgTable,
 #else
 		/*	messageTable		*/	(unsigned char **)programMesgTable,
@@ -816,10 +817,59 @@ static void LoadNRMThreadStartup(void *dummy)
 	MailFilter_Main_RunAppNRM();
 }
 
-static int MailFilterApp_Server_LoginToServer()
+static NXPathCtx_t	MFT_PathCtxt_ServerConnection = 0;
+static NXPathCtx_t	MFT_PathCtxt_UserConnection = 0;
+static int			MFT_ServerIdentity = 0;
+
+
+static bool MailFilterApp_Server_LoginToServer()
 {	
+	int            err; 
+	 
+	err = create_identity ("ICC", "cn=MailFilter.ou=System.o=ICC", "mf", NULL, XPORT_WILD|USERNAME_ASCII, &MFT_ServerIdentity);
+	if (err)
+	{
+		printf(" * Details: create_identity failed with rc=%d, errno: %d\n",err,errno);
+		return false;
+	}
+
+	err = NXCreatePathContext(0, "SYS:", NX_PNF_DEFAULT, NULL, &MFT_PathCtxt_ServerConnection);
+	if (err)	return false;
+
+	err = NXCreatePathContext(0, "SYS:", NX_PNF_DEFAULT, (void *) MFT_ServerIdentity, &MFT_PathCtxt_UserConnection);
+	if (err)	return false;
+
 	return true;
 }
+
+bool MailFilterApp_Server_SelectServerConnection()
+{
+	int err = setcwd(MFT_PathCtxt_ServerConnection);
+	if (err)	return false;
+	
+	return true;
+}
+
+bool MailFilterApp_Server_SelectUserConnection()
+{
+	int err = setcwd(MFT_PathCtxt_UserConnection);
+	if (err)	return false;
+	
+	return true;
+}
+
+static bool MailFilterApp_Server_LogoutFromServer()
+{
+	NXFreePathContext(MFT_PathCtxt_ServerConnection);
+	MFT_PathCtxt_ServerConnection = 0;
+	
+	NXFreePathContext(MFT_PathCtxt_UserConnection);
+	MFT_PathCtxt_UserConnection = 0;
+	
+	delete_identity(MFT_ServerIdentity);
+	return true;
+}
+
 
 //
 //
@@ -843,6 +893,12 @@ static int MailFilter_Main_RunAppServer()
 	if (!MailFilterApp_Server_LoginToServer())
 	{
 		MF_DisplayCriticalError("MAILFILTER: Error logging into the Server. Terminating!\n");
+		goto MF_MAIN_TERMINATE;
+	}
+	
+	if (!MailFilterApp_Server_SelectUserConnection())
+	{
+		MF_DisplayCriticalError("MAILFILTER: Error selecting server connection. Terminating!\n");
 		goto MF_MAIN_TERMINATE;
 	}
 	
@@ -1097,7 +1153,7 @@ MF_MAIN_RUNLOOP:
 	}
 
 MF_MAIN_TERMINATE:
-	MF_DisplayCriticalError("-->terminating!\n");
+	MailFilterApp_Server_LogoutFromServer();
 
 	return 0;
 }

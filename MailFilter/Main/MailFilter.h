@@ -552,6 +552,10 @@ void MF_CheckProblemDirAgeSize();
 bool MF_NutInit(void);
 bool MF_NutDeinit(void);
 
+bool MailFilterApp_Server_SelectServerConnection();
+bool MailFilterApp_Server_SelectUserConnection();
+
+
 extern "C" {
 	void MF_DisplayCriticalError(const char* format, ...);
 }

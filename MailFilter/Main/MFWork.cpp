@@ -3855,6 +3855,14 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 		MF_StatusCycleLog();
 		if (tlc < 11)
 		{
+
+			if (!MailFilterApp_Server_SelectServerConnection())
+			{
+				MF_DisplayCriticalError("MAILFILTER: Error selecting server connection. Terminating!\n");
+				shallTerminate = 255;
+				break;
+			}
+
 			// check if the user has a blocked lic. dont run then!
 			if (!MF_GoOn()) {
 					lc=0;
@@ -3920,6 +3928,14 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 					free(mfroot);
 				}
 			}
+
+			if (!MailFilterApp_Server_SelectUserConnection())
+			{
+				MF_DisplayCriticalError("MAILFILTER: Error selecting server-2 connection. Terminating!\n");
+				shallTerminate = 255;
+				break;
+			}
+
 		}
 
 #if defined(N_PLAT_NLM) && !defined(__NOVELL_LIBC__)
