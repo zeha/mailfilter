@@ -113,3 +113,5 @@
 #define MSG_PATH_GWIA                            0x006d
 #define MSG_PATH_MFLT                            0x006e
 #define MSG_VIEW_MAILFILE_HEADER                 0x006f
+#define EDIT_UTIL_IMPORTFILE_CLEARLIST           0x0070
+

@@ -97,7 +97,7 @@ extern "C" {
 
 bool mf_nlmisloadedprotected()
 {
-	return NWIsNLMLoadedProtected();
+	return (bool)NWIsNLMLoadedProtected();
 }
 
 

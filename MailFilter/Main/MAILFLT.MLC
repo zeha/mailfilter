@@ -117,6 +117,8 @@ char *programMesgTable[] =
 	// restore app
 	"GWIA:",
 	"MFLT:",
-	"View File (truncated by 8kB)"
+	"View File (truncated by 8kB)",
+	// others
+	"Delete previous filter rules?"
 };
 // UpTime:   0 Days  9 Hrs 38 Mins

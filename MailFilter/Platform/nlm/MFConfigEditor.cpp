@@ -598,7 +598,9 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 			NWSDisplayErrorText ( ERROR_FILE_NOT_FOUND , NUT_SEVERITY_FATAL , MF_NutInfo , szTemp );
 			
 		} else {
-		
+			//
+			// ask if we should import the notification settings too
+			//
 			rc = NWSConfirm (
 				      EDIT_UTIL_IMPORTFILE_ASKNOTIFICATION,
 				      10,
@@ -614,79 +616,77 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 				overrideNotify = true;
 			if (rc == 1)
 				overrideNotify = false;
+		
+			//
+			// ask if we should zap out the old filter list
+			// before importing the new one
+			// 
+			rc = NWSConfirm (
+				      EDIT_UTIL_IMPORTFILE_CLEARLIST,
+				      10,
+				      12,
+				      0,	// default = no
+				      NULL,	//int       (*action) (         int    option,          void  *parameter),
+				      MF_NutInfo,
+				      NULL	//       void     * actionParameter
+				      );
+			
+			if (rc == -1)
+				return;
+			if (rc == 1)
+			{
+				MF_GlobalConfiguration.filterList.clear();
+			}
+			
+			//
+			// let's go!
+			//
 			
 			NWSStartWait(0,0,MF_NutInfo);
+			ActivateScreen(MFD_ScreenID);
 		
 			fImp = fopen(szTemp,"rb");
 			fseek(fImp, 54, SEEK_SET);
-
+			
+			fgetc(fImp);
 			while (!feof(fImp))
 			{
-				MailFilter_Configuration::Filter flt; // = new MailFilter_Configuration::Filter();
+				fseek(fImp,-1,SEEK_CUR);
 				
-				flt.matchfield = (MailFilter_Configuration::FilterField)(fgetc(fImp));
-				flt.notify = (MailFilter_Configuration::Notification)(fgetc(fImp));
-				flt.type = (MailFilter_Configuration::FilterType)(fgetc(fImp));
-				flt.action = (MailFilter_Configuration::FilterAction)(fgetc(fImp));
-				flt.enabled = (bool)(fgetc(fImp));
-				flt.enabledIncoming = (bool)(fgetc(fImp));
-				flt.enabledOutgoing = (bool)(fgetc(fImp));
+				MailFilter_Configuration::Filter *flt = new MailFilter_Configuration::Filter();
+				
+				flt->matchfield = (MailFilter_Configuration::FilterField)(fgetc(fImp));
+				flt->notify = (MailFilter_Configuration::Notification)(fgetc(fImp));
+				flt->type = (MailFilter_Configuration::FilterType)(fgetc(fImp));
+				flt->action = (MailFilter_Configuration::FilterAction)(fgetc(fImp));
+				flt->enabled = (bool)(fgetc(fImp));
+				flt->enabledIncoming = (bool)(fgetc(fImp));
+				flt->enabledOutgoing = (bool)(fgetc(fImp));
 				
 				if (overrideNotify == true)
-					flt.notify = (MailFilter_Configuration::Notification)defaultNotify;
+					flt->notify = (MailFilter_Configuration::Notification)defaultNotify;
 
 				rc = (long)fread(szTemp,sizeof(char),1000,fImp);
 				fseek(fImp,((int)(strlen(szTemp)))-rc+1,SEEK_CUR);
 				
-				if (strlen(szTemp) > 0) flt.expression = szTemp;
+				if (strlen(szTemp) > 0) flt->expression = szTemp;
 
 				rc = (long)fread(szTemp,sizeof(char),1000,fImp);
 				fseek(fImp,((int)(strlen(szTemp)))-rc+1,SEEK_CUR);
 
-				if (strlen(szTemp) > 0) flt.name = szTemp;
+				if (strlen(szTemp) > 0) flt->name = szTemp;
 				
-				if (flt.expression == "")
+				if (flt->expression == "")
 				{
 					break;
 				}
 				
-				MF_GlobalConfiguration.filterList.push_back(flt);
-			
-/*				MFC_Filters[curItem].matchfield = (char)fgetc(fImp);
-				MFC_Filters[curItem].notify = (char)fgetc(fImp);
-				MFC_Filters[curItem].type = (char)fgetc(fImp);
-				MFC_Filters[curItem].action = (char)fgetc(fImp);
-				MFC_Filters[curItem].enabled = (char)fgetc(fImp);
-				MFC_Filters[curItem].enabledIncoming = (char)fgetc(fImp);
-				MFC_Filters[curItem].enabledOutgoing = (char)fgetc(fImp);
+				MF_GlobalConfiguration.filterList.push_back(*flt);
 				
-				if (overrideNotify == true)
-					MFC_Filters[curItem].notify = defaultNotify;
-				
-				rc = (long)fread(szTemp,sizeof(char),500,fImp);
-				fseek(fImp,((int)(strlen(szTemp)))-rc+1,SEEK_CUR);
-				
-				if (strlen(szTemp) > 0) strncpy(MFC_Filters[curItem].expression,szTemp,strlen(szTemp)+1);
-					else MFC_Filters[curItem].expression[0]=0;		
-
-				rc = (long)fread(szTemp,sizeof(char),60,fImp);
-				fseek(fImp,((int)(strlen(szTemp)))-rc+1,SEEK_CUR);
-
-				if (strlen(szTemp) > 0) strncpy(MFC_Filters[curItem].name,szTemp,strlen(szTemp)+1);
-					else MFC_Filters[curItem].name[0]=0;
-				
-				if (MFC_Filters[curItem].expression[0]==0)
-					break;
-*/
-//				cI = (int*)malloc(sizeof(int));
-//				*cI = curItem;
-//				NWSAppendToList((_MF_NUTCHAR)MFC_Filters[curItem].expression, cI, MF_NutInfo);
-//
-//				curItem++;
-
+				fgetc(fImp);
 
 				szTemp[0] = ' '; szTemp[1] = ' ';
-				switch (flt.matchfield)
+				switch (flt->matchfield)
 				{
 				case MAILFILTER_MATCHFIELD_ALWAYS:
 					szTemp[0] = '*';	break;
@@ -712,16 +712,14 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 					szTemp[0] = '?';	break;
 				}
 				
-				if (flt.type == MAILFILTER_MATCHTYPE_NOMATCH)
+				if (flt->type == MAILFILTER_MATCHTYPE_NOMATCH)
 				{
 					szTemp[1] = '!';
 				}
 				
-				strncpy(szTemp+2,flt.expression.c_str(),70);
-				NWSAppendToList((_MF_NUTCHAR)szTemp, &flt, MF_NutInfo);
+				strncpy(szTemp+2,flt->expression.c_str(),70);
+				NWSAppendToList((_MF_NUTCHAR)szTemp, flt, MF_NutInfo);
 
-//				curItem++;
-//ConsolePrintf("Imported %d: %s\n",curItem,szTemp);
 			}
 			
 			fclose(fImp);
@@ -729,9 +727,7 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 			NWSEndWait(MF_NutInfo);
 			
 			NWSUngetKey(UGK_SPECIAL_KEY,UGK_REFRESH_KEY,MF_NutInfo);
-/*			NWSUngetKey(UGK_NORMAL_KEY,UGK_ESCAPE_KEY,nutHandle);
-			NWSUngetKey(UGK_NORMAL_KEY,UGK_ENTER_KEY,nutHandle);
-*/		}
+		}
 		
 	
 	} else return;
