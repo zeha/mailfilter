@@ -672,7 +672,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 			iResult = 1;
 			break;
 		case MailFilter_Configuration::email:
-//			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL)) break;
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::email)) continue;
 			szFieldDescription = "E-Mail address";
 
 			if (m->szMailFrom[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailFrom);		szFieldDescription = "Sender's E-Mail";	}
@@ -682,7 +682,8 @@ int MF_RuleExec( MailFilter_MailData* m )
 
 			break;
 		case MailFilter_Configuration::emailBothAndCC:
-//			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL)) break;
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::emailBothAndCC)) break;
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::email)) break;
 			szFieldDescription = "E-Mail address";
 
 			if (m->szMailFrom[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailFrom);		szFieldDescription = "Sender's E-Mail";	}
@@ -693,7 +694,9 @@ int MF_RuleExec( MailFilter_MailData* m )
 
 			break;
 		case MailFilter_Configuration::emailFrom:
-//			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL_FROM)) break;
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::emailFrom)) break;
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::emailBothAndCC)) break;
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::email)) break;
 			szFieldDescription = "Sender's E-Mail";
 
 			if (m->szMailFrom[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailFrom);		}
@@ -701,7 +704,9 @@ int MF_RuleExec( MailFilter_MailData* m )
 
 			break;
 		case MailFilter_Configuration::emailTo:
-//			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL_TO)) break;
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::emailTo)) break;
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::emailBothAndCC)) break;
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::email)) break;
 			szFieldDescription = "Recipients's E-Mail";
 
 			if (m->szMailRcpt[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailRcpt);		}
@@ -709,7 +714,9 @@ int MF_RuleExec( MailFilter_MailData* m )
 
 			break;
 		case MailFilter_Configuration::emailToAndCC:
-//			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL_TO)) break;
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::emailToAndCC)) break;
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::emailBothAndCC)) break;
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::email)) break;
 			szFieldDescription = "Recipients's E-Mail";
 
 			if (m->szMailRcpt[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailRcpt);		}
@@ -719,7 +726,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 			break;
 		case MailFilter_Configuration::subject:
 //MFD_Out("S");
-//			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_SUBJECT)) break;
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::subject)) break;
 			szFieldDescription = "Subject";
 
 			if (m->szMailSubject[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailSubject);		}
@@ -727,7 +734,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 			break;
 		case MailFilter_Configuration::size:
 //MFD_Out("Z");
-//			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_SIZE)) break;
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::size)) break;
 			szFieldDescription = "Mail Size";
 			lVal = 0;
 			lVal = atol(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str()+1);
@@ -741,6 +748,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 				
 			break;
 		case MailFilter_Configuration::attachment:
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::attachment)) break;
 			att = m->lstAttachments->GetFirst();
 			while (att != NULL)
 			{
@@ -756,6 +764,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 			}
 			break;
 		case MailFilter_Configuration::archiveContentName:
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::archiveContentName)) break;
 			bool bIsEncryptedCheck = (MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression == "<encrypted file>");
 			att = m->lstArchiveContents->GetFirst();
 			while (att != NULL)
@@ -777,6 +786,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 			}
 			break;
 		case MailFilter_Configuration::archiveContentCount:
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::archiveContentCount)) break;
 			int cmpCount = atoi(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str());
 			int effectiveCount = 0;
 			att = m->lstArchiveContents->GetFirst();
@@ -796,6 +806,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 
 			break;
 		case MailFilter_Configuration::blacklist:
+			if (chkFlag(iIgnoreFields,MailFilter_Configuration::blacklist)) break;
 		
 			char* holeZone = _mfd_strdup(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),"holeZone");
 			char* validResponse = strchr(holeZone,':');
@@ -894,59 +905,61 @@ int MF_RuleExec( MailFilter_MailData* m )
 			break;
 		}
 		
-//MFD_Out("%i",iResult);
 		if (iResult != 2)
 		{
 		
-		if (iResult == 0)
-		{	// no match
-    		// if this is a NO match rule, then the filter applies and we break the cycle...
-			if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
-			{
-				iResult = 1;
-			}
-				    	
-		} else {
-			// Match Applies.
-    		// if this is a NO match rule, then the filter DOES NOT apply
-			if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
-			{
+			if (iResult == 0)
+			{	// no match
+	    		// if this is a NO match rule, then the filter applies and we break the cycle...
+				if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
+				{
+					iResult = 1;
+				}
+					    	
+			} else {
+				// Match Applies.
+	    		// if this is a NO match rule, then the filter DOES NOT apply
+				if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
+				{
 					iResult=0;
+				}
 			}
-		}
 
-		if (iResult)
-		{
-			if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_COPY)
+			if (iResult)
+				MFD_Out(MFD_SOURCE_RULE,"%i -> %i [%i] [\"%s\"]\n",curItem,iResult,MF_GlobalConfiguration.filterList[(unsigned int)curItem].type,MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str());
+
+			if (iResult)
 			{
-				m->bCopy = true;
-				iResult = 0;
-				m->lstCopies->AddValueChar("", MF_GlobalConfiguration.filterList[(unsigned int)curItem].name.c_str());
-				
+				if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_COPY)
+				{
+					m->bCopy = true;
+					iResult = 0;
+					m->lstCopies->AddValueChar("", MF_GlobalConfiguration.filterList[(unsigned int)curItem].name.c_str());
+					
+				}
+				if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_SCHEDULE)
+				{
+					m->bSchedule = true;
+					iResult = 0;
+				}
+				if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_NOSCHEDULE)
+				{
+					m->bSchedule = false;
+					iResult = 0;
+				}
+				if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_PASS)
+				{
+					MFD_Out(MFD_SOURCE_RULE,"Ignore: %x -> %x\n",iIgnoreFields,iIgnoreFields|MF_GlobalConfiguration.filterList[(unsigned int)curItem].matchfield);
+					iIgnoreFields = iIgnoreFields | MF_GlobalConfiguration.filterList[(unsigned int)curItem].matchfield;
+					iResult = 0;
+				}
 			}
-			if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_SCHEDULE)
+	//MFD_Out("%i",iResult);
+			
+			if (iResult)
 			{
-				m->bSchedule = true;
-				iResult = 0;
+				break;
 			}
-			if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_NOSCHEDULE)
-			{
-				m->bSchedule = false;
-				iResult = 0;
-			}
-			if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_PASS)
-			{
-//				MFD_Out("Ignore: %x -> %x\n",iIgnoreFields,iIgnoreFields|MFC_Filters[(unsigned int)curItem].matchfield);
-				iIgnoreFields = iIgnoreFields | MF_GlobalConfiguration.filterList[(unsigned int)curItem].matchfield;
-				iResult = 0;
-			}
-		}
-//MFD_Out("%i",iResult);
-		
-		if (iResult)
-		{
-			break;
-		}
 		
 		}
 
