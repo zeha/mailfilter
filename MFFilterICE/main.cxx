@@ -83,7 +83,17 @@ public:
 			fputc(flt.enabled,fFile);
 			fputc(flt.enabledIncoming,fFile);
 			fputc(flt.enabledOutgoing,fFile);
-		
+
+			// v11+
+				// stock filter
+				fputc(0,fFile);
+				// 4 bytes for counter
+				fputc(0,fFile);
+				fputc(0,fFile);
+				fputc(0,fFile);
+				fputc(0,fFile);
+			// ////
+
 			fprintf(fFile,"%s",flt.expression.c_str());
 			fputc(0,fFile);
 			fprintf(fFile,"%s",flt.name.c_str());
@@ -100,16 +110,7 @@ public:
 		fputc(0,fFile);
 	}
 	void endfile()
-	{	// 9 bytes Zarroo!
-		fputc(0,fFile);
-		fputc(0,fFile);
-		fputc(0,fFile);
-		fputc(0,fFile);
-		fputc(0,fFile);
-		fputc(0,fFile);
-		fputc(0,fFile);
-		fputc(0,fFile);
-		fputc(0,fFile);
+	{
 	}
 };
 
@@ -151,9 +152,10 @@ public:
 			return;
 		}
 		
-		fseek(fFile, 54, SEEK_SET);
+		fseek(fFile, 54+1, SEEK_SET);
 		while (!feof(fFile))
 		{
+			fseek(fFile,-1,SEEK_CUR);
 			MailFilter_Configuration::Filter* flt = new MailFilter_Configuration::Filter();
 
 			flt->matchfield = (MailFilter_Configuration::FilterField)(fgetc(fFile));
@@ -164,6 +166,15 @@ public:
 			flt->enabledIncoming = (bool)(fgetc(fFile));
 			flt->enabledOutgoing = (bool)(fgetc(fFile));
 			
+				// stock filter
+				fgetc(fFile);
+				// 4 bytes for counter
+				fgetc(fFile);
+				fgetc(fFile);
+				fgetc(fFile);
+				fgetc(fFile);
+
+
 			rc = (long)fread(szTemp,sizeof(char),1000,fFile);
 			fseek(fFile,((int)(strlen(szTemp)))-rc+1,SEEK_CUR);
 			
@@ -174,6 +185,8 @@ public:
 
 			if (strlen(szTemp) > 0) flt->name = szTemp;
 			
+			printf("->%s\n",flt->name.c_str());
+
 			if (flt->expression == "")
 			{
 				delete flt;
@@ -182,6 +195,7 @@ public:
 					
 			MFC_FilterList->push_back(*flt);
 			
+			fgetc(fFile);
 		}
 	
 	}

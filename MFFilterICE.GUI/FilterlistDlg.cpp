@@ -303,7 +303,7 @@ void CFilterlistDlg::OnListExport()
 	wizard.m_psh.hInstance = AfxGetInstanceHandle();
 	wizard.DoModal();
 */
-	CFileDialog fileDlg(FALSE, NULL, NULL, OFN_HIDEREADONLY, "MailFilter Binary Filter Files (*.bin)|*.bin|TAB Seperated Text Files (*.tab)|*.tab|");
+	CFileDialog fileDlg(FALSE, NULL, NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, "MailFilter Binary Filter Files (*.bin)|*.bin|TAB Seperated Text Files (*.tab)|*.tab|");
 	if (fileDlg.DoModal() != IDOK)
 		return;
 
@@ -340,7 +340,7 @@ void CFilterlistDlg::OnListImport()
 	wizard.DoModal();
 */
 
-	CFileDialog fileDlg(TRUE, NULL, NULL, OFN_HIDEREADONLY, "MailFilter Binary Filter Files (*.bin)|*.bin|TAB Seperated Text Files (*.tab)|*.tab|");
+	CFileDialog fileDlg(TRUE, NULL, NULL, OFN_HIDEREADONLY|OFN_FILEMUSTEXIST, "MailFilter Binary Filter Files (*.bin)|*.bin|TAB Seperated Text Files (*.tab)|*.tab|");
 	if (fileDlg.DoModal() != IDOK)
 		return;
 

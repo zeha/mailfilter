@@ -52,10 +52,13 @@ BOOL CFilterPropertyDlg::OnInitDialog()
 	box->AddString("E-Mail Address: From");
 	box->AddString("E-Mail Address: To, CC");
 	box->AddString("E-Mail Address: To");
-	box->AddString("Relay blacklisted");
-	box->AddString("Relay unresolvable");
+	box->AddString("Relay Host blacklisted");
+	box->AddString("Relay Host unresolvable");
 	box->AddString("Size");
 	box->AddString("Subject Line");
+	box->AddString("Archive Content: Name");
+	box->AddString("Archive Content: File Count");
+	box->AddString("Virus Scan");
 
 	box = (CComboBox*)this->GetDlgItem(IDC_MATCHTYPE);
 	box->AddString("Match");
@@ -80,54 +83,67 @@ BOOL CFilterPropertyDlg::OnInitDialog()
 	SetDlgItemText(IDC_FILTERNAME,				MFC_FilterList[nID].name.c_str());
 	SetDlgItemText(IDC_FILTEREXPRESSION,		MFC_FilterList[nID].expression.c_str());
 	
+	/*
+enum FilterField { always = 0, attachment = 1, email = 2, subject = 3, size = 4, emailFrom = 5, emailTo = 6, blacklist = 7, ipUnresolvable = 8, archiveContentName = 9, archiveContentCount = 10, emailToAndCC = 11, emailBothAndCC = 12, virus = 13 }; 
+enum FilterAction { noAction = 0, dropMail = 1, moveMail = 2, rescan = 4, pass = 8, schedule = 0x10, noschedule = 0x20, copy = 0x40 };
+enum Notification { noNotification = 0, adminIncoming = 1, adminOutgoing = 2, senderIncoming = 4, senderOutgoing = 8, recipientIncoming = 0x10, recipientOutgoing = 0x20 };
+enum FilterType { match = 0, noMatch = 1 };
+	*/
+
 	box = (CComboBox*)this->GetDlgItem(IDC_MATCHACTION);
 	switch (MFC_FilterList[nID].action)
 	{
-	case MAILFILTER_MATCHACTION_PASS:
+	case MailFilter_Configuration::pass:
         box->SetCurSel(0);		break;
-	case MAILFILTER_MATCHACTION_DROP_MAIL:
+	case MailFilter_Configuration::dropMail:
         box->SetCurSel(1);		break;
-	case MAILFILTER_MATCHACTION_SCHEDULE:
+	case MailFilter_Configuration::schedule:
         box->SetCurSel(2);		break;
-	case MAILFILTER_MATCHACTION_NOSCHEDULE:
+	case MailFilter_Configuration::noschedule:
         box->SetCurSel(3);		break;
-	case MAILFILTER_MATCHACTION_COPY:
+	case MailFilter_Configuration::copy:
         box->SetCurSel(4);		break;
 	}
 
 	box = (CComboBox*)this->GetDlgItem(IDC_MATCHFIELD);
 	switch (MFC_FilterList[nID].matchfield)
 	{
-	case MAILFILTER_MATCHFIELD_ALWAYS:
+	case MailFilter_Configuration::always:
         box->SetCurSel(0);		break;
-	case MAILFILTER_MATCHFIELD_ATTACHMENT:
+	case MailFilter_Configuration::attachment:
         box->SetCurSel(1);		break;
-	case MAILFILTER_MATCHFIELD_EMAIL_BOTHANDCC:
+	case MailFilter_Configuration::emailBothAndCC:
         box->SetCurSel(2);		break;
-	case MAILFILTER_MATCHFIELD_EMAIL:
+	case MailFilter_Configuration::email:
         box->SetCurSel(3);		break;
-	case MAILFILTER_MATCHFIELD_EMAIL_FROM:
+	case MailFilter_Configuration::emailFrom:
         box->SetCurSel(4);		break;
-	case MAILFILTER_MATCHFIELD_EMAIL_TOANDCC:
+	case MailFilter_Configuration::emailToAndCC:
         box->SetCurSel(5);		break;
-	case MAILFILTER_MATCHFIELD_EMAIL_TO:
+	case MailFilter_Configuration::emailTo:
         box->SetCurSel(6);		break;
-	case MAILFILTER_MATCHFIELD_BLACKLIST:
+	case MailFilter_Configuration::blacklist:
         box->SetCurSel(7);		break;
-	case MAILFILTER_MATCHFIELD_IPUNRESOLVABLE:
+	case MailFilter_Configuration::ipUnresolvable:
         box->SetCurSel(8);		break;
-	case MAILFILTER_MATCHFIELD_SIZE:
+	case MailFilter_Configuration::size:
         box->SetCurSel(9);		break;
-	case MAILFILTER_MATCHFIELD_SUBJECT:
+	case MailFilter_Configuration::subject:
         box->SetCurSel(10);		break;
+	case MailFilter_Configuration::archiveContentName:
+        box->SetCurSel(11);		break;
+	case MailFilter_Configuration::archiveContentCount:
+        box->SetCurSel(12);		break;
+	case MailFilter_Configuration::virus:
+        box->SetCurSel(13);		break;
 	}
 
 	box = (CComboBox*)this->GetDlgItem(IDC_MATCHTYPE);
 	switch (MFC_FilterList[nID].type)
 	{
-	case MAILFILTER_MATCHTYPE_MATCH:
+	case MailFilter_Configuration::match:
 		box->SetCurSel(0);		break;
-	case MAILFILTER_MATCHTYPE_NOMATCH:
+	case MailFilter_Configuration::noMatch:
 		box->SetCurSel(1);		break;
 	}
 

@@ -96,7 +96,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(ProjectDir)/../MailFilter/out/$(ProjectName).exe"
+				OutputFile="$(ProjectDir)../MailFilter/out/$(ProjectName).exe"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="FALSE"

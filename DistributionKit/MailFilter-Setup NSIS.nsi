@@ -9,7 +9,7 @@
 ; *** UPDATE BUILD NUMBERS *HERE* ***
   !define PROD_VERSION_MAJOR 1
   !define PROD_VERSION_MINOR 6
-  !define PROD_VERSION_REVISION 0-rc4
+  !define PROD_VERSION_REVISION 0-rc5
 ;
 ;
 
@@ -106,7 +106,6 @@ Section All
 
   File "..\MailFilter\out\FilterEdit.exe"
   File "..\MailFilter\out\MFFilterICE.exe"
-;  File ".\src\MFFilterICE.txt"
 
   SetOutPath "$INSTDIR\SERVER"
 
@@ -114,14 +113,14 @@ Section All
 ; Copy MailFilter Default Configuration
 ;
   SetOutPath "$INSTDIR\SERVER\ETC"
-  File ".\src\NLM\ETC\MailFlt\CONFIG.NUL"
-  File ".\src\NLM\ETC\MailFlt\DEFAULTS\FILTERS.BIN"
+  File ".\src\NLM\ETC\CONFIG.NUL"
+  File ".\src\NLM\ETC\FILTERS.BIN"
 
-  File ".\src\NLM\ETC\MailFlt\DEFAULTS\REPORT.TPL"
-  File ".\src\NLM\ETC\MailFlt\DEFAULTS\RINSIDE.TPL"
-  File ".\src\NLM\ETC\MailFlt\DEFAULTS\ROUTRCPT.TPL"
-  File ".\src\NLM\ETC\MailFlt\DEFAULTS\ROUTSNDR.TPL"
-  File ".\src\NLM\ETC\MailFlt\DEFAULTS\MAILCOPY.TPL"
+  File ".\src\NLM\ETC\REPORT.TPL"
+  File ".\src\NLM\ETC\RINSIDE.TPL"
+  File ".\src\NLM\ETC\ROUTRCPT.TPL"
+  File ".\src\NLM\ETC\ROUTSNDR.TPL"
+  File ".\src\NLM\ETC\MAILCOPY.TPL"
 
 ;
 ; Copy NLM Files
