@@ -951,6 +951,9 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 			this->DefaultNotification_ExternalRecipient = (MailFilter_Configuration::Notification)
 				MF_ConfigReadInt(pConfigFile, iIntegerBase+33);
 
+			this->GWIAVersion = (unsigned int)
+				MF_ConfigReadInt(pConfigFile, iIntegerBase+35);
+
 			this->EnableIncomingRcptCheck = (bool)
 				MF_ConfigReadInt(pConfigFile, iIntegerBase+39);
 				
@@ -960,13 +963,16 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 			this->EnablePFAFunctionality = (bool)
 				MF_ConfigReadInt(pConfigFile, iIntegerBase+43);
 
+/*
+			Dont upgrade this: it was only in a test version and base+45 was 
+					used for something different before.
+
 			this->EnableNRMThread = (bool)
 				MF_ConfigReadInt(pConfigFile, iIntegerBase+45);
 
 			this->EnableNRMRestore = (bool)
 				MF_ConfigReadInt(pConfigFile, iIntegerBase+47);
-
-			// Next start at 49
+*/
 			
 			this->DropBrokenMessages = true;
 			this->DropPartialMessages = true;
