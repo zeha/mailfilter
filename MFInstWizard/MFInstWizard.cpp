@@ -50,7 +50,7 @@ CInstApp::CInstApp()
 
 CInstApp theApp;
 
-static void WriteLog(CString szText)
+void WriteLog(CString szText)
 {
 	CTime time = CTime::GetCurrentTime();
 
@@ -354,6 +354,23 @@ BOOL CInstApp::InitInstance()
 
 			}
 
+			if (!bErrors)
+			{
+				CString mfpathCfg = "\\\\" + this->mf_ServerName + "\\SYS\\ETC\\MFPATH.CFG";
+				WriteLog("mfpathCfg = "+mfpathCfg);
+				FILE* mfpathFile = fopen(mfpathCfg,"wt");
+				if (mfpathFile != NULL)
+				{
+					fprintf(mfpathFile,"%s",szServerAppConfigDest);
+					fclose(mfpathFile);
+					WriteLog("Wrote: "+szServerAppConfigDest);
+				} else
+				{
+					bNonFatalErrors = true;
+					szNonFatalError = "Could not write MailFilter Location file (SYS:ETC\\MFPATH.CFG). The Installation Wizard may not find the MailFilter installation when upgrading.";
+					WriteLog("ERROR: Cannot write mfpath.cfg");
+				}
+			}
 
 			if (!bErrors)
 			{

@@ -45,3 +45,5 @@ public:
 };
 
 extern CInstApp theApp;
+
+extern void WriteLog(CString szText);

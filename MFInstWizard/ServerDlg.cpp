@@ -77,22 +77,36 @@ LRESULT ServerDlg::OnWizardNext(void)
 
 	CString mfpathCfg = "\\\\" + app->mf_ServerName + "\\SYS\\ETC\\MFPATH.CFG";
 	CString oldMFPath = "";
+
+	WriteLog("Checking Server " + app->mf_ServerName);
+	WriteLog("  > mfpathCfg = " + mfpathCfg);
+
 	FILE* mfpathFile = fopen(mfpathCfg,"rt");
 	if (mfpathFile != NULL)
 	{
+		WriteLog("  > found mfpathFile");
 		char szTemp[MAX_PATH+1];
 		memset(szTemp,0,MAX_PATH);
 		fgets(szTemp,MAX_PATH,mfpathFile);
 		oldMFPath = szTemp;
 		fclose(mfpathFile);
-	}
+
+		CFileStatus status;
+		if (CFile::GetStatus(oldMFPath + "\\CONFIG.BIN", status) == FALSE)
+			oldMFPath = "";
+	} else
+		WriteLog("  > no mfpathfile");
+	WriteLog("  > oldMFPath = " + oldMFPath);
+
 	if (oldMFPath == "")
 	{
 		CString oldSharedPath = "\\\\" + app->mf_ServerName + "\\SYS\\ETC\\MAILFLT\\CONFIG.BIN";
 		CFileStatus status;
-		if (CFile::GetStatus(oldMFPath + "\\CONFIG.BIN", status) == TRUE)
+		if (CFile::GetStatus(oldSharedPath, status) == TRUE)
 			oldMFPath = "\\\\" + app->mf_ServerName + "\\SYS\\ETC\\MAILFLT";
 
+		WriteLog("  > oldSharedPath = " + oldSharedPath);
+		WriteLog("  > oldMFPath = " + oldMFPath);
 	}
 	if (oldMFPath != "")
 	{
@@ -101,6 +115,7 @@ LRESULT ServerDlg::OnWizardNext(void)
 		{
 			if (AfxMessageBox("The Wizard detected a previous installation of MailFilter. Do you want to upgrade this installation?\n\nConfig Location: " + oldMFPath + "\n\nYes - Upgrade previous installation\nNo - Install new copy of MailFilter",MB_ICONQUESTION|MB_YESNO) == IDYES)
 			{
+				WriteLog("  > user said yes to upgrade.");
 				app->mf_IsUpgrade = TRUE;
 				oldMFPath.MakeUpper();
 
@@ -109,6 +124,7 @@ LRESULT ServerDlg::OnWizardNext(void)
 				if (oldMFPath == oldSharedBasePath)
 				{
 					app->mf_SharedInstallation = TRUE;
+					WriteLog("  > sharedinstallation: yes.");
 				} else {
 					// dig out volume and path
 					if (oldMFPath.Left(2).Compare("\\\\") == 0)
@@ -118,11 +134,18 @@ LRESULT ServerDlg::OnWizardNext(void)
 						oldMFPath.SetAt(oldMFPath.Find('\\'),':');
 					}
 					app->mf_AppDir = oldMFPath;
+					WriteLog("  > sharedinstallation: no.");
+					WriteLog("  > install-path: "+oldMFPath+".");
+
 					AfxMessageBox("Note: using the following path to upgrade MailFilter:\n  " + app->mf_AppDir + "\nThis has to be a valid NetWare Server Path!",MB_ICONINFORMATION);
 				}
-			}
-		}
-	}
+
+			} else 
+				WriteLog("  > user said no to upgrade.");
+		} else 
+			WriteLog("  > StatusCheck oldMFPath failed.");
+	} else 
+		WriteLog("  > No oldMFPath.");
 	
 	// gwia.cfg detection
 	if (!app->mf_IsUpgrade)
