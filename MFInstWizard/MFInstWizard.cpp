@@ -419,6 +419,8 @@ BOOL CInstApp::InitInstance()
 					if (!bErrors)
 						szError = "Could not copy NLM file.";
 
+					DeleteFile(szAppBinaryDest + "\\MAILFLT.NLM");
+					DeleteFile(szAppBinaryDest + "\\MFLT50.NLM");
 					DeleteFile(szAppBinaryDest + "\\MFCONFIG.NLM");
 					DeleteFile(szAppBinaryDest + "\\MFUPGR.NLM");
 					DeleteFile(szAppBinaryDest + "\\MFREST.NLM");
@@ -432,9 +434,9 @@ BOOL CInstApp::InitInstance()
 					// config
 					if (!bErrors)
 						szError = "Could not copy configuration file.";
-					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "FILTERS.BIN") == FALSE)			bErrors = true;
 					if (!this->mf_IsUpgrade)
 					{
+						if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "FILTERS.BIN") == FALSE)		bErrors = true;
 						if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "MAILCOPY.TPL") == FALSE)		bErrors = true;
 						if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "REPORT.TPL") == FALSE)		bErrors = true;
 						if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "RINSIDE.TPL") == FALSE)		bErrors = true;
@@ -462,9 +464,12 @@ BOOL CInstApp::InitInstance()
 
 					CString line;
 					
-					// mfstart.ncf
-					line = mfbinary + "-t server " + szServerAppConfigDest;
-					MF_CreateNCFFile(szAppBaseDest + "\\MFSTART.NCF", line);
+					if (!this->mf_IsUpgrade)
+					{
+						// mfstart.ncf
+						line = mfbinary + "-t server " + szServerAppConfigDest;
+						MF_CreateNCFFile(szAppBaseDest + "\\MFSTART.NCF", line);
+					}
 
 					// mfinst.ncf
 					line = mfbinary + "-t install " + szServerAppConfigDest;

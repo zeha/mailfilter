@@ -223,7 +223,7 @@ int MFRestore_ShowDetails(const char* fileName, int enableRestoreField)
 
 
 	rc = NWSEditForm (
-		MSG_PROGRAM_NAME,				//headernum
+		MSG_MAIL_RESTORE,			//headernum
 		25-line-4-3,				//line
 		0,							//col
 		line+4,						//portalHeight
@@ -422,7 +422,7 @@ void NLM_Main(void)
 	
 	iXDir dir(scanPath);
 	const char* e;
-	
+	int i=0;
 	while ( dir.ReadNextEntry() )
 	{
 		if (MFT_NLM_Exiting > 0)	break;
@@ -430,7 +430,7 @@ void NLM_Main(void)
 		e = dir.GetCurrentEntryName();
 		lTime = dir.GetCurrentEntryModificationTime();
 
-		cI = (char*)malloc(sizeof(e));
+		cI = (char*)malloc(strlen(e));
 		strcpy(cI,(e));
 		
 		strcpy (szFile,e);
@@ -445,7 +445,7 @@ void NLM_Main(void)
 
 			time = localtime(&lTime);
 
-			sprintf ( szDate, "%04d/%02d/%02d %02d:%02d", time->tm_year+1900 , time->tm_mon , time->tm_mday,
+			sprintf ( szDate, "%04d/%02d/%02d %02d:%02d", time->tm_year+1900 , time->tm_mon+1 , time->tm_mday ,
 															time->tm_hour , time->tm_min );
 		}
 		
@@ -454,6 +454,7 @@ void NLM_Main(void)
 		NWSAppendToList ( (_MF_NUTCHAR)szList, cI, MF_NutInfo );
 
 		ThreadSwitch();
+		MFD_Out(MFD_SOURCE_MAIL,"%d:%s ",++i,e);
 	}
 	
 
@@ -462,12 +463,12 @@ void NLM_Main(void)
 
 	// Display the list and allow user interaction.
 	rc = (long) NWSList(
-		/* I-	header			*/	MSG_PROGRAM_NAME,
+		/* I-	header			*/	MSG_MAIL_RESTORE,
 		/* I-	centerLine		*/	5,
 		/* I-	centerColumn	*/	1,
 		/* I-	height			*/	16,
 		/* I-	width			*/  80,
-		/* I-	validKeyFlags	*/	M_ESCAPE|M_SELECT|M_CYCLE, //|M_NO_SORT,
+		/* I-	validKeyFlags	*/	M_ESCAPE|M_SELECT|M_CYCLE,//|M_NO_SORT,
 		/* IO	element			*/	0,
 		/* I-	handle			*/  MF_NutInfo,
 		/* I-	formatProcedure	*/	NULL,
@@ -525,7 +526,7 @@ int MailFilter_Main_RunAppRestore(bool bStandalone)
 
 
 	NWSDisplayInformation (
-		NULL,
+		MSG_MAIL_RESTORE,
 		4,
 		0,
 		0,

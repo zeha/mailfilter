@@ -693,6 +693,9 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 
 	if (formSaved)
 	{
+		if ( newMatchfield == MailFilter_Configuration::virus )
+			strcpy(newExpression,".");
+
 		flt->enabled = 1;
 		flt->enabledIncoming = (bool)newEnabledIncoming;
 		flt->enabledOutgoing = (bool)newEnabledOutgoing;
@@ -725,8 +728,9 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 		}
 	}
 
+
 	if (
-			(newMatchfield != MailFilter_Configuration::size) || 
+			(newMatchfield != MailFilter_Configuration::size) || (newMatchfield != MailFilter_Configuration::virus) || 
 			(newMatchfield != MailFilter_Configuration::blacklist) || (newMatchfield != MailFilter_Configuration::ipUnresolvable) 
 		)
 	{
@@ -1113,11 +1117,11 @@ static void MFConfig_EditConfig()
 	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableIncomingRcptCheck, NULL, MF_NutInfo);
 	line++;
 	
-	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Drop Broken Messages:", MF_NutInfo);
+	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Drop Broken Messages:", MF_NutInfo);
 	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newDropBrokenMessages, NULL, MF_NutInfo);
 	line++;
 
-	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Drop Partial Messages:", MF_NutInfo);
+	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Drop Partial Messages:", MF_NutInfo);
 	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newDropPartialMessages, NULL, MF_NutInfo);
 	line++;
 

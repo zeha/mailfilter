@@ -75,8 +75,6 @@ bool iXDir::ReadNextEntry()
 				// no dotfile
 				return true;
 			}
-
-			
 		}
 	} else
 		return false;

@@ -153,7 +153,7 @@ static bool outputMailList(HINTERNET hndl, int startPage)
 
 				time = localtime(&lTime);
 
-				sprintf ( szDate, "%04d/%02d/%02d %02d:%02d", time->tm_year+1900 , time->tm_mon , time->tm_mday,
+				sprintf ( szDate, "%04d/%02d/%02d %02d:%02d", time->tm_year+1900 , time->tm_mon+1 , time->tm_mday,
 																time->tm_hour , time->tm_min );
 			}
 

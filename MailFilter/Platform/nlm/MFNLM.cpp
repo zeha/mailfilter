@@ -3,7 +3,7 @@
  +		MFNLM.cpp
  +		
  +		NetWare Platform Specific Functions
- +      for CLib AND LibC
+ +		for CLib AND LibC
  +
  +		
  +		Copyright 2001-2004 Christian Hofstädtler.
@@ -1029,10 +1029,7 @@ MF_MAIN_RUNLOOP:
 		while ( (MFT_NLM_ThreadCount > 0) || (!MFT_bStartupComplete) )
 		{
 			if (MFT_NLM_Exiting > 0)
-			{
-				MF_DisplayCriticalError("MAILFILTER: NLM is exiting.\n");
 				break;
-			}
 
 			ThreadSwitch();
 
@@ -1042,7 +1039,6 @@ MF_MAIN_RUNLOOP:
 								MF_NutInfo );
 			}
 		}
-		MF_DisplayCriticalError("MAILFILTER: threads: %d\n",MFT_NLM_ThreadCount);
 		
 		// 254 = restart
 		// 253 = config
@@ -1274,7 +1270,6 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		}
 		
 		rc = MailFilter_Main_RunAppServer(argv[0]);
-		MF_DisplayCriticalError("MAILFILTER: RunAppServer rc: %d\n",rc);
 		break;
 		
 	case MailFilter_Configuration::CONFIG:
