@@ -236,7 +236,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 			case 'h':
 				MF_DisplayCriticalError("MAILFILTER: Usage:\n"
 						"  %s [-d | -x debugflags] [-t app] [ConfigurationPath]\n"
-						"  -d debug\n\t-v verbose\n"
+						"  -d debug (with flags = 0xFFFF)\n"
 						"  -t args are: \"server\" \"config\" \"restore\" \"nrm\"\n",argv[0]);
 				return false;
 				break;
