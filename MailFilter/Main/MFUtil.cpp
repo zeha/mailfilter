@@ -171,7 +171,10 @@ int MF_ParseCommandLine( int argc, char **argv )
 				break;
 			case '?':
 			case 'h':
-				MF_DisplayCriticalError("MAILFILTER: Usage:\n\t%s [-d | -x debugflags] [-t app] [ConfigurationPath]\n\t-d debug\n\t-v verbose\n\t-t args are: \"server\" \"config\" \"restore\" \"nrm\"\n",argv[0]);
+				MF_DisplayCriticalError("MAILFILTER: Usage:\n"
+						"  %s [-d | -x debugflags] [-t app] [ConfigurationPath]\n"
+						"  -d debug\n\t-v verbose\n"
+						"  -t args are: \"server\" \"config\" \"restore\" \"nrm\"\n",argv[0]);
 				return false;
 				break;
 			case 't':

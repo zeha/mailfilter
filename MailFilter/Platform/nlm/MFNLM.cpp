@@ -791,7 +791,7 @@ static void LoadNRMThreadStartup(void *dummy)
 //   * Start Thread(s) ...
 //   * Run NUT in foreground thread.
 //
-static int MailFilter_Main_RunAppServer()
+static int MailFilter_Main_RunAppServer(const char* szProgramName)
 {	
 	// Init NWSNut
 	printf(MF_Msg(MSG_BOOT_USERINTERFACE));
@@ -907,6 +907,7 @@ MF_MAIN_RUNLOOP:
 		
 		if (MF_GlobalConfiguration.EnableNRMThread == true)
 		{
+		#ifdef __NOVELL_LIBC__
 			if (!mf_nlmisloadedprotected())
 			{
 				MFD_Out(MFD_SOURCE_CONFIG,"NRM thread will be started.\n");
@@ -926,14 +927,21 @@ MF_MAIN_RUNLOOP:
 				#endif
 				{
 					//MF_DisplayCriticalError(MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
-					MF_StatusText("ERROR: NRM Thread Startup Error. NRM NOT loaded.");
+					MF_StatusText("ERROR: NRM Startup Error. NRM NOT loaded.");
 					MF_Thread_NRM = 0;
 		//			goto MF_MAIN_TERMINATE;
 				}
 			} else {
-				MFD_Out(MFD_SOURCE_CONFIG,"NRM thread will NOT be started --> not in OS space.\n");
-				MF_StatusText("NOTE: NOT loading NRM -- MailFilter is not loaded in OS address space");
+				MF_StatusText("Loading NRM out-of-process.");
+				std::string loadCmd = "LOAD ";
+				loadCmd += szProgramName;
+				loadCmd += " -t nrm ";
+				loadCmd += MF_GlobalConfiguration.config_directory;
+				system(loadCmd.c_str());
 			}
+		#else
+			MF_StatusText("NOTE: NRM is not available for MFLT50.");
+		#endif
 		}
 
 		
@@ -1106,9 +1114,7 @@ int main( int argc, char *argv[ ])
 #endif //_MF_MEMTRACE
 
 	MF_ProductName = "MailFilter professional "MAILFILTERVERNUM" ["MAILFILTERPLATFORM"]";
-
-
-	printf("%s: %s\n",MF_ProductName,MF_Msg(MSG_BOOT_LOADING));
+	printf("%s\n",MF_ProductName);
 	
 #ifndef __NOVELL_LIBC__
 	// Save Thread Group
@@ -1119,6 +1125,8 @@ int main( int argc, char *argv[ ])
 	
 	MF_DisplayCriticalError("MAILFILTER: Info: This is the Legacy version of MailFilter!\n\tUse only on NetWare 5.0, NetWare 5.1 prior SP6 or NetWare 6.0 prior SP3.\n");
 #else
+	NXContextSetName(NXContextGet(),"MailFilterUI");
+
 	{
 		struct utsname u;
 		uname(&u);
@@ -1211,7 +1219,7 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 			goto MF_MAIN_TERMINATE;
 		}
 		
-		rc = MailFilter_Main_RunAppServer();
+		rc = MailFilter_Main_RunAppServer(argv[0]);
 		
 		break;
 		
@@ -1261,7 +1269,6 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 	
 		#ifdef __NOVELL_LIBC__
 		NXContextSetName(NXContextGet(),"MailFilterNRM");
-		#endif
 
 		// Read Configuration from File
 		printf(MF_Msg(MSG_BOOT_CONFIGURATION));
@@ -1273,6 +1280,11 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		}
 
 		rc = MailFilter_Main_RunAppNRM();
+
+		#else
+		rc = -1;
+		MF_DisplayCriticalError("MAILFILTER: NRM is not available for MFLT50. Please Upgrade!\n");
+		#endif
 		
 		break;
 		

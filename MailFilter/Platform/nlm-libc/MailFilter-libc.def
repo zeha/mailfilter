@@ -16,7 +16,7 @@ MODULE libc.nlm mfava.nlm nwsnut.nlm
 #
 
 #
-IMPORT NWSSetFormRepaintFlag NWIsNLMLoadedProtected
+IMPORT NWSSetFormRepaintFlag NWIsNLMLoadedProtected RenameScreen
 #
 
 #

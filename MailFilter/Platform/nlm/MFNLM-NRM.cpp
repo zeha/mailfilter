@@ -556,43 +556,35 @@ void MailFilter_NRM_sigterm()
 
 int MailFilter_Main_RunAppNRM()
 {
+	printf ("MailFilter NRM: Initializing...\n");
 
 	// Rename thread
-#if defined( N_PLAT_NLM ) && (!defined(__NOVELL_LIBC__))
-	RenameThread(GetThreadID(),"MFNRM");		// 15 (16?) Chars max.
-#endif
-#if defined( N_PLAT_NLM ) && (defined(__NOVELL_LIBC__))
 	NXContextSetName(NXContextGet(),"MailFilterNRM");
-#endif
-
-#if defined( N_PLAT_NLM ) && (!defined(__NOVELL_LIBC__))
-	MF_NRM_ThreadID = GetThreadGroupID();
-#endif
+	RenameScreen(getscreenhandle(),"MailFilter NRM");
 
 	if (!DLSetupNRM())
 	{
-		printf("Could not import symbols. aborting startup.\n");
+		printf("Could not import PORTAL/HTTPSTK symbols. Aborting Startup.\n");
 		return -1;
 	}
 
 	if (!MF_NLM_RM_Init())
 	{
-		printf ("MailFilter/NRM Startup Failed.\n");
+		printf ("Portal Startup Failed.\n");
 		return -1;
 	}
 	// Pretend that we've already exited.
 	--MFT_NLM_ThreadCount;
 
-#ifndef __NOVELL_LIBC__
-	ExitThread(TSR_THREAD, 0);
-#else
 	
 	if (cond_init ( &condMainThread , USYNC_THREAD, NULL ) != 0)
 	{
-		printf("Could not initialize a mutex. aborting startup\n");
+		printf("Could not initialize mutex. Startup Failed\n");
 	}
 	else 
 	{
+	
+		printf("MailFilter NRM Running.\n");
 	
 		mutex_t mtx;
 		mutex_init(&mtx, USYNC_THREAD, NULL);
@@ -600,13 +592,13 @@ int MailFilter_Main_RunAppNRM()
 		cond_wait(&condMainThread,&mtx);
 	}
    	
+	printf("Shutdown...\n");
 	
 	MF_NLM_RM_DeInit();
 	DLDeSetupNRM();
 
 	cond_signal(&condMainThread);
 	cond_destroy(&condMainThread);
-#endif
 	
 	return 0;	
 }
