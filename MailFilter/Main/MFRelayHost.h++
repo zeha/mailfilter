@@ -16,7 +16,6 @@ class MFRelayHost
 {
 public:
 	MFRelayHost(std::string relayhost);
-	~MFRelayHost();
 	int LookupRBL_DNS(std::string holeZone, std::string validResult);
 	int LookupDNS();
 	

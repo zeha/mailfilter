@@ -8,20 +8,20 @@
 #include <errno.h>
 #include "MFVersion.h"
 
-//static void *(*malloc_sym) (size_t length_);
+static void *(*malloc_sym) (size_t length_);
 static void *(*calloc_sym) (size_t n, size_t size);
 static void* myNlmHandle = 0;
    
 int __init_malloc()
 {
 	myNlmHandle = getnlmhandle();
-/*	malloc_sym = (ImportPublicObject(myNlmHandle,"LIBC@malloc"));
+	malloc_sym = (ImportPublicObject(myNlmHandle,"LIBC@malloc"));
 	if (malloc_sym == NULL)
 	{
 		printf("MAILFILTER: Malloc Library FAILED to load.\n");
 		return ENOTSUP;
 	}
-*/		
+		
 	calloc_sym = (ImportPublicObject(myNlmHandle,"LIBC@calloc"));
 	if (calloc_sym == NULL)
 	{
@@ -37,6 +37,8 @@ int __deinit_malloc()
 {
 	if (calloc_sym)
 		UnImportPublicObject(getnlmhandle(),"LIBC@calloc");
+	if (malloc_sym)
+		UnImportPublicObject(getnlmhandle(),"LIBC@malloc");
 
 	printf("MAILFILTER: Malloc Library unloaded.\n");
 	return 0;
@@ -59,10 +61,12 @@ void* malloc(size_t length)
 
 #endif
 
+	if (malloc_sym == NULL)
+		return NULL;
+
 	while (cnt < 20)
 	{
-		//p = malloc_sym(length);
-		p = library_malloc(myNlmHandle,length);
+		p = malloc_sym(length);
 		if (p)
 			return p;
 	}

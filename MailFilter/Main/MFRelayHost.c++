@@ -9,10 +9,6 @@
 #include "MFRelayHost.h++"
 #include "MailFilter.h"
 
-MFRelayHost::~MFRelayHost()
-{
-}
-
 MFRelayHost::MFRelayHost(std::string relayhost)
 {
 	

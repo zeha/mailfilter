@@ -143,7 +143,7 @@ static bool MF_StatusCycleLog2()
 	
 	if ( rename ( LogFileOld , LogFileNew ) )
 	{
-		MF_StatusUI_Update ( MSG_LOGGING_ERROR_CYCLE );
+		MF_StatusUI_Update ( MF_Msg(MSG_LOGGING_ERROR_CYCLE) );
 		failed = true;
 	}
 

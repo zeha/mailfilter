@@ -56,6 +56,7 @@ long MFUnZip::ExtractCurrentFile(const char* localFilename)
 
 	unsigned int sizeBuf;
 	void* Buf;
+	ThreadSwitch();
 
 	sizeBuf = MFUnZip_WRITEBUFFERSIZE; // 8192
 	Buf = (void*)_mfd_malloc(sizeBuf,"MFUnZip::ExtractCurrentFile");
@@ -72,6 +73,7 @@ long MFUnZip::ExtractCurrentFile(const char* localFilename)
 		return MFUnZip_BADZIPFILE;
 	}
 
+	ThreadSwitch();
 	FILE* fout = fopen(localFilename,"wb");
 	if (fout == NULL)
 	{
@@ -100,6 +102,7 @@ long MFUnZip::ExtractCurrentFile(const char* localFilename)
 					bytesWritten += err;
 				}
 			}
+			ThreadSwitch();
 		} while (err>0);
 
 		fclose(fout);		// close local file
@@ -113,6 +116,7 @@ long MFUnZip::ExtractCurrentFile(const char* localFilename)
 	} else
 		unzCloseCurrentFile(this->zipFile);
 
+	ThreadSwitch();
 	_mfd_free(Buf,"MFUnZip::ExtractCurrentFile");
 	MFD_Out(MFD_SOURCE_ZIP,"MFUnZip: wrote %d bytes\n",bytesWritten);
 	if (err == MFUnZip_OK)
@@ -131,6 +135,7 @@ int MFUnZip::ExtractFile(const char* innerFilename, const char* localFilename)
 		return MFUnZip_NOZIPFILE;
 	}
 
+	ThreadSwitch();
 	rc = unzGoToFirstFile(this->zipFile);
 	if (rc != MFUnZip_OK)
 	{
@@ -153,6 +158,7 @@ iXList* MFUnZip::ReadZipContents()
 	MFUnZip_GlobalInfo gi;
 	int err;
 
+	ThreadSwitch();
 	err = unzGetGlobalInfo (this->zipFile,&gi);
 	if (err!=MFUnZip_OK)
 	{
@@ -185,6 +191,7 @@ iXList* MFUnZip::ReadZipContents()
 					break;
 				}
 			}
+			ThreadSwitch();
 		}
 		return lst;
 	}	

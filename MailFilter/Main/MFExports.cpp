@@ -74,7 +74,7 @@ long MailFilter_API_GetStats(int statID, int statSubID)
 
 	return ret;
 }
-*/
+
 //
 // Checks the passed String for block ...
 //
@@ -118,7 +118,7 @@ long MailFilter_API_RuleCheck( char *szScan , unsigned int mailSource , unsigned
 	return rc;
 	
 }
-
+*/
 #ifdef __cplusplus
 }
 #endif

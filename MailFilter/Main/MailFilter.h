@@ -480,7 +480,6 @@ void MF_GetServerName(char* serverName, unsigned long bufSize);
 void MF_StatusUI_Update(const char* newText);
 void MF_StatusUI_UpdateLog(const char* newText);
 #ifdef __cplusplus
-void MF_StatusUI_Update(int newText);
 void MF_StatusUI_UpdateLog(int newText);
 #endif
 void MF_StatusLog( const char *newText );

@@ -17,6 +17,7 @@ MFZip::MFZip(const char* zipFilename, int compressLevel, unsigned int flags)
 	if (flags)
 		unlink(zipFilename);
 	
+	ThreadSwitch();
 	this->zipFile = zipOpen(zipFilename,0);
 	if (!this->zipFile)
 	{
@@ -56,6 +57,7 @@ int MFZip::AddFile(const char* innerFilename, const char* localFilename)
 		return MFZip_NOZIPFILE;
 	}
 
+	ThreadSwitch();
 	void* buf=NULL;
 	unsigned int buf_size;
 
@@ -67,6 +69,7 @@ int MFZip::AddFile(const char* innerFilename, const char* localFilename)
     	return MFZip_INTERNALERROR;
     }
 
+	ThreadSwitch();
 	FILE* fin = fopen(localFilename,"rb");
 
 	if (fin == NULL)
@@ -76,6 +79,7 @@ int MFZip::AddFile(const char* innerFilename, const char* localFilename)
 		MFD_Out(MFD_SOURCE_ZIP,"ERROR: Could not open local file.\n");
 		return MFZip_ERR_LOCALFILEOPEN;
 	}
+	ThreadSwitch();
 	
 	
 	err = zipOpenNewFileInZip(this->zipFile,innerFilename,&zi,
@@ -83,6 +87,7 @@ int MFZip::AddFile(const char* innerFilename, const char* localFilename)
                                  (this->compressionLevel != 0) ? MFZip_DEFLATED : 0,
                                  this->compressionLevel);
 
+	ThreadSwitch();
 	if (err != MFZip_OK)
 	{
 		MFD_Out(MFD_SOURCE_ZIP,"ERROR: Could not open inner zipfile.\n");
@@ -112,6 +117,7 @@ int MFZip::AddFile(const char* innerFilename, const char* localFilename)
 					err = MFZip_ERR_INNERFILEWRITE;
 				}
 			}
+			ThreadSwitch();
 		} while ((err == MFZip_OK) && (size_read>0));
 		
 		_mfd_free(buf,"MFZip::AddFile");
@@ -127,6 +133,7 @@ int MFZip::AddFile(const char* innerFilename, const char* localFilename)
 		}
 	}
 
+	ThreadSwitch();
 	MFD_Out(MFD_SOURCE_ZIP,"Success adding file.\n",localFilename);
 	
 	return MFZip_OK;	

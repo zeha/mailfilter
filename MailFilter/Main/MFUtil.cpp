@@ -133,6 +133,8 @@ int MFUtil_CheckCurrentVersion()
 	// Version Up2Date check
 	struct hostent *he;
 
+	ThreadSwitch();
+
 	he = gethostbyname("version-1.mailfilter.cc");
 	if (he == NULL)
 	{
@@ -142,6 +144,7 @@ int MFUtil_CheckCurrentVersion()
 	} else {
 		struct in_addr host_ipaddress;
 		memcpy(&host_ipaddress.S_un.S_addr,he->h_addr_list[0],4);
+		ThreadSwitch();
 		
 		int majorVersion = host_ipaddress.S_un.S_un_b.s_b1;
 		int buildNumber = (host_ipaddress.S_un.S_un_b.s_b2 * 100) + host_ipaddress.S_un.S_un_b.s_b3;
@@ -169,7 +172,8 @@ int MFUtil_CheckCurrentVersion()
 						"","");
 			_mfd_free(szEmail,"szEmail");
 		}
-			
+		ThreadSwitch();
+		
 		if ( otherNews != 0)
 		{
 			char* szEmail = (char*)_mfd_malloc(5000,"szEmail");
@@ -187,6 +191,7 @@ int MFUtil_CheckCurrentVersion()
 						"","");
 			_mfd_free(szEmail,"szEmail");
 		}
+		ThreadSwitch();
 
 		return 1;
 	}

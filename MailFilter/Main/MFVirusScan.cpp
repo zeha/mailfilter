@@ -9,6 +9,7 @@
 #include "MFMail.h++"
 #include "MFUnZip.h"
 #include "MFVirusScan.h"
+#include "MFVersion.h"
 
 #include "../Included/mime/modmimee.h"
 #include <tnef-lib.h>
@@ -276,6 +277,7 @@ long MFVS_DecodeAttachment(const char* szScanFile, FILE* mailFile, mimeEncodingT
 		mimeDecoder = MimeB64DecoderInit(MFVS_WriteOutAttachment,(void*)fAttFile);
 		if (mimeDecoder != NULL)	bHaveDecoder = true;
 	}
+#ifndef MAILFILTER_VERSION_YESITCRASHES
 	if (encodingType == mimeEncodingQuotedPrintable)
 	{	// Initialize QuotedPrintable Decoder
 		mimeDecoder = MimeQPDecoderInit(MFVS_WriteOutAttachment,(void*)fAttFile);
@@ -286,7 +288,7 @@ long MFVS_DecodeAttachment(const char* szScanFile, FILE* mailFile, mimeEncodingT
 		mimeDecoder = MimeUUDecoderInit(MFVS_WriteOutAttachment,(void*)fAttFile);
 		if (mimeDecoder != NULL)	bHaveDecoder = true;
 	}
-	
+#endif
 	if (!bHaveDecoder)
 	{	_mfd_free(szScanBuffer,"Decode");
 		fclose(fAttFile);
@@ -388,6 +390,7 @@ long MFUtil_EncodeFile(const char* szInFile, const char* szOutFile, mimeEncoding
 		mimeCoder = MimeB64EncoderInit(MFVS_WriteOutEncodedStream,(void*)fOutFile);
 		if (mimeCoder != NULL)	bHaveCoder = true;
 	}
+#ifndef MAILFILTER_VERSION_YESITCRASHES
 	if (encodingType == mimeEncodingQuotedPrintable)
 	{	// Initialize QuotedPrintable Decoder
 		mimeCoder = MimeQPEncoderInit(MFVS_WriteOutEncodedStream,(void*)fOutFile);
@@ -398,7 +401,8 @@ long MFUtil_EncodeFile(const char* szInFile, const char* szOutFile, mimeEncoding
 		mimeCoder = MimeUUEncoderInit("attach.uue",MFVS_WriteOutEncodedStream,(void*)fOutFile);
 		if (mimeCoder != NULL)	bHaveCoder = true;
 	}
-	
+#endif
+
 	if (!bHaveCoder)
 	{	_mfd_free(szScanBuffer,"Encode");
 		fclose(fInFile); fclose(fOutFile);

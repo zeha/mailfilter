@@ -1977,6 +1977,8 @@ int MF_EMailPostmasterGeneric(const char* Subject, const char* Text, const char*
 		} else {
 			bAttachFile = false;
 		}
+
+		ThreadSwitch();
 		
 		fprintf(mail,"MAIL FROM:%s\r\nRCPT TO:%s\r\n",MF_GlobalConfiguration->DomainEmailMailFilter.c_str(),MF_GlobalConfiguration->DomainEmailPostmaster.c_str());
 		
@@ -2014,6 +2016,8 @@ int MF_EMailPostmasterGeneric(const char* Subject, const char* Text, const char*
 		fprintf(mail,"\r\n");
 
 		fclose(mail);
+
+		ThreadSwitch();
 		return 0;
 	}
 }
@@ -3080,6 +3084,7 @@ static bool CheckDirectory(const char* szDirectoryName, bool bCleanUp)
 			}
 			
 		}
+		ThreadSwitch();
 	}
 	
 	return true;
@@ -3088,6 +3093,8 @@ static bool CheckDirectory(const char* szDirectoryName, bool bCleanUp)
 
 void __mfd_symbols_worker()
 {
+	ThreadSwitch();
+
 	char scanDir[MAX_PATH];
 	sprintf(scanDir,"%s"IX_DIRECTORY_SEPARATOR_STR"MFSCAN"IX_DIRECTORY_SEPARATOR_STR"%04i"IX_DIRECTORY_SEPARATOR_STR"lock.mfs",MF_GlobalConfiguration->MFLTRoot.c_str(),0);
 	

@@ -392,6 +392,7 @@ int MF_ParseMail(MailFilter_MailData* m, bool bMiniMode)
 							}
 							
 							iThisAttSize = MFVS_DecodeAttachment(szAttFile,mailFile,mimeEncodingBase64);
+#ifndef MAILFILTER_VERSION_YESITCRASHES
 							if (iThisAttSize == 0)
 							{	// try with uuencode
 								iThisAttSize = MFVS_DecodeAttachment(szAttFile,mailFile,mimeEncodingUUEncode);
@@ -400,7 +401,8 @@ int MF_ParseMail(MailFilter_MailData* m, bool bMiniMode)
 							{	// try with qp
 								iThisAttSize = MFVS_DecodeAttachment(szAttFile,mailFile,mimeEncodingQuotedPrintable);
 							}
-							
+#endif
+
 							if (iThisAttSize > 0)
 							{
 								m->iTotalAttachmentSize += iThisAttSize;
