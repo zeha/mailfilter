@@ -4,7 +4,7 @@
  +		
  +		Worker Thread Code
  +		
- +		Copyright 2001 Christian Hofstädtler.
+ +		Copyright 2001-2004 Christian Hofstädtler.
  +		
  +		
  +		- Aug/2001 ; ch   ; Initial Code
@@ -594,8 +594,8 @@ int MF_FilterCheck( MailFilter_MailData* m, char *szScan , int matchfield )
 	}
 	if (rc)
 	{	/* set these things appropaite */
-		m->iFilterNotify = MF_GlobalConfiguration.filterList[m->iFilterHandle-1].notify;
-		m->iFilterAction = MF_GlobalConfiguration.filterList[m->iFilterHandle-1].action;
+		m->iFilterNotify = MF_GlobalConfiguration.filterList[(unsigned int)(m->iFilterHandle-1)].notify;
+		m->iFilterAction = MF_GlobalConfiguration.filterList[(unsigned int)(m->iFilterHandle-1)].action;
 	}
 	
 	_mfd_free(toScan,"FilterCheckSBuf");
@@ -719,12 +719,12 @@ consoleprintf("***RuleExec called***\n");
 //MFD_Out("..");
 		switch (MF_GlobalConfiguration.filterList[(unsigned int)curItem].matchfield)
 		{
-		case MailFilter_Configuration::MailFilter_Configuration::always:
+		case MailFilter_Configuration::always:
 			// this rule matches without any other filters
 			szFieldDescription = "Always";
 			iResult = 1;
 			break;
-		case MailFilter_Configuration::MailFilter_Configuration::email:
+		case MailFilter_Configuration::email:
 //			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL)) break;
 			szFieldDescription = "E-Mail address";
 
@@ -734,7 +734,7 @@ consoleprintf("***RuleExec called***\n");
 			if (m->szEnvelopeRcpt[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeRcpt);	szFieldDescription = "Recipients's E-Mail";	}
 
 			break;
-		case MailFilter_Configuration::MailFilter_Configuration::emailBothAndCC:
+		case MailFilter_Configuration::emailBothAndCC:
 //			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL)) break;
 			szFieldDescription = "E-Mail address";
 
@@ -745,7 +745,7 @@ consoleprintf("***RuleExec called***\n");
 			if (m->szMailCC[0]!=0)			if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailCC);		szFieldDescription = "CC's E-Mail";			}
 
 			break;
-		case MailFilter_Configuration::MailFilter_Configuration::emailFrom:
+		case MailFilter_Configuration::emailFrom:
 //			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL_FROM)) break;
 			szFieldDescription = "Sender's E-Mail";
 
@@ -753,7 +753,7 @@ consoleprintf("***RuleExec called***\n");
 			if (m->szEnvelopeFrom[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeFrom);	}
 
 			break;
-		case MailFilter_Configuration::MailFilter_Configuration::emailTo:
+		case MailFilter_Configuration::emailTo:
 //			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL_TO)) break;
 			szFieldDescription = "Recipients's E-Mail";
 
@@ -761,7 +761,7 @@ consoleprintf("***RuleExec called***\n");
 			if (m->szEnvelopeRcpt[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeRcpt);	}
 
 			break;
-		case MailFilter_Configuration::MailFilter_Configuration::emailToAndCC:
+		case MailFilter_Configuration::emailToAndCC:
 //			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL_TO)) break;
 			szFieldDescription = "Recipients's E-Mail";
 
@@ -770,7 +770,7 @@ consoleprintf("***RuleExec called***\n");
 			if (m->szMailCC[0]!=0)			if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailCC);			szFieldDescription = "CC's E-Mail";			}
 
 			break;
-		case MailFilter_Configuration::MailFilter_Configuration::subject:
+		case MailFilter_Configuration::subject:
 //MFD_Out("S");
 //			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_SUBJECT)) break;
 			szFieldDescription = "Subject";
@@ -778,7 +778,7 @@ consoleprintf("***RuleExec called***\n");
 			if (m->szMailSubject[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailSubject);		}
 			
 			break;
-		case MailFilter_Configuration::MailFilter_Configuration::size:
+		case MailFilter_Configuration::size:
 //MFD_Out("Z");
 //			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_SIZE)) break;
 			szFieldDescription = "Mail Size";
@@ -793,7 +793,7 @@ consoleprintf("***RuleExec called***\n");
 					iResult = 1;
 				
 			break;
-		case MailFilter_Configuration::MailFilter_Configuration::attachment:
+		case MailFilter_Configuration::attachment:
 //MFD_Out("A");
 			att = m->lstAttachments->GetFirst();
 			while (att != NULL)
@@ -810,7 +810,7 @@ consoleprintf("***RuleExec called***\n");
 				att = m->lstAttachments->GetNext(att);
 			}
 			break;
-		case MailFilter_Configuration::MailFilter_Configuration::blacklist:
+		case MailFilter_Configuration::blacklist:
 		
 			char* holeZone = _mfd_strdup(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),"holeZone");
 			char* validResponse = strchr(holeZone,':');
@@ -830,7 +830,7 @@ consoleprintf("***RuleExec called***\n");
 			_mfd_free(holeZone,"holeZone");
 
 		    break;
-		case MailFilter_Configuration::MailFilter_Configuration::ipUnresolvable:
+		case MailFilter_Configuration::ipUnresolvable:
 		
 /*		
 			} else {
@@ -3074,8 +3074,8 @@ int MF_PostScan_Modify( MailFilter_MailData* m )
 							
 							if (memicmp(MF_GlobalConfiguration.Multi2One.c_str(),szTemp+strlen(szTemp)-strlen(MF_GlobalConfiguration.Multi2One.c_str()),strlen(MF_GlobalConfiguration.Multi2One.c_str())-2)==0)
 							{
-								szScanBuffer[curPos-2+5] = MF_GlobalConfiguration.Multi2One[curCmpPos-2];
-								szScanBuffer[curPos-1+5] = MF_GlobalConfiguration.Multi2One[curCmpPos-1];
+								szScanBuffer[curPos-2+5] = MF_GlobalConfiguration.Multi2One[(unsigned int)(curCmpPos-2)];
+								szScanBuffer[curPos-1+5] = MF_GlobalConfiguration.Multi2One[(unsigned int)(curCmpPos-1)];
 							}
 						}
 						bModifiedFromAddress = true;
@@ -3935,14 +3935,14 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 
 	MFT_NLM_ThreadCount++;
 	
-#if defined( N_PLAT_NLM ) && (!defined(__NOVELL_LIBC__))
 	// Rename this Thread
+#if defined( N_PLAT_NLM ) && (!defined(__NOVELL_LIBC__))
 	RenameThread(GetThreadID(),programMesgTable[THREADNAME_WORK]);		// 15 (16?) Chars max.
-	// init Namespaces and so on...
-//	SetCurrentNameSpace (NW_NS_LONG);
-//	SetTargetNameSpace(LONGNameSpace);
-	// 
-#endif 
+#endif
+#ifdef __NOVELL_LIBC__
+	NXContextSetName(NXContextGet(),"MailFilterWorker");
+#endif
+
 
 #define PS IX_DIRECTORY_SEPARATOR_STR
 

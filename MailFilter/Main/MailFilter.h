@@ -123,7 +123,14 @@ extern "C" {
 }
 #endif // __cplusplus
 
+	#define NUTCHAR unsigned char*
+	typedef unsigned char BOOL;
+
 #else
+
+	#define NUTCHAR char*
+	typedef int BOOL;
+
 #include <netware.h>
 #include <library.h>
 #include <nks/thread.h>
@@ -320,7 +327,7 @@ int __cdecl ConsolePrintf(const char* format, ... );
 
 	#ifdef N_PLAT_NLM
 		// NWSNUT State Information for MAIN THREAD ONLY!
-		 static NUTInfo *MF_NutInfo			= NULL;
+		 NUTInfo *MF_NutInfo			= NULL;
 		 static LONG allocTag;
 	#endif // N_PLAT_NLM
 
@@ -340,6 +347,10 @@ int __cdecl ConsolePrintf(const char* format, ... );
 	// (NUT) String Table
 	extern char *programMesgTable[];
 
+
+	#ifdef N_PLAT_NLM
+		 extern NUTInfo *MF_NutInfo;
+	#endif
 
 	#ifdef __cplusplus
 		#include "MFConfig.h++"
@@ -539,6 +550,7 @@ static char *_mfd_strdup( const char * str , const char* szFuncName )
 
 // Message Support Macro
 #define MF_Msg(id)						programMesgTable[id]
+#define MF_NMsg(id)						(NUTCHAR)programMesgTable[id]
 #define MF_DisplayCriticalError(id)		consoleprintf(MF_Msg(id))
 #define MF_StatusNothing(void)			MF_StatusText("")
 
@@ -586,8 +598,9 @@ bool MFBW_CheckCurrentScheduleState();
 int MF_CountFilters(int action);
 int MF_CountAllFilters();
 void MF_CheckProblemDirAgeSize();
+bool MF_NutInit(void);
 
-
+int MailFilter_Main_RunAppConfig(bool bStandalone);
 
 // Thread Functions
 #ifndef WIN32

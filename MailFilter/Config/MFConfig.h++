@@ -16,6 +16,8 @@
 #include <iostream>
 #include <vector>
 
+#include "MFConfig-Filter.h++"
+
 #ifndef __MAILFILTER_CONFIGURATION_CPP_HEADER
 #define __MAILFILTER_CONFIGURATION_CPP_HEADER
 
@@ -24,7 +26,6 @@ namespace MailFilter_Configuration
 
 #include "MFConfig-defines.h"
 
-#include "MFConfig-Filter.h++"
 
 //#define MAILFILTER_CONFIGURATION_SIGNATURE			"MAILFILTER_R001_009"		//*** MODIFY THESE
 //#define MAILFILTER_CONFIGURATION_THISBUILD			9							//    TWO BUILD NUMBERS ***
@@ -76,7 +77,8 @@ public:
 	
 	std::string	MessageFooterText;
 	
-	std::vector<MailFilter_Configuration::Filter> filterList;
+	//std::vector<MailFilter_Configuration::Filter> filterList;
+	MAILFILTER_CONFIGURATION_FILTERLISTTYPE filterList;
 
 	ApplicationModeType ApplicationMode;	
 

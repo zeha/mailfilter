@@ -43,7 +43,7 @@
 
 // NUT: Local Prototypes
 static int MF_NutVerifyExit(void);
-static bool MF_NutInit();
+//static bool MF_NutInit();
 static void MF_NutHandlerKeyF5 (void *handle);
 static void MF_NutHandlerKeyF6 (void *handle);
 static void MF_NutHandlerKeyF7 (void *handle);
@@ -335,6 +335,15 @@ bool MF_NutInit(void)
 		/*	handle				*/	&MF_NutInfo
 		);
 	if(ccode != NULL) {	return false;	}
+
+	return true;
+}
+
+bool MailFilterApp_Server_InitNut()
+{
+
+	if (!MF_NutInit())
+		return false;
 
 	LONG	statusPortal;
   
@@ -717,11 +726,13 @@ void NLM_SignalHandler(int sig)
 
 #ifndef __NOVELL_LIBC__
 				SetThreadGroupID(handlerThreadGroupID);
+#else
+				ungetcharacter(27);
 #endif
 
 				while (MFT_NLM_ThreadCount > 0)
 				{
-//					gotoxy(49,1);
+//					gotorowcol(49,1);
 //					printf("%d",MFT_NLM_ThreadCount);
 					NXThreadYield();
 				}
@@ -745,7 +756,7 @@ void NLM_SignalHandler(int sig)
 
 bool MF_NLM_InitDS()
 {
-#ifndef __NOVELL_LIBC__
+#if 0 //ndef __NOVELL_LIBC__
 //	NWCCODE				ccode;
 	NWDSCCODE			dsccode;
 	LCONV				lConvInfo;
@@ -1015,7 +1026,7 @@ int MailFilter_Main_RunAppServer()
 	// Init NWSNut
 	printf(MF_Msg(MSG_BOOT_USERINTERFACE));
 
-	if (!MF_NutInit())
+	if (!MailFilterApp_Server_InitNut())
 		goto MF_MAIN_TERMINATE;
 	
 	// DS and Server Connections ...
@@ -1132,7 +1143,7 @@ MF_MAIN_RUNLOOP:
 		ThreadSwitch();
 
 		// Lie that we've already exited ...
-		MFT_NLM_ThreadCount--;
+		--MFT_NLM_ThreadCount;
 
 		// 
 		LONG tmp_Key_Type;
@@ -1200,20 +1211,16 @@ MFD_Out(MFD_SOURCE_GENERIC,"MFNLM: MF Restart detected");
 			}
 				
 			// increase thread count so we can decrease it above again.
-			MFT_NLM_ThreadCount++;
+			++MFT_NLM_ThreadCount;
 
 			goto MF_MAIN_RUNLOOP;
 		}
 
 	}
 
-//	ExitThread(TSR_THREAD,0);
-
 MF_MAIN_TERMINATE:
 	return 0;
 }
-/*
-*/
 
 //
 //  Main NLM Function
@@ -1225,7 +1232,7 @@ MF_MAIN_TERMINATE:
 int main( int argc, char *argv[ ])
 {
 
-	MFT_NLM_ThreadCount++;
+	++MFT_NLM_ThreadCount;
 
 #ifdef _MF_MEMTRACE
 	atexit(_mfd_tellallocccountonexit);
@@ -1257,12 +1264,7 @@ int main( int argc, char *argv[ ])
 	{
 		struct utsname u;
 		uname(&u);
-		
-/*		consoleprintf("MAILFLT: Info: LibC version running on %d.%d SP%d\n",
-				u.netware_major,
-				u.netware_minor,
-				u.servicepack);
-*/				
+	
 		if ( 
 			(u.netware_major == 6) &&
 			(u.netware_minor == 0) &&
@@ -1347,7 +1349,6 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 	SetAutoScreenDestructionMode(true);
 #endif
 
-
 	// Read Configuration from File
 	printf(MF_Msg(MSG_BOOT_CONFIGURATION));
 
@@ -1363,15 +1364,23 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 	signal(	SIGTERM	, NLM_SignalHandler	);
 	signal(	SIGINT	, NLM_SignalHandler	);
 	
-	
+
 	if (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::SERVER)
 	{
+#ifndef __NOVELL_LIBC__
+		NXContextSetName(NXContextGet(),"MailFilterServer");
+#endif
 		return MailFilter_Main_RunAppServer();
 	}
 	else
-	if (0) { }
-	else 
-	if (0) { }
+	if (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::CONFIG)
+	{
+#ifndef __NOVELL_LIBC__
+		NXContextSetName(NXContextGet(),"MailFilterConfig");
+#endif
+		--MFT_NLM_ThreadCount;
+		return MailFilter_Main_RunAppConfig(true);
+	}
 	else
 	{
 		ConsolePrintf("MAILFILTER: Could not run your selected application.\n\tMaybe it is not compiled-in.\n");

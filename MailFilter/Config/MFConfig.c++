@@ -188,68 +188,318 @@ Configuration::~Configuration()
 
 bool Configuration::ReadFilterList()
 {
-	FILE* fFile;
-	long rc;
-//	long rc2;
+
+	if (this->config_build > 7)
+	{
+
+		FILE* fFile;
+		long rc;
+		char szTemp[1002];
+		int curItem=0;
+		int curFilter=0;
+		int curPos=-1;
+		int curChr = 0;
+	#ifdef _MAILFILTER_WITH_POSIX_REGEXP_H
+		regex_t re;
+	#endif
+	#ifdef _MAIFILTER_WITH_REGEXP_H
+		pcre *re;
+	#endif
+
+
+		fFile = fopen(this->config_file.c_str(),"rb");
+		fseek(fFile,4001,SEEK_SET);
+
+		while (!feof(fFile))
+		{
+			fseek(fFile,-1,SEEK_CUR);
+			MailFilter_Configuration::Filter flt;
+			
+			flt.matchfield = (MailFilter_Configuration::FilterField)(fgetc(fFile));
+			flt.notify = (MailFilter_Configuration::Notification)(fgetc(fFile));
+			flt.type = (MailFilter_Configuration::FilterType)(fgetc(fFile));
+			flt.action = (MailFilter_Configuration::FilterAction)(fgetc(fFile));
+			flt.enabled = (bool)(fgetc(fFile));
+			flt.enabledIncoming = (bool)(fgetc(fFile));
+			flt.enabledOutgoing = (bool)(fgetc(fFile));
+			
+			if (this->config_build < 9)
+			{
+				switch (flt.matchfield)
+				{
+				case MAILFILTER_OLD_MATCHFIELD_SUBJECT:
+					flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_SUBJECT;
+					break;
+				case MAILFILTER_OLD_MATCHFIELD_SIZE:
+					flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_SIZE;
+					break;
+				case MAILFILTER_OLD_MATCHFIELD_EMAIL_FROM:
+					flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_EMAIL_FROM;
+					break;
+				case MAILFILTER_OLD_MATCHFIELD_EMAIL_TO:
+					flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_EMAIL_TO;
+					break;
+				}
+			}
+			if (this->config_build < 10)
+			{
+				switch (flt.matchfield)
+				{
+				case MAILFILTER_MATCHFIELD_EMAIL_TO:
+					flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_EMAIL_TOANDCC;
+					break;
+				case MAILFILTER_MATCHFIELD_EMAIL:
+					flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_EMAIL_BOTHANDCC;
+					break;
+				}
+			}
+
+			rc = (long)fread(szTemp,sizeof(char),1000,fFile);
+			fseek(fFile,((int)(strlen(szTemp)))-rc+1,SEEK_CUR);
+			
+			if (strlen(szTemp) > 0) flt.expression = szTemp;
+
+			rc = (long)fread(szTemp,sizeof(char),1000,fFile);
+			fseek(fFile,((int)(strlen(szTemp)))-rc+1,SEEK_CUR);
+
+			if (strlen(szTemp) > 0) flt.name = szTemp;
+			
+			if (flt.expression == "")
+			{
+				break;
+			}
+			
+			this->filterList.push_back(flt);
+			
+			fgetc(fFile);
+		}
+
+		fclose(fFile);
+		
+		return true;
+
+	} else {
+		// i cannot upgrade this.
+		// sorry.
+		return false;
+	}
+
+}
+
+/*
+// this one can read the V7 config file and put it in the current memory config
+int MF_Filter_InitListsV7()
+{
+	FILE* cfgFile;
+	int curItem;
+	long rc1;
+	long rc2;
 	char szTemp[1002];
+
+	// version 7
+
+	cfgFile = fopen(MAILFILTER_CONFIGURATION_MAILFILTER,"rb");
+	fseek(cfgFile,4000,SEEK_SET);
+
+	for (curItem = 0; curItem<MailFilter_MaxFilters; curItem++)
+	{
+		MFC_Filters[curItem].matchfield = (char)fgetc(cfgFile);
+
+		switch (MFC_Filters[curItem].matchfield)
+		{
+		case MAILFILTER_OLD_MATCHFIELD_SUBJECT:
+			MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_SUBJECT;
+			break;
+		case MAILFILTER_OLD_MATCHFIELD_SIZE:
+			MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_SIZE;
+			break;
+		case MAILFILTER_OLD_MATCHFIELD_EMAIL_FROM:
+			MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_EMAIL_FROM;
+			break;
+		case MAILFILTER_OLD_MATCHFIELD_EMAIL_TO:
+			MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_EMAIL_TOANDCC;
+			break;
+		}
+			
+		MFC_Filters[curItem].notify = (char)fgetc(cfgFile);
+		MFC_Filters[curItem].type = 0;
+		MFC_Filters[curItem].action = (char)fgetc(cfgFile);
+		MFC_Filters[curItem].enabled = (char)fgetc(cfgFile);
+		MFC_Filters[curItem].enabledIncoming = (char)fgetc(cfgFile);
+		MFC_Filters[curItem].enabledOutgoing = (char)fgetc(cfgFile);
+		MFC_Filters[curItem].expression[0] = 0;
+		
+		rc1 = (long)fread(szTemp,sizeof(char),501,cfgFile);
+		fseek(cfgFile,((int)(strlen(szTemp)))-rc1+1,SEEK_CUR);
+		
+		if (strlen(szTemp) > 0) strncpy(MFC_Filters[curItem].expression,szTemp,strlen(szTemp)+1);
+			else MFC_Filters[curItem].expression[0]=0;		
+
+		rc2 = (long)fread(szTemp,sizeof(char),61,cfgFile);
+		fseek(cfgFile,((int)(strlen(szTemp)))-rc2+1,SEEK_CUR);
+
+		if (strlen(szTemp) > 0) strncpy(MFC_Filters[curItem].name,szTemp,strlen(szTemp)+1);
+			else MFC_Filters[curItem].name[0]=0;
+		
+		if (MFC_Filters[curItem].expression[0]==0)
+			break;
+	}
+
+	fclose(cfgFile);
+	return 0;
+}
+
+// this one can read the V6 config file and put it in the current memory config
+int MF_Filter_InitListsV6()
+{
+	FILE* filterList;
 	int curItem=0;
 	int curFilter=0;
 	int curPos=-1;
 	int curChr = 0;
-#ifdef _MAILFILTER_WITH_POSIX_REGEXP_H
-	regex_t re;
-#endif
-#ifdef _MAIFILTER_WITH_REGEXP_H
-	pcre *re;
-#endif
 
+	////////////////////
+	//
+	//  Begin with the ATTACHMENTS
+	//
 
-	// version 8
-	
-	// here we go again ...
+	filterList = fopen(MAILFILTER_CONFIGURATION_MAILFILTER,"rb");
+	fseek(filterList,4000,SEEK_SET);
 
-	fFile = fopen(this->config_file.c_str(),"rb");
-	fseek(fFile,4000,SEEK_SET);
-
-	while (!feof(fFile))
+	if (filterList == NULL)
 	{
-	
-		MailFilter_Configuration::Filter flt; // = new MailFilter_Configuration::Filter();
-		
-		flt.matchfield = (MailFilter_Configuration::FilterField)(fgetc(fFile));
-		flt.notify = (MailFilter_Configuration::Notification)(fgetc(fFile));
-		flt.type = (MailFilter_Configuration::FilterType)(fgetc(fFile));
-		flt.action = (MailFilter_Configuration::FilterAction)(fgetc(fFile));
-		flt.enabled = (bool)(fgetc(fFile));
-		flt.enabledIncoming = (bool)(fgetc(fFile));
-		flt.enabledOutgoing = (bool)(fgetc(fFile));
-		
-		rc = (long)fread(szTemp,sizeof(char),1000,fFile);
-		fseek(fFile,((int)(strlen(szTemp)))-rc+1,SEEK_CUR);
-		
-		if (strlen(szTemp) > 0) flt.expression = szTemp;
-
-		rc = (long)fread(szTemp,sizeof(char),1000,fFile);
-		fseek(fFile,((int)(strlen(szTemp)))-rc+1,SEEK_CUR);
-
-		if (strlen(szTemp) > 0) flt.name = szTemp;
-		
-		if (flt.expression == "")
-		{
-		//	delete flt;
-			break;
-		}
-		
-//		consoleprintf("pushing filter()\n");
-		this->filterList.push_back(flt);
-			
+		ConsolePrintf("MAILFILTER: Error while opening configuration file.\n");
+		return FALSE;
 	}
 
-	fclose(fFile);
+	while( !feof(filterList) )
+	{
+		if (curItem > MFT_Filter_ListAttachments_MAX-1) break;
+
+		MFC_Filters[curFilter].expression[0]=0;
+		fread(MFC_Filters[curFilter].expression,sizeof(char),50,filterList);
+		MFC_Filters[curFilter].expression[50-1]=0;
+		if (MFC_Filters[curFilter].expression[0]==0)
+			break;
+
+		MFC_Filters[curFilter].matchfield = MAILFILTER_MATCHFIELD_ATTACHMENT;
+		MFC_Filters[curFilter].name[0] = 0;
+		MFC_Filters[curFilter].enabled = true;
+		MFC_Filters[curFilter].enabledIncoming = true;
+		MFC_Filters[curFilter].enabledOutgoing = true;
+		MFC_Filters[curFilter].enabled = (MFC_Filters[curItem].enabledIncoming == true) && (MFC_Filters[curFilter].enabledOutgoing == true);
+		MFC_Filters[curFilter].notify = migrateNotify;
+		MFC_Filters[curFilter].action = MAILFILTER_MATCHACTION_DROP_MAIL;
+				
+#ifdef N_PLAT_NLM
+		ThreadSwitch();
+#endif
+		curFilter++;
+		curItem++;
+	}
+
+	//
+	//
+	////////////////////
+
+
+	////////////////////
+	//
+	//  Next, the SUBJECT cache
+	//
+
+	fseek(filterList,11550,SEEK_SET);
+
+	while( !feof(filterList) )
+	{
+		if (curItem > MFT_Filter_ListSubjects_MAX-1) break;
+
+		MFC_Filters[curFilter].expression[0]=0;
+		curPos=-1;
+		curChr=0;
+		fread(MFC_Filters[curFilter].expression,sizeof(char),75,filterList);
+		MFC_Filters[curFilter].expression[75-1]=0;
+		if (MFC_Filters[curFilter].expression[0]==0)
+			break;
+
+		MFC_Filters[curFilter].matchfield = MAILFILTER_MATCHFIELD_SUBJECT;
+		MFC_Filters[curFilter].name[0] = 0;
+		MFC_Filters[curFilter].enabled = true;
+		MFC_Filters[curFilter].enabledIncoming = true;
+		MFC_Filters[curFilter].enabledOutgoing = true;
+		MFC_Filters[curFilter].enabled = (MFC_Filters[curFilter].enabledIncoming == true) && (MFC_Filters[curFilter].enabledOutgoing == true);
+		MFC_Filters[curFilter].notify = migrateNotify;
+		MFC_Filters[curFilter].action = MAILFILTER_MATCHACTION_DROP_MAIL;
+				
+#ifdef N_PLAT_NLM
+		ThreadSwitch();
+#endif
+		curFilter++;
+	}
+	//
+	//
+	////////////////////
+
+	////////////////////
+	//
+	//  Next, the SENDER cache
+	//
+	fseek(filterList,87000,SEEK_SET);
+
+	while( !feof(filterList) )
+	{
+		if (curItem > MFT_Filter_ListSenders_MAX-1) break;
+
+		MFC_Filters[curFilter].expression[0]=0;
+
+		curPos=-1;
+		curChr=0;
+
+		fread(MFC_Filters[curFilter].expression,sizeof(char),50,filterList);
+		MFC_Filters[curFilter].expression[50-1]=0;
+
+		if (MFC_Filters[curFilter].expression[0]==0)
+			break;
+
+		MFC_Filters[curFilter].matchfield = MAILFILTER_MATCHFIELD_EMAIL;
+		MFC_Filters[curFilter].name[0] = 0;
+		MFC_Filters[curFilter].enabledIncoming = true;
+		MFC_Filters[curFilter].enabledOutgoing = true;
+		MFC_Filters[curFilter].enabled = (MFC_Filters[curFilter].enabledIncoming == true) && (MFC_Filters[curFilter].enabledOutgoing == true);
+		MFC_Filters[curFilter].notify = migrateNotify;
+		MFC_Filters[curFilter].action = MAILFILTER_MATCHACTION_DROP_MAIL;
+				
+#ifdef N_PLAT_NLM
+		ThreadSwitch();
+#endif
+		curFilter++;
+	}
+
+	//
+	//
+	////////////////////
+
+	// ** MODIFY LISTS **
+
+	////////////////////
+	//
+	//  Next, the FROM cache
+	//
+	curItem = 0;
 	
-	return true;
+	fseek(filterList,95000,SEEK_SET);
+
+		fread(MFC_Multi2One,sizeof(char),50,filterList);
+		MFC_Multi2One[49]=0;
+	//
+	////////////////////
+	
+	fclose(filterList);
+	
+	return TRUE;
+
 }
- 
+*/
 bool Configuration::ReadFromFile(std::string alternateFilename)
 {
 	int rc = 0;

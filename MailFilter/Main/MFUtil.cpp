@@ -103,7 +103,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 	{
 //		int this_option_optind = ix_optind ? ix_optind : 1;
 
-		c = ix_getopt(argc, argv, "dhvx?");
+		c = ix_getopt(argc, argv, "dh?vxt");
 		if (c == -1)
 			break;
 			
@@ -129,7 +129,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 #endif
 			case '?':
 			case 'h':
-				printf ("MAILFILTER: Usage:\n\t%s [-dv] ConfigurationDir\n\t-d debug\n\t-v verbose\n",argv[0]);
+				consoleprintf ("MAILFILTER: Usage:\n\t%s [-dv] ConfigurationDir\n\t-d debug\n\t-v verbose\n",argv[0]);
 				return false;
 				break;
 			case 't':
@@ -151,11 +151,13 @@ int MF_ParseCommandLine( int argc, char **argv )
 						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::RESTORE;
 						bTArgOkay = true;
 					}
+					ix_optind++;
 				}
 				
 				if (!bTArgOkay)
 				{
-					printf("MAILFILTER: Invalid argument passed to -t.\n\tValid args are: \"server\" \"config\" \"restore\"\n");
+					consoleprintf("MAILFILTER: Invalid argument passed to -t.\n\tValid args are: \"server\" \"config\" \"restore\"\n");
+					return false;
 				}
 				break;
 			default:
@@ -165,13 +167,13 @@ int MF_ParseCommandLine( int argc, char **argv )
 
 	if (ix_optind < argc)
 	{
-		ConsolePrintf ("MAILFILTER: Using %s as Configuration Directory.\n",argv[ix_optind]);
+		consoleprintf ("MAILFILTER: Using %s as Configuration Directory.\n",argv[ix_optind]);
 		MF_GlobalConfiguration.config_directory = argv[ix_optind];
 		
 #ifdef IXPLAT_WIN32
 	} else {
 		char* xdir = GetRegValue(HKEY_LOCAL_MACHINE,"SOFTWARE\\Hofstaedtler IE GmbH\\MailFilter","InstallDir","C:\\Progra~1\\MailFilter");
-		ConsolePrintf ("MAILFILTER: Using %s as Configuration Directory.\n",xdir);
+		consoleprintf ("MAILFILTER: Using %s as Configuration Directory.\n",xdir);
 		MF_GlobalConfiguration.config_directory = xdir;
 	}
 #endif

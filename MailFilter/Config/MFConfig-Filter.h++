@@ -19,6 +19,8 @@
 #ifndef __MAILFILTER_CONFIGURATION_FILTER_CPP_HEADER
 #define __MAILFILTER_CONFIGURATION_FILTER_CPP_HEADER
 
+#define MAILFILTER_CONFIGURATION_FILTERLISTTYPE		std::vector<MailFilter_Configuration::Filter>
+
 namespace MailFilter_Configuration
 {
 
@@ -30,6 +32,7 @@ enum FilterType { match = 0, noMatch = 1 };
 class Filter
 {
 public:
+	char *sig;
 	FilterField matchfield;
 	std::string expression;
 	std::string name;
@@ -39,6 +42,8 @@ public:
 	FilterType type;
 	Notification notify;
 	FilterAction action;
+	
+	Filter(){ sig = "MFMFMF"; }
 };
 
 // Compatiblity Only:
