@@ -9,17 +9,22 @@ echo.
 
 set CMDIDE=call mftools\build.bat
 
-rd /s mailfilter\out
+REM rd /s mailfilter\out
+del mailfilter\out\*.nlm
+del mailfilter\out\*.ncv
+del mailfilter\out\*.map
+del mailfilter\out\*.lib
 
-%CMDIDE% iXplat ixplat.mcp /t "iXplat NLM"
+%CMDIDE% iXplat ixplat.mcp /t "iXplat NLM LibC"
+%CMDIDE% iXplat ixplat.mcp /t "iXplat NLM CLib"
 %CMDIDE% iXplat ixplat.mcp /t "iXplat W32"
 
-%CMDIDE% mailfilter\libs\src\pcre-3.9\pcrelib pcrelib.mcp /t "pcrelib nlm"
-%CMDIDE% mailfilter\libs\src\pcre-3.9\pcrelib pcrelib.mcp /t "pcrelib w32"
-%CMDIDE% mailfilter\libs\src\pcre-3.9\pcreposixlib pcreposixlib.mcp
+%CMDIDE% mailfilter\libs\src\pcre-4.5\pcrelib pcrelib.mcp /t "pcrelib nlm"
+%CMDIDE% mailfilter\libs\src\pcre-4.5\pcrelib pcrelib.mcp /t "pcrelib w32"
+%CMDIDE% mailfilter\libs\src\pcre-4.5\pcreposixlib pcreposixlib.mcp
 
-%CMDIDE% mailfilter\libs\src\zlib-libc\netware\static static.mcp
-%CMDIDE% mailfilter\libs\src\zlib-libc\contrib\minizip\nw minizip.mcp /t "MiniZip as Static Library"
+REM %CMDIDE% mailfilter\libs\src\zlib-libc\netware\static static.mcp
+REM %CMDIDE% mailfilter\libs\src\zlib-libc\contrib\minizip\nw minizip.mcp /t "MiniZip as Static Library"
 
 %CMDIDE% mailfilter\libs\src\tnef tnef-lib.mcp /t "TNEF Lib / NetWare CLIB"
 %CMDIDE% mailfilter\libs\src\tnef tnef-lib.mcp /t "TNEF Lib / NetWare LibC"
@@ -29,18 +34,18 @@ rd /s mailfilter\out
 %CMDIDE% mailfilter\Licensing\project library.mcp /t "Static Library NLM/LibC"
 %CMDIDE% mailfilter\Licensing\project library.mcp /t "Static Library Win32"
 
-%CMDIDE% mailfilter\platform\nlm\mfnrm MFNRM.mcp
-%CMDIDE% mailfilter\platform\nlm\mfzap MFZAP.mcp
+REM %CMDIDE% mailfilter\platform\nlm\mfnrm MFNRM.mcp
+REM %CMDIDE% mailfilter\platform\nlm\mfzap MFZAP.mcp
 
-%CMDIDE% mailfilter\platform\nlm mailfilter-clib.mcp /t "MailFilter/ax CLib"
-%CMDIDE% mailfilter\platform\nlm-libc mailfilter-libc.mcp /t "MailFilter/ax LibC"
+%CMDIDE% mailfilter\platform\nlm mailfilter-clib.mcp /t "MailFilter CLib"
+%CMDIDE% mailfilter\platform\nlm-libc mailfilter-libc.mcp /t "MailFilter LibC"
 
-%CMDIDE% mfconfig.nlm mfconfig.mcp /t "MFConfig / CLIB"
-%CMDIDE% mfconfig.nlm mfconfig.mcp /t "MFUpgrade / CLIB"
+REM %CMDIDE% mfconfig.nlm mfconfig.mcp /t "MFConfig / CLIB"
+REM %CMDIDE% mfconfig.nlm mfconfig.mcp /t "MFUpgrade / CLIB"
 
 REM %CMDIDE% mfmmx mfmmx.mcp
 
-%CMDIDE% mfrestore mfrestore.mcp
+REM %CMDIDE% mfrestore mfrestore.mcp
 
 %CMDIDE% mfxor mfxor.mcp
 

@@ -24,7 +24,7 @@ struct LibTNEF_ClientData {
 };
 
 extern int LibTNEF_SaveAttachmentData(struct LibTNEF_ClientData* data, char* szDestinationFilename);
-extern int LibTNEF_Decode(char* szFilename, struct LibTNEF_ClientData* data /* out */);
+extern int LibTNEF_Decode(const char* szFilename, struct LibTNEF_ClientData* data /* out */);
 extern int LibTNEF_Free(struct LibTNEF_ClientData* data /* in/out */);
 extern int LibTNEF_ReadNextAttribute(struct LibTNEF_ClientData* data /* in/out */);
 
