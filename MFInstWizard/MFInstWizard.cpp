@@ -567,7 +567,7 @@ BOOL CInstApp::InitInstance()
 
 					static const std::string::size_type npos = -1;
 					size_t i;
-					std::string smtpHomeLine = "/smtphome=" + this->mf_GwiaSmtpHome;
+					std::string smtpHomeLine = "/smtphome=" + this->mf_GwiaSmtpHome+ "\r\n";
 
 					std::string line;
 					std::string value;
@@ -609,7 +609,7 @@ BOOL CInstApp::InitInstance()
 									WriteLog("  > overriding old smtphome setting");
 								}
 							}
-							newcfgfile << line << std::endl;
+							newcfgfile << line;// << std::endl;
 						}
 
 						if (!bPatchedSmtpHome)
