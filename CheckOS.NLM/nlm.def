@@ -1,0 +1,6 @@
+MODULE LIBC.NLM
+# MFAVA.NLM
+#CALNLM32.NLM
+IMPORT @E:/Novell/NDK/libc/imports/libc.imp
+IMPORT @E:/Novell/NDK/libc/imports/netware.imp
+IMPORT LoadModuleInSpace OSAddressSpaceID
