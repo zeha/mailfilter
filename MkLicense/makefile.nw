@@ -1,0 +1,53 @@
+###########################################################
+
+LIBS=libc.lib
+NWSDK=E:\Novell\ndk\nwsdk
+VC=E:\Programme\Microsoft Visual Studio\VC98
+
+.silent:
+
+###########################################################
+
+LK="$(VC)\bin\link"
+
+CF=/c /DN_PLAT_NLM /G5 /Gd /GF /nologo /O1 /W4 /Zp1 /I$(NWSDK)\include\nwdll /I$(NWSDK)\include\nlm /I$(NWSDK)\include 
+RF=/r /x /i"$(VC)\include" /dVER_MAJ=$(VER_MAJ) /dVER_MIN=$(VER_MIN) /dVER_REV=$(VER_REV) /dVER_STR=\"$(VER_STR)\"
+LF=/nologo /DLL /LIBPATH:$(NWSDK)\lib\nwdll\vc /NODEFAULTLIB:oldnames.lib
+
+OBJ=NLM\mklic.obj
+
+rel:    dir NLM\mfmklic.nlm
+
+dir:
+        if not exist NLM\nul md NLM
+
+.c{nlm}.obj:
+	$(CC) @<<
+$(CF) -Fo$@ $<
+<<
+
+.cpp{nlm}.obj:
+	$(CC) @<<
+$(CF) -Fo$@ $<
+<<
+
+.rc{nlm}.res:
+	$(RC) $(RF) -fo$@ $<
+
+#out\$(PROGNAME).res makefile.nw
+#out\$(PROGNAME).res
+
+NLM\mfmklic.nlm: $(OBJ) makefile.nw
+	echo Linking $*
+	$(LK) $(LF) @<<
+$(OBJ)
+/OUT:$@
+/MAP:$*.map
+/PDB:nul
+/SUBSYSTEM:Console
+/MERGE:.CRT=.data
+$(LIBS)
+<<
+
+NLM\mklic.obj:	.\mklic.cpp	makefile.nw
+#out\MailFilter.res:	.\nlm\MailFilter.rc	.\nlm\MFVersion.h .\nlm\MailFilter.h makefile.nw .\nlm\version.mak

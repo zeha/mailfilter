@@ -1,0 +1,21 @@
+##
+## MFSTART.NCF - Starts the MailFilter System.
+##
+#
+MFSTOP
+#######
+## Load MailFilter Server/NLM
+## This is the main component of MailFilter on NetWare.
+load mailflt
+# load address space = MailFilter mailflt
+#######
+#
+#######
+## Load MailFilter/NRM
+## MailFilter/NRM is disabled by default.
+# load mfnrm
+#######
+#
+##
+## --- e o f ---
+##

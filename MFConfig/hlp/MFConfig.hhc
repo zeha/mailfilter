@@ -1,0 +1,31 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD><BODY>
+<OBJECT type="text/site properties">
+	<param name="ImageType" value="Folder">
+</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="MailFilter/ax professional">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="MailFilter/ax professional">
+			<param name="Local" value="HIDD_ROOT_DIALOG.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Rule Import">
+			<param name="Local" value="HIDD_WIZ_IMPORT.htm">
+			<param name="New" value="1">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Rule Export">
+			<param name="Local" value="HIDD_WIZ_EXPORT.htm">
+			<param name="New" value="1">
+			</OBJECT>
+	</UL>
+</UL>
+</BODY></HTML>

@@ -1,0 +1,434 @@
+Transport-Neutral Encapsulation Format 
+(TNEF)
+TNEF is a format for converting a set of MAPI properties-a MAPI message-into a serial data stream. The 
+TNEF functions are primarily used by transport providers that need to encode MAPI message properties for 
+transmission through a messaging system that does not support those properties directly. For example, an 
+SMTP based transport would use TNEF to encode properties like PR_SENT_REPRESENTING, which do 
+not have direct representations in the structure of an SMTP message.
+The TNEF implementation defines several TNEF-specific attributes, each of which correspond to particular 
+MAPI properties. These attributes are used to encode their respective MAPI properties into the TNEF 
+stream. In addition, a special attribute is defined that can be used to encapsulate any MAPI property that 
+does not have a specific attribute corresponding to it. The reason these attributes are defined, instead of 
+simply using a uniform encoding method for all MAPI properties, is to enable backward compatibility with 
+non-MAPI software that is using TNEF such as Microsoft Mail 3.x and its transport providers.
+The remainder of this appendix describes the structure and syntax of a TNEF stream, the mapping between 
+MAPI properties and TNEF attributes, and important considerations for certain TNEF attributes.
+TNEF Stream Structure
+A TNEF stream begins with a 32-bit signature that identifies the stream as a TNEF stream. Following the 
+signature is a 16-bit unsigned integer that is used as a key to cross-reference attachments to their location 
+within the tagged message text. The remainder of the stream is a sequence of TNEF attributes. Message 
+attributes appear first in the TNEF stream, and attachment attributes follow. Attributes belonging to a 
+particular attachment are grouped together, beginning with the attAttachRenddata attribute.
+Most of the constant values used in TNEF streams are defined in the tnef.h header file. Notably, 
+TNEF_SIGNATURE, LVL_MESSAGE, LVL_ATTACHMENT, and all the TNEF attribute identifiers 
+are defined in that file. Other constants have the values indicated by their interpretation to a C language 
+compiler. Typically such constants are used to give the sizes of the following item. For example, 
+sizeof(ULONG) in an item's definition indicates that an integer representing the size of the following 
+unsigned long integer should occur in that place in the TNEF stream.
+All integers in a TNEF stream are stored in little-endian binary form, but are shown in hexadecimal 
+throughout this appendix. Checksum values are simply 16-bit unsigned integers that are the sum, modulo 
+65536, of the bytes of data that the checksum applies to. All attribute lengths are unsigned long integers, 
+including any terminating null characters.
+The key is a nonzero, 16-bit unsigned integer that signifies the initial value of the attachment reference 
+keys. The attachment reference keys are assigned to each attachment sequentially beginning with the initial 
+value, that is passed to the OpenTnefStream function by the service provider that is using TNEF. The 
+service provider should generate a random initial value for the key to minimize the chance that two 
+messages use the same key.
+The TNEF implementation uses attribute identifiers to map attributes to their corresponding MAPI 
+properties. An attribute identifier is a 32-bit unsigned integer made up of two word values. The high-order 
+word is an indication of the data type, such as string or binary, and the low-order word identifies the 
+particular attribute. The data types in the high order word are:*
+Type
+Value
+
+
+atpTriples
+0x0000
+atpString
+0x0001
+atpText
+0x0002
+atpDate
+0x0003
+atpShort
+0x0004
+atpLong
+0x0005
+atpByte
+0x0006
+atpWord
+0x0007
+atpDword
+0x0008
+atpMax
+0x0009
+
+
+The low-order word values for each attribute are defined in the tnef.h header file.
+TNEF Stream Syntax
+This topic presents a Bakus-Nauer like description of the TNEF stream syntax. In this description, non-
+terminal elements that have a further definition are in italics. Constants and literal items are in bold. 
+Sequences of elements are listed in order on a single line. For example, the Stream item consists of the 
+constant TNEF_SIGNATURE, followed by a Key, followed by an Object. When an item has more than 
+one possible implementation, the alternatives are listed on consecutive lines. For example, an Object can 
+consist of a Message_Seq, a Message_Seq followed by an Attach_Seq, or just an Attach_Seq.
+TNEF_Stream:
+TNEF_SIGNATURE Key Object
+Key:
+a nonzero 16-bit unsigned integer
+TNEF enabled transports generate this value before using the TNEF implementation to generate a TNEF 
+stream.
+Object:
+Message_Seq
+Message_Seq Attach_Seq
+Attach_Seq
+Message_Seq:
+attTnefVersion
+attTnefVersion Msg_Attribute_Seq
+attTnefVersion attMessageClass
+attTnefVersion attMessageClass Msg_Attribute_Seq
+attMessageClass
+attMessageClass Msg_Attribute_Seq
+Msg_Attribute_Seq
+attTnefVersion:
+LVL_MESSAGE attTnefVersion sizeof(ULONG) 0x00010000 checksum
+attMessageClass:
+LVL_MESSAGE attMessageClass msg_class_length msg_class checksum
+Msg_Attribute_Seq:
+Msg_Attribute
+Msg_Attribute Msg_Attribute_Seq
+Msg_Attribute:
+LVL_MESSAGE attribute-ID attribute-length attribute-data checksum
+Attribute-ID is one of the TNEF attribute identifiers, such as attSubject. Attribute-length is the length in 
+bytes of the attribute data. Attribute-data is the data associated with the attribute.
+Attach_Seq:
+attRenddata
+attRenddata Att_Attribute_Seq
+attRenddata:
+LVL_ATTACHMENT attRenddata sizeof(RENDDATA) renddata checksum
+Renddata is the data associated with the RENDDATA structure containing the rendering information for the 
+corresponding attachment. The RENDDATA structure is defined in the tnef.h header file.
+Att_Attribute_Seq:
+Att_Attribute
+Att_Attribute Att_Attribute_Seq
+Att_Attribute:
+LVL_ATTACHMENT attribute-ID attribute-length attribute-data checksum
+Attribute-ID, attribute-length, and attribute-data have the same meanings as for the Msg_Attribute item.
+
+Mapping of TNEF Attributes to MAPI Properties
+The following table lists all the attributes defined in the TNEF implementation and their mappings to MAPI 
+properties. In some cases, multiple MAPI properties are encoded as a single attribute. Some attributes have 
+extended descriptions later in this appendix.*
+TNEF attribute
+MAPI property or properties
+
+
+attAidOwner
+PR_OWNER_APPT_ID
+attAttachCreateDate
+PR_CREATION_TIME
+attAttachData
+PR_ATTACH_DATA_BIN or 
+PR_ATTACH_DATA_OBJ
+attAttachment
+For information about this mapping, see "Comments 
+About the Attributes" later in this chapter
+attAttachMetaFile
+PR_ATTACH_RENDERING
+attAttachModifyDate
+PR_LAST_MODIFICATION_TIME
+attAttachRenddata
+PR_ATTACH_METHOD, 
+PR_RENDERING_POSITION
+attAttachTitle
+PR_ATTACH_FILENAME
+attAttachTransportFilename
+PR_ATTACH_TRANSPORT_NAME
+attBody
+PR_BODY
+attConversationID
+PR_CONVERSATION_KEY. See attConversationID 
+and attParentID for details.
+attDateEnd
+PR_END_DATE See attDate Attributes for details.
+attDateModified
+PR_LAST_MODIFICATION_TIME See attDate 
+Attributes for details.
+attDateRecd
+PR_MESSAGE_DELIVERY_TIME See attDate 
+Attributes for details.
+attDateSent
+PR_CLIENT_SUBMIT_TIME See attDate Attributes 
+for details.
+attDateStart
+PR_START_DATE See attDate Attributes for details.
+attFrom
+PR_SENDER_ENTRYID and PR_SENDER_NAME
+attMAPIProps
+For information about this attribute, see attMAPIProps.
+attMessageClass
+PR_MESSAGE_CLASS
+attMessageID
+PR_SEARCH_KEY See TNEF Correlation in X.400 
+Gateways and Transports.
+attMessageStatus
+PR_MESSAGE_FLAGS
+attOriginalMessageClass
+PR_ORIG_MESSAGE_CLASS
+attOwner
+See attOwner for details.
+attParentID
+PR_PARENT_KEY See attConversationID and 
+attParentID for details.
+attPriority
+PR_PRIORITY
+attRecipTable
+PR_MESSAGE_RECIPIENTS
+attRequestRes
+PR_RESPONSE_REQUESTED
+attSentFor
+PR_SENT_REPRESENTING_ENTRYID
+attSubject
+PR_SUBJECT
+attTnefVersion
+For information about this attribute, see 
+Comments About the Attributes
+This section provides additional information about certain TNEF attributes. For more information about the 
+MAPI properties that the attributes are mapped to, see the reference entries for the individual properties.
+attMAPIProps
+The attMAPIProps attribute is special in that it can be used to encode any MAPI property that does not 
+have a counterpart in the set of existing TNEF-defined attributes. The attribute data is a counted set of 
+MAPI properties laid end-to-end. The format of this encoding, which allows for any set of MAPI properties, 
+is as follows:
+Property_Seq:
+property-count Property_Value, ...
+There must be as many Property_Value items as the property-count value indicates.
+Property_Value:
+property-tag Property
+property-tag Proptag_Name Property
+The property-tag is simply the value associated with the property identifier, such as 0x003700001F for 
+PR_SUBJECT.
+Property:
+Value
+value-count Value, ...
+Value:
+value-data
+value-size value-data padding
+value-size value-IID value-data padding
+Proptag_Name:
+name-guid name-kind name-id
+name-guid name-kind name-string-length name-string padding
+
+The encapsulation of each property varies based on the property identifier and the property type. Property 
+tags, identifiers, and types are defined in the mapitags.h and mapidefs.h header files.
+If the property is a named property, then the property tag is immediately followed by the MAPI property 
+name, consisting of a globally unique identifier (GUID), a kind, and either an identifier or a Unicode string.
+Multivalued and properties with variable length values, such as the PT_BINARY, PT_STRING8, 
+PT_UNICODE, or PT_OBJECT property types, are treated in the following way. First the number of 
+values, encoded as a 32-bit unsigned long, is placed in the TNEF stream, followed by the individual values. 
+Each property's value-data is encoded as its size in bytes followed by the value-data itself. The value-data is 
+padded out to a 4-byte boundary, although the amount of padding is not included in the value-size.
+If the property is of type PT_OBJECT, the value-size is followed by the interface identifier of the object. 
+The current implementation of TNEF only supports the IID_IMessage, IID_IStorage, and IID_Istream 
+interface identifiers. The size of the interface identifier is included in the value-size.
+If the object is an embedded message (that is, it has a property type of PT_OBJECT and an interface 
+identifier of IID_IMessage), the value data is encoded as an embedded TNEF stream. The actual encoding 
+of an embedded message in TNEF implementation is done by opening a second TNEF object for the 
+original stream and processing the stream inline.
+attDate Attributes
+All MAPI properties relating to dates and times are mapped to TNEF attributes that have the attDate prefix. 
+These are all encoded as DTR structures. The dates and times for attachment attributes are encoded as DTR 
+structures as well. 
+A DTR structure is very similar to the SYSTEMTIME structure defined in the Win32 header files. The 
+DTR structure is encoded in the TNEF stream as sizeof(DTR) bytes starting with the first member of the 
+structure. The DTR structure is defined in the tnef.h header file.
+attOriginalMessageClass
+A message class is stored as a string. The encoded string usually holds the MAPI-specified name of the 
+message class. The exception is that to provide compatibility with Microsoft Mail for Windows for 
+Workgroups 3.1, the following MAPI message classes are mapped to the following Microsoft Mail for 
+Windows for Workgroups 3.1 message classes:*
+MAPI message class
+Windows for Workgroups Mail 3.x
+
+
+IPM
+IPM.Microsoft Mail.Note
+IPM.Note
+IPM.Microsoft Mail.Note
+IPM.Schedule.Meeting.Canceled
+IPM.Microsoft Schedule.MtgCncl
+IPM.Schedule.Meeting.Request
+IPM.Microsoft Schedule.MtgReq
+IPM.Schedule.Meeting.Resp.Neg
+IPM.Microsoft Schedule.MtgRespN
+IPM.Schedule.Meeting.Resp.Pos
+IPM.Microsoft Schedule.MtgRespP
+IPM.Schedule.Meeting.Resp.Ten
+t
+IPM.Microsoft Schedule.MtgRespA
+Report.IPM.Note.NDR
+IPM.Microsoft Mail.Non-Delivery
+Report.IPM.Note.RN
+IPM.Microsoft Mail.Read Receipt
+attConversationID and attParentID
+The Windows for Workgroups 3.1 Mail conversation key is a text string. The MAPI equivalent is a binary 
+value. To provide backward compatibility, the TNEF implementation converts the binary data to text and 
+adds a terminating null character.
+attFrom
+The attFrom attribute is encoded as a TRP structure which encodes the display name and email address of 
+the sender, followed by the display name and address of the sender, followed by any necessary padding. 
+The format for attFrom is as follows:
+attFrom:
+TRP-structure sender-display-name sender-address padding
+The sender-display-name is a null-terminated string that is padded with an additional null character, if 
+necessary, to reach a 2-byte boundary. The padding at the end of the attFrom encoding consists of as many 
+null characters as needed to reach a sizeof(TRP) boundary.
+TRP-structure:
+trpidOneOff cbgrtrp cch cb
+For the attFrom item, the TRP-structure is always a one-off encoding, so the trpid of the TRP-structure field 
+is always trpidOneOff. The cbgrtrp, cch, and cb items correspond to the remaining fields of the TRP 
+structure.
+The cbgrtrp field is calculated as the sum of (sizeof(TRP) *2), the length of the null-terminated sender-
+display-name with its padding, and the length of the null-terminated sender-address.
+The cch field is calculated as the length of the null-terminated display-name with its padding.
+The cb field is calculated as the length of the null-terminated sender-address.
+sender-address:
+address-type : address '\0'
+The sender-address is a string that is composed of four parts, the address-type, a literal colon (:), the address 
+itself, and a terminating null character. For example, the string "fax:1-909-555-1234\0" would be a legal 
+sender-address value.
+attOwner
+The attOwner attribute is encoded as counted strings laid end-to-end. The format for attOwner is as follows:
+attOwner:
+display-name-length display-name address-length email-address
+email-address
+type : address
+Unlike other length values, the display-name-length and address-length are unsigned 16 bit values instead of 
+unsigned long integers. They still include terminating null characters, however. The type and address strings 
+in the email-address entry are separated by a literal colon (:) character, such as "smtp:joe@nowhere.com". 
+Only the combined type:address string is null-terminated.
+The mapping of MAPI properties to the attOwner attribute is dependent on the message class of the 
+message being encoded. If the message is either a Microsoft Schedule+ meeting request or cancellation, 
+then attOwner encodes one of the PR_SENT_REPRESENTING properties. If the message is a Microsoft 
+Schedule+ meeting response of any type, then attOwner encodes one of the PR_RCVD_REPRESENTING 
+properties.
+attSentFor
+The attSentFor attribute is encoded as counted strings laid end-to-end. The format for attSentFor is as 
+follows: 
+attSentFor:
+display-name-length display-name address-length email-address
+email-address
+type : address
+Unlike other length values, the display-name-length and address-length are unsigned 16 bit values instead of 
+unsigned long integers. They still include terminating null characters, however. The type and address strings 
+in the email-address entry are separated by a literal colon (:) character, such as "smtp:joe@nowhere.com". 
+Only the combined type:address string is null-terminated.
+attRecipTable
+When a recipient table is being encoded, each recipient is encoded as a row of MAPI properties. The format 
+is as follows:
+Row_Seq:
+row-count Property_Sequence, ...
+The format of Property_Seq is the same as in the attMAPIProps attribute.
+attPriority
+MAPI message priorities are also mapped to Microsoft Mail 3.1 priority values for backward compatibility 
+as follows:*
+Priority
+MAPI value
+TNEF value
+
+normal
+-1
+3
+high
+0
+2
+low
+1
+1
+attMessageStatus
+MAPI message flags are mapped to Microsoft Mail 3.1 values to preserve backward compatibility. All the 
+flags are grouped together and encoded in a single byte. The mappings are as follows:*
+MAPI message flags
+TNEF flags
+
+
+MSGFLAG_READ
+fmsRead
+MSGFLAG_UNMODIFED
+~fmsModified
+MSGFLAG_SUBMIT
+fmsSubmitted
+MSGFLAG_HASATTAC
+H
+fmsHasAttach
+MSGFLAG_UNSENT
+fmsLocal
+These flags are defined in the tnef.h header file.
+attAttachRenddata
+The attAttachRenddata attribute is encoded as a RENDDATA structure that describes how and where the 
+attachment is rendered in the message text. The RENDDATA structure is simply encoded in the TNEF 
+stream as sizeof(RENDDATA) bytes beginning with the first member of the RENDDATA structure. If the 
+value of the RENDDATA structure's dwFlags member is set to MAC_BINARY, then the data for the 
+following attachment is stored in MacBinary format; otherwise, the attachment data is encoded as usual.
+OLE Attachments
+Attachments that are OLE objects are encoded as OLE 1.0 stream objects for backward compatibility with 
+Microsoft Mail 3.x. If the original object is really an OLE 2.0 IStorage object, then the object must be 
+converted to an OLE 1.0 stream. This conversion is performed using 
+OleConvertIStorageToOLESTREAM function, which part of the Win32 OLE libraries; examples of this 
+conversion can be found in OLE Programmer's Reference, Volume One.
+TNEF Correlation
+Some messaging systems perform a correlation check on any TNEF stream attached to an inbound message 
+to verify that the TNEF stream does in fact belong to that message. This involves matching the value of 
+some field in the header of the inbound message with a copy of that value stored in some property in the 
+TNEF stream. Values that are presumably unique for each message, such as message ID numbers, are 
+typically used for this. The transport or gateway the created the TNEF stream is responsible for choosing an 
+appropriate value from the message header and placing a copy into an appropriate property before encoding 
+the outgoing message's properties into the TNEF stream. Gateways or transports that receive the message 
+can then extract that property from the TNEF stream and verify that its value matches the value of the 
+corresponding header field on the inbound message.
+If the values do not match, the gateway or transport should discard the TNEF stream and processes only the 
+native message envelope. Such checks are prudent because non-MAPI-based mail clients may attach a file 
+containing a TNEF stream from an old message to a forwarding or even an unrelated message; if not 
+checked, such an error may result in the loss of message text.
+The header field value chosen must be unique to the message. There is no fixed header field for all 
+messaging systems because different messaging systems use different header fields, but typically the 
+messaging system assigns a unique identifier to the message which is suitable for this purpose. For example, 
+SMTP systems typically use the MessageID header, while X.400 systems typically use the IM_THIS_IPM 
+attribute.
+TNEF Correlation in SMTP Gateways and Transports
+Gateways and transports that connect to Internet based systems, those that use SMTP, use the value of the 
+MessageID SMTP header and the PR_TNEF_CORRELATION_KEY property to implement TNEF 
+correlation.
+The value of the MessageID header of the outbound message should be copied to the 
+PR_TNEF_CORRELATION_KEY property and encoded in the attMAPIProps attribute of the TNEF 
+stream. Note that PR_TNEF_CORRELATION_KEY is a binary property, while the MessageID is a string; 
+the null terminator should be included in the copy and in the comparison.
+This technique is used by all Microsoft software that connects MAPI-based messaging systems to the 
+Internet, such as Microsoft Mail 3.x and Microsoft Exchange Server. This technique should be used by any 
+SMTP gateways and transports that connect to systems that support MAPI clients in order to maximize 
+interoperability.
+TNEF Correlation in X.400 Gateways and Transports
+Gateways and transports that connect to X.400 based systems, use the value of the IM_THIS_IPM X.400 
+attribute and the attMessageID TNEF attribute to implement TNEF correlation.
+The value of the IM_THIS_IPM attribute of the outbound message is copied to attMessageID in the TNEF 
+stream. The IM_THIS_IPM X.400 attribute is typically a string, while the attMessageID TNEF attribute is 
+a string of hexadecimal digits representing a binary value. Therefore, each character in the IM_THIS_IPM 
+X.400 attribute, including the terminating null character, must be converted to a 2-character hexadecimal 
+string representing the ASCII value of that character. For instance, if the IM_THIS_IPM X.400 attribute is 
+the following string:
+3030322D3030312D305337533A3A3936303631312D313533373030
+then the value of attMessageID would be the following sequence of hexadecimal digits:
+33 30 33 30 33 32 32 44
+33 30 33 30 33 31 32 44
+33 30 35 33 33 37 35 33
+33 41 33 41 33 39 33 36
+33 30 33 36 33 31 33 31
+32 44 33 31 33 35 33 33
+33 37 33 30 33 30 00
+This technique is used by the Microsoft Exchange Server X.400 Connector. This technique should be used 
+by any X.400 gateways and transports that connect to Microsoft Exchange Server in order to maximize 
+interoperability.
+For greatest compatibility with future as well as present Microsoft software, the IM_THIS_IPM X.400 
+attribute should also be copied to the PR_TNEF_CORRELATION_KEY property. However, since 
+PR_TNEF_CORRELATION_KEY is a binary property, no translation into a hexadecimal string is 
+necessary. 

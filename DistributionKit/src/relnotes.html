@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>MailFilter/ax professional: Release Notes</title>
+	<link rel="STYLESHEET" type="text/css" href="http://www.mailfilter.cc/assets/style.css">
+</head>
+<body>
+<h1><a href="http://www.mailfilter.cc/"><img src="http://www.mailfilter.cc/assets/menu-logo.png" border="0"></a> Release Notes</h1>
+
+<h4>Version 1.5.5 | 1123</h4>
+<ul>
+	<li>Added MailCopy module - this module requires an approaite license.</li>
+	<li>Added paging to MFNRM.NLM</li>
+	<li>Created new FilterICE - can read/write CSV, TAB and binary filter files.</li>
+	<li>PFA mode now check the second Received header, as the first one will always be "PFAgent"</li>
+	<li>Bugfix: Virus Scanning module would send mails always to all parties.</li>
+	<li>Removed Filter2CSV</li>
+</ul>
+
+<h4>Version 1.5.4 | 1119</h4>
+<ul>
+	<li>Spam DNS Blacklist feature is now a normal filter rule. <b>Your old setting does not get converted automatically.</b></li>
+	<li>Daily Admin Message now includes log file.</li>
+	<li>Filter2CSV: Updated.</li>
+	<li>MailFilter/ax Core: Fixed a bug where MFN files were left in the MFSCAN directory tree.</li>
+	<li>MailFilter/ax Core: Fixed an abend in the attachment decoder.</li>
+	<li>MailFilter/ax Core: Internal Configuration System rewrite.</li>
+	<li>Local Installer: Updated, should cause less problems.</li>
+</ul>
+
+<h4>Build 1117</h4>
+<ul>
+	<li>Spam DNS Blacklist feature included.</li>
+	<li>Bandwith Limiting Part 1 included as a module.</li>
+	<li>Filter2CSV included</li>
+	<li>PFA Mail-Fixup functionality included</li>
+	<li>The NRM/Portal module has been reworked in most parts.</li>
+
+	<li>Novell Cluster Services Setup notice included.</li>
+	<li>MailFilter/ax Core: Fixed some memory leaks under rare conditions.</li>
+	<li>MailFilter/ax Core: Added LibC version, requires NW51SP5 or NW6SP3.</li>
+	<li>MailFilter/ax Core: changed idle scan delay to 3 seconds.</li>
+	<li>MailFilter/ax Core: fixed invalid UpTime display.</li>
+	<li>New MSI-based installer</li>
+
+</ul>
+
+<h4>Build 1116b</h4>
+<ul>
+<li>Fixed bug in Virus Scanning Code introduced in 1116<br>
+Sorry for any inconvience this has caused.</li>
+</ul>
+
+<h4>Build 1116</h4>
+<ul>
+<li>Fixed memory leak<br>
+<li>Cleaned up Virus Scanning Code<br>
+
+<li>Include a timestamp when scanning the mail<br>
+<li>Updated MFNRM, MFRestore to include timestamp when restoring a mail<br>
+<li>Screen and log improvements.<br>
+</ul>
+
+<h4>Build 1115</h4>
+<ul>
+<li>Included MIME Header Display decoding<br>
+<li>MailFilter/ax can now decode MIME Base64 and UUE attachments. (Virus Scanning required.)<br>
+</ul>
+
+(Builds 1113-1114 were beta only.)<br>
+
+<h3>Build 1112a</h3>
+<ul>
+<li>Fixed packaging problem.<br>
+</ul>
+
+<h3>Build 1112</h3>
+<ul>
+<li>Fixed possible abends.<br>
+<li>Screen and log improvements.<br>
+
+</ul>
+
+
+</body>
+</html>

@@ -1,0 +1,51 @@
+MailFilter/ax professional: Technical Information Document
+----------------------------------------------------------
+
+"MFFilter2CSV.exe and the CSV file format"
+
+MFFilter2CSV.exe is a utility to convert between CSV and the binary MailFilter/ax Rule package files.
+To create a CSV from a rule package file use: MFFilter2CSV.exe -csv filters.bin filters.csv
+To create a rule package file from your CSV: MFFilter2CSV.exe -bin filters.csv filters.bin
+
+The Win32 configurator can read and write both CSV files and MailFilter/ax Rule Packages.
+
+
+The rule package is exported in this CSV format by MFFilter2CSV:
+   Matchfield,Notify,Type,Action,Enabled,Incoming,Outgoing,Description,Expression
+
+The first four fields are hex values, in particular:
+   Matchfield:
+	MATCHFIELD_ATTACHMENT				0x0001
+	MATCHFIELD_EMAIL				0x0002
+	MATCHFIELD_SUBJECT				0x0004
+	MATCHFIELD_SIZE					0x0008
+	MATCHFIELD_EMAIL_FROM				0x0010
+	MATCHFIELD_EMAIL_TO				0x0020
+
+   Notification Type:
+	NOTIFICATION_ADMIN_INCOMING			0x0001
+	NOTIFICATION_ADMIN_OUTGOING			0x0002
+	NOTIFICATION_SENDER_INCOMING			0x0004
+	NOTIFICATION_SENDER_OUTGOING			0x0008
+	NOTIFICATION_RECIPIENT_INCOMING			0x0010
+	NOTIFICATION_RECIPIENT_OUTGOING			0x0020
+
+   Match Type:
+	MATCHTYPE_MATCH					0x0000
+	MATCHTYPE_NOMATCH				0x0001
+
+   Action on Match:
+	MATCHACTION_DROP_MAIL				0x0001
+	MATCHACTION_MOVE_MAIL				0x0002
+	MATCHACTION_RESCAN				0x0004
+	MATCHACTION_PASS				0x0008
+	MATCHACTION_SCHEDULE				0x0010
+
+Enabled should be set to '1' always.
+Incoming and Outgoing represent if the rule should be enabled for Incoming/Outgoing mails. (0 = Disabled, 1 = Enabled)
+
+Description is a string which can be up to 60 characters long, describing the rule in short words.
+Expression is a string which contains the expression for this rule. It can be up to 200 characters long.
+
+-------------------- Last Updated: Feb 13th 2003, ch -----
+

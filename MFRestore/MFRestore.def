@@ -1,0 +1,6 @@
+# MFRestore.DEF
+
+MODULE nwsnut.nlm clib.nlm libc.nlm 
+
+# Also if running with LibC only - NWSNut requires CLIB loaded ... :(
+

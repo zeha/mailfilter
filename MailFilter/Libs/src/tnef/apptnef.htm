@@ -1,0 +1,743 @@
+<HTML>
+
+<HEAD>
+
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z">
+<TITLE>Untitled</TITLE>
+
+</HEAD>
+
+<BODY>
+
+<P>
+<A NAME="E09"><B><FONT SIZE=6>Transport-Neutral Encapsulation
+Format (TNEF)</FONT></B></A>
+<P>
+<FONT SIZE=2>TNEF is a format for converting a set of MAPI properties-a
+MAPI message-into a serial data stream. The TNEF functions are
+primarily used by transport providers that need to encode MAPI
+message properties for transmission through a messaging system
+that does not support those properties directly. For example,
+an SMTP based transport would use TNEF to encode properties like
+PR_SENT_REPRESENTING, which do not have direct representations
+in the structure of an SMTP message.</FONT>
+<P>
+<FONT SIZE=2>The TNEF implementation defines several TNEF-specific
+attributes, each of which correspond to particular MAPI properties.
+These attributes are used to encode their respective MAPI properties
+into the TNEF stream. In addition, a special attribute is defined
+that can be used to encapsulate any MAPI property that does not
+have a specific attribute corresponding to it. The reason these
+attributes are defined, instead of simply using a uniform encoding
+method for all MAPI properties, is to enable backward compatibility
+with non-MAPI software that is using TNEF such as Microsoft Mail
+3.x and its transport providers.</FONT>
+<P>
+<FONT SIZE=2>The remainder of this appendix describes the structure
+and syntax of a TNEF stream, the mapping between MAPI properties
+and TNEF attributes, and important considerations for certain
+TNEF attributes.</FONT>
+<P>
+<B>TNEF Stream Structure</B>
+<P>
+<FONT SIZE=2>A TNEF stream begins with a 32-bit signature that
+identifies the stream as a TNEF stream.  Following the signature
+is a 16-bit unsigned integer that is used as a key to cross-reference
+attachments to their location within the tagged message text.
+The remainder of the stream is a sequence of TNEF attributes.
+Message attributes appear first in the TNEF stream, and attachment
+attributes follow. Attributes belonging to a particular attachment
+are grouped together, beginning with the attAttachRenddata attribute.</FONT>
+<P>
+<FONT SIZE=2>Most of the constant values used in TNEF streams
+are defined in the <I>tnef.h</I> header file. Notably, <B>TNEF_SIGNATURE</B>,
+<B>LVL_MESSAGE</B>, <B>LVL_ATTACHMENT</B>, and all the TNEF attribute
+identifiers are defined in that file. Other constants have the
+values indicated by their interpretation to a C language compiler.
+Typically such constants are used to give the sizes of the following
+item. For example, <B>sizeof(ULONG)</B> in an item's definition
+indicates that an integer representing the size of the following
+unsigned long integer should occur in that place in the TNEF stream.</FONT>
+<P>
+<FONT SIZE=2>All integers in a TNEF stream are stored in little-endian
+binary form, but are shown in hexadecimal throughout this appendix.
+Checksum values are simply 16-bit unsigned integers that are the
+sum, modulo 65536, of the bytes of data that the checksum applies
+to. All attribute lengths are unsigned long integers, including
+any terminating null characters.</FONT>
+<P>
+<FONT SIZE=2>The key is a nonzero, 16-bit unsigned integer that
+signifies the initial value of the attachment reference keys.
+The attachment reference keys are assigned to each attachment
+sequentially beginning with the initial value, that is passed
+to the <U><B>OpenTnefStream</B></U> function by the service provider
+that is using TNEF. The service provider should generate a random
+initial value for the key to minimize the chance that two messages
+use the same key.</FONT>
+<P>
+<FONT SIZE=2>The TNEF implementation uses attribute identifiers
+to map attributes to their corresponding MAPI properties. An attribute
+identifier is a 32-bit unsigned integer made up of two word values.
+The high-order word is an indication of the data type, such as
+string or binary, and the low-order word identifies the particular
+attribute. The data types in the high order word are:</FONT>
+<TABLE>
+
+<TR><TD WIDTH=151><B><FONT SIZE=2>Type</FONT></B></TD><TD WIDTH=258>Value
+</TD></TR>
+
+<TR><TD WIDTH=151></TD><TD WIDTH=258></TD></TR>
+
+<TR><TD WIDTH=151>atpTriples</TD><TD WIDTH=258>0x0000</TD></TR>
+
+<TR><TD WIDTH=151>atpString</TD><TD WIDTH=258>0x0001</TD></TR>
+
+<TR><TD WIDTH=151>atpText</TD><TD WIDTH=258>0x0002</TD></TR>
+
+<TR><TD WIDTH=151>atpDate</TD><TD WIDTH=258>0x0003</TD></TR>
+
+<TR><TD WIDTH=151>atpShort</TD><TD WIDTH=258>0x0004</TD></TR>
+
+<TR><TD WIDTH=151>atpLong</TD><TD WIDTH=258>0x0005</TD></TR>
+
+<TR><TD WIDTH=151>atpByte</TD><TD WIDTH=258>0x0006</TD></TR>
+
+<TR><TD WIDTH=151>atpWord</TD><TD WIDTH=258>0x0007</TD></TR>
+
+<TR><TD WIDTH=151>atpDword</TD><TD WIDTH=258>0x0008</TD></TR>
+
+<TR><TD WIDTH=151>atpMax</TD><TD WIDTH=258>0x0009</TD></TR>
+
+<TR><TD WIDTH=151></TD><TD WIDTH=258></TD></TR>
+
+</TABLE>
+
+<P>
+<FONT SIZE=1></FONT>
+<P>
+<FONT SIZE=2>The low-order word values for each attribute are
+defined in the <I>tnef.h</I> header file.</FONT>
+<P>
+<B>TNEF Stream Syntax</B>
+<P>
+<FONT SIZE=2>This topic presents a Bakus-Nauer like description
+of the TNEF stream syntax. In this description, non-terminal elements
+that have a further definition are in italics.  Constants and
+literal items are in bold. Sequences of elements are listed in
+order on a single line. For example, the <I>Stream</I> item consists
+of the constant <B>TNEF_SIGNATURE</B>, followed by a <I>Key</I>,
+followed by an <I>Object</I>. When an item has more than one possible
+implementation, the alternatives are listed on consecutive lines.
+For example, an <I>Object</I> can consist of a <I>Message_Seq</I>,
+a <I>Message_Seq</I> followed by an <I>Attach_Seq</I>, or just
+an <I>Attach_Seq</I>.</FONT>
+<P>
+<I><FONT SIZE=2>TNEF_Stream:<BR>
+</FONT></I><B><FONT SIZE=2>TNEF_SIGNATURE</FONT></B><FONT SIZE=2>
+<I>Key</I> <I>Object</I></FONT>
+<P>
+<I><FONT SIZE=2>Key:<BR>
+</FONT></I><FONT SIZE=2>a nonzero 16-bit unsigned integer</FONT>
+<P>
+<FONT SIZE=2>TNEF enabled transports generate this value before
+using the TNEF implementation to generate a TNEF stream.</FONT>
+<P>
+<I><FONT SIZE=2>Object:<BR>
+Message_Seq<BR>
+Message_Seq Attach_Seq<BR>
+Attach_Seq</FONT></I>
+<P>
+<I><FONT SIZE=2>Message_Seq:<BR>
+attTnefVersion<BR>
+attTnefVersion Msg_Attribute_Seq<BR>
+attTnefVersion attMessageClass<BR>
+attTnefVersion attMessageClass Msg_Attribute_Seq<BR>
+attMessageClass<BR>
+attMessageClass Msg_Attribute_Seq<BR>
+Msg_Attribute_Seq</FONT></I>
+<P>
+<I><FONT SIZE=2>attTnefVersion:<BR>
+</FONT></I><B><FONT SIZE=2>LVL_MESSAGE attTnefVersion sizeof(ULONG)</FONT></B><FONT SIZE=2>
+<B>0x00010000 </B>checksum</FONT>
+<P>
+<I><FONT SIZE=2>attMessageClass:<BR>
+</FONT></I><B><FONT SIZE=2>LVL_MESSAGE attMessageClass</FONT></B><FONT SIZE=2>
+<I>msg_class_length msg_class</I> checksum</FONT>
+<P>
+<I><FONT SIZE=2>Msg_Attribute_Seq:<BR>
+Msg_Attribute<BR>
+Msg_Attribute Msg_Attribute_Seq</FONT></I>
+<P>
+<I><FONT SIZE=2>Msg_Attribute:<BR>
+</FONT></I><B><FONT SIZE=2>LVL_MESSAGE</FONT></B><FONT SIZE=2>
+attribute-ID attribute-length attribute-data checksum</FONT>
+<P>
+<FONT SIZE=2>Attribute-ID is one of the TNEF attribute identifiers,
+such as <B>attSubject</B>. Attribute-length is the length in bytes
+of the attribute data.  Attribute-data is the data associated
+with the attribute.</FONT>
+<P>
+<I><FONT SIZE=2>Attach_Seq:<BR>
+attRenddata<BR>
+attRenddata Att_Attribute_Seq</FONT></I>
+<P>
+<I><FONT SIZE=2>attRenddata:<BR>
+</FONT></I><B><FONT SIZE=2>LVL_ATTACHMENT attRenddata</FONT></B><FONT SIZE=2>
+<B>sizeof(RENDDATA)</B> renddata checksum</FONT>
+<P>
+<FONT SIZE=2>Renddata is the data associated with the RENDDATA
+structure containing the rendering information for the corresponding
+attachment. The RENDDATA structure is defined in the <I>tnef.h</I>
+header file.</FONT>
+<P>
+<I><FONT SIZE=2>Att_Attribute_Seq:<BR>
+Att_Attribute<BR>
+Att_Attribute Att_Attribute_Seq</FONT></I>
+<P>
+<I><FONT SIZE=2>Att_Attribute:<BR>
+</FONT></I><B><FONT SIZE=2>LVL_ATTACHMENT</FONT></B><FONT SIZE=2>
+attribute-ID attribute-length attribute-data checksum</FONT>
+<P>
+<FONT SIZE=2>Attribute-ID, attribute-length, and attribute-data
+have the same meanings as for the <I>Msg_Attribute</I> item.<BR>
+</FONT>
+<P>
+<B>Mapping of TNEF Attributes to MAPI Properties</B>
+<P>
+<FONT SIZE=2>The following table lists all the attributes defined
+in the TNEF implementation and their mappings to MAPI properties.
+In some cases, multiple MAPI properties are encoded as a single
+attribute. Some attributes have extended descriptions later in
+this appendix.</FONT>
+<TABLE>
+
+<TR><TD WIDTH=222><B><FONT SIZE=2>TNEF attribute</FONT></B></TD>
+<TD WIDTH=318>MAPI property or properties</TD></TR>
+
+<TR><TD WIDTH=222></TD></TR>
+
+<TR><TD WIDTH=222>attAidOwner</TD><TD WIDTH=318><U>PR_OWNER_APPT_ID</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attAttachCreateDate</TD><TD WIDTH=318><U>PR_CREATION_TIME</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attAttachData</TD><TD WIDTH=318><U>PR_ATTACH_DATA_BIN</U> or <U>PR_ATTACH_DATA_OBJ</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attAttachment</TD><TD WIDTH=318>For information about this mapping, see &quot;Comments About the Attributes&quot; later in this chapter
+</TD></TR>
+
+<TR><TD WIDTH=222>attAttachMetaFile</TD><TD WIDTH=318><U>PR_ATTACH_RENDERING</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attAttachModifyDate</TD><TD WIDTH=318><U>PR_LAST_MODIFICATION_TIME</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attAttachRenddata</TD><TD WIDTH=318><U>PR_ATTACH_METHOD</U>, <U>PR_RENDERING_POSITION</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attAttachTitle</TD><TD WIDTH=318><U>PR_ATTACH_FILENAME</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attAttachTransportFilename</TD><TD WIDTH=318><U>PR_ATTACH_TRANSPORT_NAME</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attBody</TD><TD WIDTH=318><U>PR_BODY</U></TD>
+</TR>
+
+<TR><TD WIDTH=222>attConversationID</TD><TD WIDTH=318><U>PR_CONVERSATION_KEY</U>. See <U>attConversationID and attParentID</U> for details.
+</TD></TR>
+
+<TR><TD WIDTH=222>attDateEnd</TD><TD WIDTH=318><U>PR_END_DATE</U> See <U>attDate Attributes</U> for details.
+</TD></TR>
+
+<TR><TD WIDTH=222>attDateModified</TD><TD WIDTH=318><U>PR_LAST_MODIFICATION_TIME</U> See <U>attDate Attributes</U> for details.
+</TD></TR>
+
+<TR><TD WIDTH=222>attDateRecd</TD><TD WIDTH=318><U>PR_MESSAGE_DELIVERY_TIME</U> See <U>attDate Attributes</U> for details.
+</TD></TR>
+
+<TR><TD WIDTH=222>attDateSent</TD><TD WIDTH=318><U>PR_CLIENT_SUBMIT_TIME</U> See <U>attDate Attributes</U> for details.
+</TD></TR>
+
+<TR><TD WIDTH=222>attDateStart</TD><TD WIDTH=318><U>PR_START_DATE</U> See <U>attDate Attributes</U> for details.
+</TD></TR>
+
+<TR><TD WIDTH=222>attFrom</TD><TD WIDTH=318><U>PR_SENDER_ENTRYID</U> and <U>PR_SENDER_NAME</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attMAPIProps</TD><TD WIDTH=318>For information about this attribute, see <U><B>attMAPIProps</B></U>.
+</TD></TR>
+
+<TR><TD WIDTH=222>attMessageClass</TD><TD WIDTH=318><U>PR_MESSAGE_CLASS</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attMessageID</TD><TD WIDTH=318><U>PR_SEARCH_KEY</U> See <U>TNEF Correlation in X.400 Gateways and Transports</U>.
+</TD></TR>
+
+<TR><TD WIDTH=222>attMessageStatus</TD><TD WIDTH=318><U>PR_MESSAGE_FLAGS</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attOriginalMessageClass</TD><TD WIDTH=318><U>PR_ORIG_MESSAGE_CLASS</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attOwner</TD><TD WIDTH=318>See <U>attOwner</U> for details.
+</TD></TR>
+
+<TR><TD WIDTH=222>attParentID</TD><TD WIDTH=318><U>PR_PARENT_KEY</U> See <U>attConversationID and attParentID</U> for details.
+</TD></TR>
+
+<TR><TD WIDTH=222>attPriority</TD><TD WIDTH=318><U>PR_PRIORITY</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attRecipTable</TD><TD WIDTH=318><U>PR_MESSAGE_RECIPIENTS</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attRequestRes</TD><TD WIDTH=318><U>PR_RESPONSE_REQUESTED</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attSentFor</TD><TD WIDTH=318><U>PR_SENT_REPRESENTING_ENTRYID</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attSubject</TD><TD WIDTH=318><U>PR_SUBJECT</U>
+</TD></TR>
+
+<TR><TD WIDTH=222>attTnefVersion</TD><TD WIDTH=318>For information about this attribute, see 
+</TD></TR>
+
+</TABLE>
+
+<P>
+<FONT SIZE=1></FONT>
+<P>
+<B>Comments About the Attributes</B>
+<P>
+<FONT SIZE=2>This section provides additional information about
+certain TNEF attributes. For more information about the MAPI properties
+that the attributes are mapped to, see the reference entries for
+the individual properties.</FONT>
+<P>
+<B>attMAPIProps</B>
+<P>
+<FONT SIZE=2>The <B>attMAPIProps</B> attribute is special in that
+it can be used to encode any MAPI property that does not have
+a counterpart in the set of existing TNEF-defined attributes.
+The attribute data is a counted set of MAPI properties laid end-to-end.
+The format of this encoding, which allows for any set of MAPI
+properties, is as follows:</FONT>
+<P>
+<I><FONT SIZE=2>Property_Seq:<BR>
+</FONT></I><FONT SIZE=2>property-count <I>Property_Value, ...</I></FONT>
+<P>
+<FONT SIZE=2>There must be as many <I>Property_Value</I> items
+as the property-count value indicates.</FONT>
+<P>
+<I><FONT SIZE=2>Property_Value:<BR>
+</FONT></I><FONT SIZE=2>property-tag <I>Property<BR>
+</I>property-tag <I>Proptag_Name Property</I></FONT>
+<P>
+<FONT SIZE=2>The property-tag is simply the value associated with
+the property identifier, such as 0x003700001F for <U>PR_SUBJECT</U>.</FONT>
+<P>
+<I><FONT SIZE=2>Property:<BR>
+Value<BR>
+</FONT></I><FONT SIZE=2>value-count <I>Value, ...</I></FONT>
+<P>
+<I><FONT SIZE=2>Value:<BR>
+</FONT></I><FONT SIZE=2>value-data<BR>
+value-size value-data padding<BR>
+value-size value-IID value-data padding</FONT>
+<P>
+<I><FONT SIZE=2>Proptag_Name:<BR>
+</FONT></I><FONT SIZE=2>name-guid name-kind name-id<BR>
+name-guid name-kind name-string-length name-string padding<BR>
+</FONT>
+<P>
+<FONT SIZE=2>The encapsulation of each property varies based on
+the property identifier and the property type. Property tags,
+identifiers, and types are defined in the <I>mapitags.h</I> and
+<I>mapidefs.h</I> header files.</FONT>
+<P>
+<FONT SIZE=2>If the property is a named property, then the property
+tag is immediately followed by the MAPI property name, consisting
+of a globally unique identifier (GUID), a kind, and either an
+identifier or a Unicode string.</FONT>
+<P>
+<FONT SIZE=2>Multivalued and properties with variable length values,
+such as the PT_BINARY, PT_STRING8, PT_UNICODE, or PT_OBJECT property
+types, are treated in the following way. First the number of values,
+encoded as a 32-bit unsigned long, is placed in the TNEF stream,
+followed by the individual values. Each property's value-data
+is encoded as its size in bytes followed by the value-data itself.
+The value-data is padded out to a 4-byte boundary, although the
+amount of padding is not included in the value-size.</FONT>
+<P>
+<FONT SIZE=2>If the property is of type PT_OBJECT, the value-size
+is followed by the interface identifier of the object. The current
+implementation of TNEF only supports the IID_IMessage, IID_IStorage,
+and IID_Istream interface identifiers. The size of the interface
+identifier is included in the value-size.</FONT>
+<P>
+<FONT SIZE=2>If the object is an embedded message (that is, it
+has a property type of PT_OBJECT and an interface identifier of
+IID_IMessage), the value data is encoded as an embedded TNEF stream.
+The actual encoding of an embedded message in TNEF implementation
+is done by opening a second TNEF object for the original stream
+and processing the stream inline.</FONT>
+<P>
+<B>attDate Attributes</B>
+<P>
+<FONT SIZE=2>All MAPI properties relating to dates and times are
+mapped to TNEF attributes that have the attDate prefix. These
+are all encoded as <B>DTR</B> structures. The dates and times
+for attachment attributes are encoded as <B>DTR</B> structures
+as well. </FONT>
+<P>
+<FONT SIZE=2>A <B>DTR</B> structure is very similar to the <B>SYSTEMTIME</B>
+structure defined in the Win32 header files. The <B>DTR</B> structure
+is encoded in the TNEF stream as <B>sizeof(DTR)</B> bytes starting
+with the first member of the structure. The DTR structure is defined
+in the <I>tnef.h</I> header file.</FONT>
+<P>
+<B><FONT SIZE=5 COLOR=#000000>attOriginal</FONT><FONT SIZE=5 FACE="Arial Narrow">MessageClass</FONT></B>
+<P>
+<FONT SIZE=2>A message class is stored as a string. The encoded
+string usually holds the MAPI-specified name of the message class.
+The exception is that to provide compatibility with Microsoft
+Mail for Windows for Workgroups 3.1, the following MAPI message
+classes are mapped to the following Microsoft Mail for Windows
+for Workgroups 3.1 message classes:</FONT>
+<TABLE>
+
+<TR><TD WIDTH=194><B><FONT SIZE=2>MAPI message class</FONT></B>
+</TD><TD WIDTH=270>Windows for Workgroups Mail 3.<I>x</I></TD>
+</TR>
+
+<TR><TD WIDTH=194></TD></TR>
+
+<TR><TD WIDTH=194>IPM</TD><TD WIDTH=270>IPM.Microsoft Mail.Note
+</TD></TR>
+
+<TR><TD WIDTH=194>IPM.Note</TD><TD WIDTH=270>IPM.Microsoft Mail.Note
+</TD></TR>
+
+<TR><TD WIDTH=194>IPM.Schedule.Meeting.Canceled</TD><TD WIDTH=270>IPM.Microsoft Schedule.MtgCncl
+</TD></TR>
+
+<TR><TD WIDTH=194>IPM.Schedule.Meeting.Request</TD><TD WIDTH=270>IPM.Microsoft Schedule.MtgReq
+</TD></TR>
+
+<TR><TD WIDTH=194>IPM.Schedule.Meeting.Resp.Neg</TD><TD WIDTH=270>IPM.Microsoft Schedule.MtgRespN
+</TD></TR>
+
+<TR><TD WIDTH=194>IPM.Schedule.Meeting.Resp.Pos</TD><TD WIDTH=270>IPM.Microsoft Schedule.MtgRespP
+</TD></TR>
+
+<TR><TD WIDTH=194>IPM.Schedule.Meeting.Resp.Tent</TD><TD WIDTH=270>IPM.Microsoft Schedule.MtgRespA
+</TD></TR>
+
+<TR><TD WIDTH=194>Report.IPM.Note.NDR</TD><TD WIDTH=270>IPM.Microsoft Mail.Non-Delivery
+</TD></TR>
+
+<TR><TD WIDTH=194>Report.IPM.Note.RN</TD><TD WIDTH=270>IPM.Microsoft Mail.Read Receipt
+</TD></TR>
+
+</TABLE>
+
+<P>
+<FONT SIZE=1></FONT>
+<P>
+<B>attConversationID and attParentID</B>
+<P>
+<FONT SIZE=2>The Windows for Workgroups 3.1 Mail conversation
+key is a text string. The MAPI equivalent is a binary value. To
+provide backward compatibility, the TNEF implementation converts
+the binary data to text and adds a terminating null character.</FONT>
+<P>
+<B>attFrom</B>
+<P>
+<FONT SIZE=2>The attFrom attribute is encoded as a TRP structure
+which encodes the display name and email address of the sender,
+followed by the display name and address of the sender, followed
+by any necessary padding. The format for attFrom is as follows:</FONT>
+<P>
+<I><FONT SIZE=2>attFrom:<BR>
+<I>TRP-structure </I></FONT></I><FONT SIZE=2>sender-display-name<I>
+sender-address </I>padding</FONT>
+<P>
+<FONT SIZE=2>The sender-display-name is a null-terminated string
+that is padded with an additional null character, if necessary,
+to reach a 2-byte boundary. The padding at the end of the attFrom
+encoding consists of as many null characters as needed to reach
+a <B>sizeof(TRP)</B> boundary.</FONT>
+<P>
+<I><FONT SIZE=2>TRP-structure:<BR>
+</FONT></I><B><FONT SIZE=2>trpidOneOff</FONT></B><FONT SIZE=2>
+cbgrtrp cch cb</FONT>
+<P>
+<FONT SIZE=2>For the attFrom item, the TRP-structure is always
+a one-off encoding, so the trpid of the TRP-structure field is
+always <B>trpidOneOff</B>. The cbgrtrp, cch, and cb items correspond
+to the remaining fields of the TRP structure.</FONT>
+<P>
+<FONT SIZE=2>The cbgrtrp field is calculated as the sum of <B>(sizeof(TRP)
+*2),</B> the length of the null-terminated sender-display-name
+with its padding, and the length of the null-terminated sender-address.</FONT>
+<P>
+<FONT SIZE=2>The cch field is calculated as the length of the
+null-terminated display-name with its padding.</FONT>
+<P>
+<FONT SIZE=2>The cb field is calculated as the length of the null-terminated
+sender-address.</FONT>
+<P>
+<I><FONT SIZE=2>sender-address:<BR>
+</FONT></I><FONT SIZE=2>address-type <B>:</B> address <B>'\0'</B></FONT>
+<P>
+<FONT SIZE=2>The sender-address is a string that is composed of
+four parts, the address-type, a literal colon (:), the address
+itself, and a terminating null character. For example, the string
+&quot;fax:1-909-555-1234\0&quot; would be a legal sender-address
+value.</FONT>
+<P>
+<B>attOwner</B>
+<P>
+<FONT SIZE=2>The attOwner attribute is encoded as counted strings
+laid end-to-end. The format for attOwner is as follows:</FONT>
+<P>
+<B><FONT SIZE=2>attOwner</FONT></B><FONT SIZE=2>:<BR>
+display-name-length display-name address-length <I>email-address</I></FONT>
+<P>
+<I><FONT SIZE=2>email-address<BR>
+</FONT></I><FONT SIZE=2>type <B>:</B> address</FONT>
+<P>
+<FONT SIZE=2>Unlike other length values, the display-name-length
+and address-length are unsigned 16 bit values instead of unsigned
+long integers. They still include terminating null characters,
+however.  The type and address strings in the <I>email-address</I>
+entry are separated by a literal colon (:) character, such as
+&quot;smtp:joe@nowhere.com&quot;. Only the combined type<B>:</B>address
+string is null-terminated.</FONT>
+<P>
+<FONT SIZE=2>The mapping of MAPI properties to the attOwner attribute
+is dependent on the message class of the message being encoded.
+If the message is either a Microsoft Schedule+ meeting request
+or cancellation, then attOwner encodes one of the PR_SENT_REPRESENTING
+properties. If the message is a Microsoft Schedule+ meeting response
+of any type, then attOwner encodes one of the PR_RCVD_REPRESENTING<I>
+</I>properties.</FONT>
+<P>
+<B>attSentFor</B>
+<P>
+<FONT SIZE=2>The attSentFor attribute is encoded as counted strings
+laid end-to-end. The format for attSentFor is as follows: </FONT>
+<P>
+<B><FONT SIZE=2>attSentFor</FONT></B><FONT SIZE=2>:<BR>
+display-name-length display-name address-length <I>email-address</I></FONT>
+<P>
+<I><FONT SIZE=2>email-address<BR>
+</FONT></I><FONT SIZE=2>type <B>:</B> address</FONT>
+<P>
+<FONT SIZE=2>Unlike other length values, the display-name-length
+and address-length are unsigned 16 bit values instead of unsigned
+long integers. They still include terminating null characters,
+however.  The type and address strings in the <I>email-address</I>
+entry are separated by a literal colon (:) character, such as
+&quot;smtp:joe@nowhere.com&quot;. Only the combined type<B>:</B>address
+string is null-terminated.</FONT>
+<P>
+<B>attRecipTable</B>
+<P>
+<FONT SIZE=2>When a recipient table is being encoded, each recipient
+is encoded as a row of MAPI properties. The format is as follows:</FONT>
+<P>
+<I><FONT SIZE=2>Row_Seq:<BR>
+row-count</FONT></I><FONT SIZE=2> <I>Property_Sequence,</I> ...</FONT>
+<P>
+<FONT SIZE=2>The format of <I>Property_Seq</I> is the same as
+in the <U>attMAPIProps</U> attribute.</FONT>
+<P>
+<B>attPriority</B>
+<P>
+<FONT SIZE=2>MAPI message priorities are also mapped to Microsoft
+Mail 3.1 priority values for backward compatibility as follows:</FONT>
+<TABLE>
+
+<TR><TD WIDTH=144><B><FONT SIZE=2>Priority</FONT></B></TD><TD WIDTH=160>MAPI value
+</TD><TD WIDTH=160>TNEF value</TD></TR>
+
+<TR><TD COLSPAN=3 WIDTH=464></TD></TR>
+
+<TR><TD WIDTH=144>normal</TD><TD WIDTH=160>-1</TD><TD WIDTH=160>3
+</TD></TR>
+
+<TR><TD WIDTH=144>high</TD><TD WIDTH=160>0</TD><TD WIDTH=160>2
+</TD></TR>
+
+<TR><TD WIDTH=144>low</TD><TD WIDTH=160>1</TD><TD WIDTH=160>1
+</TD></TR>
+
+</TABLE>
+
+<P>
+<FONT SIZE=1></FONT>
+<P>
+<B>attMessageStatus</B>
+<P>
+<FONT SIZE=2>MAPI message flags are mapped to Microsoft Mail 3.1
+values to preserve backward compatibility. All the flags are grouped
+together and encoded in a single byte. The mappings are as follows:</FONT>
+<TABLE>
+
+<TR><TD WIDTH=163><B><FONT SIZE=2>MAPI message flags</FONT></B>
+</TD><TD WIDTH=301>TNEF flags</TD></TR>
+
+<TR><TD WIDTH=163></TD></TR>
+
+<TR><TD WIDTH=163>MSGFLAG_READ</TD><TD WIDTH=301>fmsRead</TD>
+</TR>
+
+<TR><TD WIDTH=163>MSGFLAG_UNMODIFED</TD><TD WIDTH=301>~fmsModified
+</TD></TR>
+
+<TR><TD WIDTH=163>MSGFLAG_SUBMIT</TD><TD WIDTH=301>fmsSubmitted
+</TD></TR>
+
+<TR><TD WIDTH=163>MSGFLAG_HASATTACH</TD><TD WIDTH=301>fmsHasAttach
+</TD></TR>
+
+<TR><TD WIDTH=163>MSGFLAG_UNSENT</TD><TD WIDTH=301>fmsLocal</TD>
+</TR>
+
+</TABLE>
+
+<P>
+<FONT SIZE=1></FONT>
+<P>
+<FONT SIZE=2>These flags are defined in the <I>tnef.h</I> header
+file.</FONT>
+<P>
+<B>attAttachRenddata</B>
+<P>
+<FONT SIZE=2>The attAttachRenddata attribute is encoded as a <B>RENDDATA</B>
+structure that describes how and where the attachment is rendered
+in the message text. The <B>RENDDATA</B> structure is simply encoded
+in the TNEF stream as <B>sizeof(RENDDATA)</B> bytes beginning
+with the first member of the <B>RENDDATA</B> structure. If the
+value of the <B>RENDDATA</B> structure's <B>dwFlags</B> member
+is set to <B>MAC_BINARY</B>, then the data for the following attachment
+is stored in MacBinary format; otherwise, the attachment data
+is encoded as usual.</FONT>
+<P>
+<B>OLE Attachments</B>
+<P>
+<FONT SIZE=2>Attachments that are OLE objects are encoded as OLE
+1.0 stream objects for backward compatibility with Microsoft Mail
+3.<I>x</I>. If the original object is really an OLE 2.0 <B>IStorage</B>
+object, then the object must be converted to an OLE 1.0 stream.
+This conversion is performed using <B>OleConvertIStorageToOLESTREAM
+</B>function, which part of the Win32 OLE libraries; examples
+of this conversion can be found in <I>OLE Programmer's Reference,
+Volume One.</I></FONT>
+<P>
+<B>TNEF Correlation</B>
+<P>
+<FONT SIZE=2>Some messaging systems perform a correlation check
+on any TNEF stream attached to an inbound message to verify that
+the TNEF stream does in fact belong to that message. This involves
+matching the value of some field in the header of the inbound
+message with a copy of that value stored in some property in the
+TNEF stream. Values that are presumably unique for each message,
+such as message ID numbers, are typically used for this. The transport
+or gateway the created the TNEF stream is responsible for choosing
+an appropriate value from the message header and placing a copy
+into an appropriate property before encoding the outgoing message's
+properties into the TNEF stream. Gateways or transports that receive
+the message can then extract that property from the TNEF stream
+and verify that its value matches the value of the corresponding
+header field on the inbound message.</FONT>
+<P>
+<FONT SIZE=2>If the values do not match, the gateway or transport
+should discard the TNEF stream and processes only the native message
+envelope. Such checks are prudent because non-MAPI-based mail
+clients may attach a file containing a TNEF stream from an old
+message to a forwarding or even an unrelated message; if not checked,
+such an error may result in the loss of message text.</FONT>
+<P>
+<FONT SIZE=2>The header field value chosen must be unique to the
+message. There is no fixed header field for all messaging systems
+because different messaging systems use different header fields,
+but typically the messaging system assigns a unique identifier
+to the message which is suitable for this purpose. For example,
+SMTP systems typically use the MessageID header, while X.400 systems
+typically use the IM_THIS_IPM attribute.</FONT>
+<P>
+<A NAME="temp"><B>TNEF Correlation in SMTP Gateways and Transports</B></A>
+<P>
+<FONT SIZE=2>Gateways and transports that connect to Internet
+based systems, those that use SMTP, use the value of the MessageID
+SMTP header and the PR_TNEF_CORRELATION_KEY property to implement
+TNEF correlation.</FONT>
+<P>
+<FONT SIZE=2>The value of the MessageID header of the outbound
+message should be copied to the <U>PR_TNEF_CORRELATION_KEY</U>
+property and encoded in the <U>attMAPIProps</U> attribute of the
+TNEF stream. Note that PR_TNEF_CORRELATION_KEY is a binary property,
+while the MessageID is a string; the null terminator should be
+included in the copy and in the comparison.</FONT>
+<P>
+<FONT SIZE=2>This technique is used by all Microsoft software
+that connects MAPI-based messaging systems to the Internet, such
+as Microsoft Mail 3.<I>x</I> and Microsoft Exchange Server.  This
+technique should be used by any SMTP gateways and transports that
+connect to systems that support MAPI clients in order to maximize
+interoperability.</FONT>
+<P>
+<B>TNEF Correlation in X.400 Gateways and Transports</B>
+<P>
+<FONT SIZE=2>Gateways and transports that connect to X.400 based
+systems, use the value of the IM_THIS_IPM X.400 attribute and
+the attMessageID TNEF attribute to implement TNEF correlation.</FONT>
+<P>
+<FONT SIZE=2>The value of the IM_THIS_IPM attribute of the outbound
+message is copied to attMessageID in the TNEF stream. The IM_THIS_IPM
+X.400 attribute is typically a string, while the attMessageID
+TNEF attribute is a string of hexadecimal digits representing
+a binary value. Therefore, each character in the IM_THIS_IPM X.400
+attribute, including the terminating null character, must be converted
+to a 2-character hexadecimal string representing the ASCII value
+of that character. For instance, if the IM_THIS_IPM X.400 attribute
+is the following string:</FONT>
+<P>
+<FONT SIZE=2>    3030322D3030312D305337533A3A3936303631312D313533373030</FONT>
+<P>
+<FONT SIZE=2>then the value of attMessageID would be the following
+sequence of hexadecimal digits:</FONT>
+<P>
+<FONT SIZE=2>    33 30 33 30 33 32 32 44</FONT>
+<P>
+<FONT SIZE=2>    33 30 33 30 33 31 32 44</FONT>
+<P>
+<FONT SIZE=2>    33 30 35 33 33 37 35 33</FONT>
+<P>
+<FONT SIZE=2>    33 41 33 41 33 39 33 36</FONT>
+<P>
+<FONT SIZE=2>    33 30 33 36 33 31 33 31</FONT>
+<P>
+<FONT SIZE=2>    32 44 33 31 33 35 33 33</FONT>
+<P>
+<FONT SIZE=2>    33 37 33 30 33 30 00</FONT>
+<P>
+<FONT SIZE=2>This technique is used by the Microsoft Exchange
+Server X.400 Connector. This technique should be used by any X.400
+gateways and transports that connect to Microsoft Exchange Server
+in order to maximize interoperability.</FONT>
+<P>
+<FONT SIZE=2>For greatest compatibility with future as well as
+present Microsoft software, the IM_THIS_IPM X.400 attribute should
+also be copied to the PR_TNEF_CORRELATION_KEY property. However,
+since PR_TNEF_CORRELATION_KEY is a binary property, no translation
+into a hexadecimal string is necessary.</FONT>
+</BODY>
+
+</HTML>

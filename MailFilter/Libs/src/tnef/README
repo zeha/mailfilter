@@ -1,0 +1,62 @@
+
+tnef2txt 1.0
+Brandon Long (blong@uiuc.edu)
+6/26/97
+
+This is a simple C program which should be fairly portable to decode 
+the Microsoft's Translation Neutral Encapsulation Format, used by
+various Microsoft OS products to transfer MAPI information through
+text only gateways such as SMTP and X.whatever.  This program is only
+useful in so far as you can see what is contained in the bitstream, and
+may not even do that overly well.  As of this version, it decodes most 
+of the items in it, but not the MAPI properties.  The documentation
+from Microsoft (converted from MS Word to HTML and text) is here, add 
+whatever you like.
+
+What this package contains:
+  Makefile
+   - a fairly standard Makefile to compile this tool
+  README
+   - This file
+  apptnef.htm
+   - Documention of the TNEF format from the Microsoft FTP server,
+     translated from the original Word DOC to HTML
+  apptnef.txt
+   - Same as above, but the text version
+  config.h
+   - various defines for compiling this on different platforms.  This
+     "Translation Neutral" format is actual byte order dependent, so
+     you probably need to specify a PLATFORM in the makefile
+  ms-tnef
+   - Example TNEF bitstream binary file 
+  ms-tnef.out
+   - Decode of the ms-tnef example file from the td32.exe program
+     available from the Microsoft FTP server.  The program is not
+     included here because it was over 500k. (Under AIX, tnef2txt 
+     is under 40k. hmm)
+  tnef.c
+   - The C code for this program
+  tnef.h
+   - A stripped down version of the Microsoft tnef.h file indicated by
+     the documentation they provided.  It should now compile on most 
+     platforms, but there is probably still quite a bit of gunk in there
+     which isn't necessary for the program to operate.
+
+Version 1.1 (7/1/97)
+  Understands more parts of the TNEF, though it mostly punts (just
+  display what it can).  Also, you can now specify -s to save 
+  any attachments to files if they are stored in the stream.  Could use
+  a nicer interface for that (like actually prompting for filenames and
+  the like), maybe sometime when I get ambitious.
+
+Version 1.2 (7/19/97)
+  Ok, some systems don't like reading 16/32bit data on unaligned
+  boundaries.  Now, the program will work anyways, though its slower.
+  Not that its that much slower a user will notice, but anways.
+  Also, I replaced the #pragma pack() with __attribute__ ((packed)),
+  which is a GCCism, so this might now require GCC (though that should
+  be more universal than the #pragma directive).
+
+Version 1.3 (7/22/97)
+  Ok, make everything read from the stream in 8 bits, no more packed
+  structures imposed on the stream or anything.

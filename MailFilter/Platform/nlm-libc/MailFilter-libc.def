@@ -1,0 +1,25 @@
+#
+# This is
+# MailFilter-libc.def
+# (c) Copyright 2001, 2002 Christian Hofstaedtler
+#
+
+#
+# MailFilter-libc needs LibC, NWSNUT, WS2_32 to be auto-loaded
+MODULE libc.nlm nwsnut.nlm threads.nlm
+# ws2_32.nlm
+# Clib.nlm 
+
+#
+# Message file ...
+# MESSAGES MailFlt.msg
+#
+
+#
+# No special imports ...
+# IMPORT UnloadModule
+#
+
+#
+# - MailFilter.def
+#

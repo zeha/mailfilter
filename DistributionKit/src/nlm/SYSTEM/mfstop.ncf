@@ -1,0 +1,20 @@
+##
+## MFSTOP.NCF - Shuts down MailFilter System.
+##
+#
+#######
+## Unload MailFilter/NRM
+unload mfnrm
+#######
+#
+#######
+## Unload MailFilter Server/NLM
+## This unloads MF from the OS Space, the MailFilter space and the mailflt space, just in case ...
+unload mailflt.nlm
+unload address space = mailfilter
+unload address space = mailflt
+#######
+#
+##
+## --- e o f ---
+##

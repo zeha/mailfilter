@@ -1,0 +1,9 @@
+WARNING: This is not a TRIVIAL upgrade!
+
+If you are updating from MailFilter pre-1105,
+your filter lists won't work. You must rework your 
+filter rules. You should backup your configuration
+including the filters, and then import the defaults. 
+
+A tutorial to Regular Expressions is mentioned in 
+the documentation.

@@ -1,0 +1,25 @@
+#------------------------------------------------------------------------------
+# Generic C NLM Linker Command/Definition File
+#
+# Other commands are listed by the Targeting NetWare manual in the chapter
+# entitled, "NetWare Linker Command Files."
+#------------------------------------------------------------------------------
+MODULE	libc.nlm
+#IMPORT	@C:\novell\ndk\libc\imports\libc.imp
+IMPORT MailFilter_API_RuleCheck
+
+# If this NLM is written correctly, its threads (if more than one) should be
+# able to run on any processor completely in parallel with each other. For this
+# to occur, however, it must be marked as MP-safe. This is done using a special
+# tool, mpkxdc.exe:
+#
+#		mpkxdc -n hello.xdc
+#
+# Other possibilities exist. For example, a list of functions that aren't safe
+# to migrate off processor 0 can be created using the same tool and a list in
+# a text file. See the Novell NDK documentation for more details.
+#
+# Ultimately, the output from this tool, hello.xdc, is then set into the linked
+# NLM using this command:
+#
+XDCDATA	mfmmx.xdc

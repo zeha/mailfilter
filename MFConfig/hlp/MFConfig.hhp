@@ -1,0 +1,34 @@
+[OPTIONS]
+Auto Index=Yes
+Compatibility=1.1 or later
+Compiled file=MFConfig.chm
+Contents file=MFConfig.hhc
+Default topic=HIDD_ROOT_DIALOG.HTM
+Display compile progress=No
+Full-text search=Yes
+Index file=MFConfig.hhk
+Language=0x409 Englisch (USA)
+Title=MailFilter/ax professional
+
+
+[FILES]
+HIDD_ROOT_DIALOG.HTM
+HIDD_WIZ_EXPORT.htm
+HIDD_WIZ_IMPORT.htm
+
+[ALIAS]
+HIDD_ABOUTBOX = HIDD_ROOT_DIALOG.htm
+HIDD_FILTEREDIT = HIDD_ROOT_DIALOG.htm
+HIDD_FILTERLIST = HIDD_ROOT_DIALOG.htm
+HIDD_MFCONFIG_DIALOG = HIDD_ROOT_DIALOG.htm
+HIDD_WIZ_EXPORT=HIDD_WIZ_EXPORT.htm
+HIDD_WIZ_IMPORT=HIDD_WIZ_IMPORT.htm
+
+[MAP]
+#include HTMLDefines.h
+
+[TEXT POPUPS]
+HTMLDefines.h
+
+[INFOTYPES]
+

@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>MailFilter/ax professional: Cluster Notes</title>
+	<link rel="STYLESHEET" type="text/css" href="http://www.mailfilter.cc/assets/style.css">
+</head>
+<body>
+<h1><a href="http://www.mailfilter.cc/"><img src="http://www.mailfilter.cc/assets/menu-logo.png" border="0"></a> Cluster Notes</h1>
+
+<b>Version 1.5</b><br>
+<br>
+
+<h5>MailFilter/ax Cluster support features:</h5>
+<ul>
+<li>Every MailFilter/ax NLM supports passing a "configuration home directory" on the command line.<br>
+	For example: load mailflt.nlm gwise:\mailfilter</li>
+<li>MailFilter/ax does not need to be installed on SYS: - it can reside on any volume.</li>	
+<li>You can customize MFSTOP.NCF in a way that unloading MailFilter/ax on one server migrates the Cluster Application to another server.</li>
+</ul>
+
+<h5>Installation Example</h5>
+This instruction assumes that your shared cluster volume is named "GWISE" and the shared IP address is "192.168.130.215".
+
+<ol>
+<li>Install GroupWise/GWIA as normal and create your shared cluster volume.
+
+<li>Install MailFilter to your workstation.
+
+<li>Create GWISE:\MAILFLT and GWISE:\SYSTEM directories.
+
+<li>Copy everything from C:\Programme\MailFilter\NLM\SYSTEM to GWISE:\SYSTEM
+
+<li>Copy everything from C:\Programme\MailFilter\NLM\ETC to GWISE:\MAILFLT
+
+<li>Rename GWISE:\MAILFLT\CONFIG.NUL to CONFIG.BIN
+
+<li>Initial MailFilter/ax configuration:<br>
+	<code>
+       SEARCH ADD GWISE:\SYSTEM<br>
+       LOAD MFUPGR.NLM GWISE:\MAILFLT
+	</code><br>
+    Switch to the logger screen and check for errors, if ok then load MFConfig:
+	<code>
+       LOAD MFCONFIG.NLM GWISE:\MAILFLT
+	</code><br>
+    Fill in your configuration and verify that the filter list has been imported, if not, do it now. (You already copied the default filters to GWISE:\MAILFLT\FILTERS.BIN in Step 5.)<br>
+    When done, load MAILFLT.NLM GWISE:\MAILFLT and check it works.
+
+<li>Change your MFSTART.NCF:<br>
+     a) Add "SEARCH ADD GWISE:\SYSTEM" before the first line.<br>
+     b) Comment out the "MFSTOP" line.<br>
+     c) Comment out "load mailflt" and uncomment the "load address space ..." line.<br>
+     d) Apped "GWISE:\MAILFLT" to the "load address space ..." line.
+
+<li>Change your MFSTOP.NCF:<br>
+     Comment out the "unload mailflt.nlm" line.
+
+<li>Add the following to your Cluster Object Load Script:<br>
+     <code>GWISE:\SYSTEM\mfstart.ncf</code>
+
+<li>Add the following to your Cluster Object Unload Script:<br>
+     <code>GWISE:\SYSTEM\mfstop.ncf</code>
+
+<li>Make sure you have unloaded MailFilter/ax and all related NLMs.<br>
+    You can try out your newly clustered MailFilter/ax now.
+
+</ol>
+
+<h5>Sample Scripts</h5>
+<b>Cluster Resource Load Script</b><br>
+<pre>
+search add gwise:\system
+
+add secondary ipaddress 192.168.130.215
+CLUSTER CVSBIND ADD CLUSTER_GWISEPOOL_SERVER 192.168.130.215
+NUDP ADD CLUSTER_GWISEPOOL_SERVER 192.168.130.215
+nss /poolactivate=GWISEPOOL /overridetype=question
+mount GWISE
+  
+gwise:\system\mfstart.ncf
+</pre>
+<br>
+
+<b>Cluster Resource Unload Script</b><br>
+<pre>
+gwise:\system\mfstop.ncf
+
+del secondary ipaddress 192.168.130.215
+CLUSTER CVSBIND DEL CLUSTER_GWISEPOOL_SERVER 192.168.130.215
+NUDP DEL CLUSTER_GWISEPOOL_SERVER 192.168.130.215
+nss /pooldeactivate=GWISEPOOL /overridetype=question
+</pre>
+<br>
+
+<b>MailFilter/ax Startup: MFSTART.NCF</b><br>
+<pre>
+##
+## MFSTART.NCF - Starts the MailFilter System.
+##
+#
+search add gwise:\system
+#######
+## Load MailFilter Server/NLM
+## This is the main component of MailFilter on NetWare.
+load address space = MailFilter mailflt gwise:\mailflt
+#######
+#
+##
+## --- e o f ---
+##
+</pre>
+<br>
+
+<b>MailFilter/ax Unload: MFSTOP.NCF</b><br>
+<pre>
+##
+## MFSTOP.NCF - Shuts down MailFilter System.
+##
+#
+#######
+## Unload MailFilter Server/NLM
+unload address space = mailfilter
+unload address space = mailflt
+#######
+#
+##
+## --- e o f ---
+##
+</pre>
+<br>
+
+
+</body>
+</html>

@@ -1,0 +1,25 @@
+#
+# This is
+# MailFilter.def
+# (c) Copyright 2001, 2002, 2003 Christian Hofstaedtler
+#
+
+#
+# MailFilter needs CLIB, NWSNUT, *NLM32, WS2_32, DSAPI to be auto-loaded
+MODULE dsapi.nlm Clib.nlm netdb.nlm clxnlm32.nlm locnlm32.nlm calnlm32.nlm nwsnut.nlm
+# ws2_32.nlm 
+#
+
+#
+# Message file ...
+# MESSAGES MailFlt.msg
+#
+
+#
+# No special imports ...
+# IMPORT UnloadModule
+#
+
+#
+# - MailFilter.def
+#

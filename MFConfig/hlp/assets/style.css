@@ -1,0 +1,30 @@
+	/* Copyright 2001 Christian Hofstaedtler */
+	
+	P,TD,A,BODY {
+		font-family : Verdana, Geneva, Arial, Helvetica, sans-serif;
+		font-size : 9pt;
+		font-variant : normal;
+		line-height : 130%;
+		color: black;
+		background-color: white;
+	}
+	BODY{
+	margin: 9pt 10% 5pt 10%;
+}
+
+	A,A:visited {
+		color : #FF0000;
+		font-weight : bold;
+		line-height : 13pt;
+	}
+	A:hover {
+		color : #0000FF;
+	}
+	A:active {
+		color : #0000FF;
+	}
+
+	.languageid {
+		color: #0000FF;
+    }
+		
