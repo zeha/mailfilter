@@ -2,10 +2,14 @@
 #include <dirent.h>
 #include <string.h>
 #include <malloc.h>
-
+#include <errno.h>
 #include "iX.h"
 #include "iXDir.h"
 #include <sys/stat.h>
+
+#ifdef IXPLAT_NETWARE_LIBC
+#include <screen.h>
+#endif
 
 
 iXDir::iXDir(const char* DirectoryName)
@@ -97,7 +101,7 @@ long long iXDir::GetCurrentEntrySize()
 	if (m_Entry != NULL)
 		return m_Entry->d_size;
 	else
-		return 0;
+		return -1;
 }
 
 bool iXDir::UnlinkCurrentEntry()
@@ -128,12 +132,17 @@ time_t iXDir::GetCurrentEntryModificationTime()
 		const char* e = GetCurrentEntryName();
 		
 		stat(e,&st);
-#ifdef IXPLAT_NETWARE_LIBC
-		return st.st_mtime.tv_sec;
-#else
+		
+#ifdef IXPLAT_NETWARE_CLIB
+		ConsolePrintf("mt:%d ",st.st_mtime);
 		return st.st_mtime;
+#else
+		consoleprintf("mt:%d ",st.st_mtime);
+		return st.st_mtime.tv_sec;
 #endif
+		// just in case.
+		return -2;
 	
 	} else
-		return 0;
+		return (-1);
 }

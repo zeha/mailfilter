@@ -1,0 +1,144 @@
+Module Name:             AVENGINE.NLM
+Description:             Anti-Virus Scanning Engine Library v23.66
+Version:                 23.66 (2004/07/28)
+Copyright:               Copyright 2004 Computer Associates International, Inc. (CA)
+File Format Version:     00000004 
+Module Type:             Generic (0)
+Code Start:              000001C0
+Code Size:               000B28F5 (    731381)
+Data Start:              000B2AB5
+Data Size:               00007680 (     30336)
+Uninitialized Data Size: 00000000 (         0)
+Start Procedure:         000AFB94
+Exit Procedure:          000AFC2F
+Check Unload Procedure:  00000000
+Flags:                   00000000
+CLIB Stack Size:         00000200 (       512)
+CLIB Thread Name:        Anti-Virus Engine
+CLIB Screen Name:        System Console
+Exported Symbols:        60
+ CODE:00031724 = AvCheckIntegrity
+ CODE:00000B54 = AvDllDupAvBuffer
+ CODE:00000C44 = AvDllFreeDupAvBuffer
+ CODE:00000BFC = AvDllGetUIBuffer
+ CODE:00000AF0 = AvDllInitialize
+ CODE:00000BD4 = AvDllSetSysParm
+ CODE:00000BBC = AvDllSetUIBuffer
+ CODE:00000C0C = AvDllTerminate
+ CODE:00000C7C = AvDllGetFileName
+ CODE:00000C90 = AvDllGetVirusName
+ CODE:00000CA4 = AvDllGetPathName
+ CODE:00030E44 = AvFindFirstVirusName
+ CODE:00031140 = AvFindNextVirusName
+ CODE:000311BC = AvFindPrevVirusName
+ CODE:0002FBD8 = AvGetDatVersion
+ CODE:0002FB28 = AvGetEngineVersions
+ CODE:00030BA0 = AvGetErrorCode
+ CODE:00030B5C = AvGetFileName
+ CODE:00031864 = AvGetFullErrorCode
+ CODE:000300D8 = AvGetMemoryUsed
+ CODE:0003129C = AvGetSomeVirusNameInfo
+ CODE:00031700 = AvGetTotals
+ CODE:00030B8C = AvGetVirusFlags
+ CODE:00030AC8 = AvGetVirusName
+ CODE:000313A0 = AvGetVirusNameInfo
+ CODE:00032BB8 = AvMakeText
+ CODE:00030B58 = AvGetVirusLocation
+ CODE:0003007C = AvLoadData
+ CODE:00031710 = AvNewDrive
+ CODE:00034238 = AvPrintInDll
+ CODE:000316EC = AvResetTotals
+ CODE:00034230 = AvScanDirectoryFirst
+ CODE:00034230 = AvScanDirectoryNext
+ CODE:00030878 = AvScanFile
+ CODE:0002F76C = AvSetFlags
+ CODE:0003008C = AvUnloadData
+ CODE:0000187C = LoadAvDll
+ CODE:0000188C = UnLoadDll
+ CODE:0002D804 = InoAvInit
+ CODE:0002D8DC = InoAvDeInit
+ CODE:0002D938 = InoAvCreateThreadContext
+ CODE:0002DAF4 = InoAvDestroyThreadContext
+ CODE:0002DE30 = InoAvGetCallback
+ CODE:0002DBF8 = InoAvSetCallback
+ CODE:0002E36C = InoAvSetScanMode
+ CODE:0002E43C = InoAvGetEngineInfo
+ CODE:0002E4E8 = InoAvGetSignatureInfo
+ CODE:0002E97C = InoAvQueryFeature
+ CODE:0002E9D0 = InoAvEnableFeature
+ CODE:0002E204 = InoAvScanFile
+ CODE:0002E364 = InoAvScanBoot
+ CODE:0002E364 = InoAvScanMemory
+ CODE:0002E730 = InoAvOpenSigEnum
+ CODE:0002E778 = InoAvSigEnum
+ CODE:0002E8B4 = InoAvCloseSigEnum
+ CODE:0002E8F0 = InoAvFindSigEntry
+ CODE:0002EAC0 = InoAvQueryFeatureEx
+ CODE:0002EB48 = InoAvEnableFeatureEx
+ CODE:0002D7FC = InoAvExecSystemCure
+ CODE:0002EDD4 = InoAvPackDat
+Imported Symbols:        54
+ _exit (1 reference)
+ _SetupArgv (1 reference)
+ _StartNLM (1 reference)
+ _TerminateNLM (1 reference)
+ access (7 references)
+ atexit (2 references)
+ BeginThread (2 references)
+ chmod (6 references)
+ chsize (2 references)
+ close (5 references)
+ closedir (9 references)
+ CloseLocalSemaphore (3 references)
+ delay (1 reference)
+ ExitThread (3 references)
+ FindNLMHandle (1 reference)
+ free (3 references)
+ getche (2 references)
+ GetFileServerMiscInformation (1 reference)
+ GetThreadID (6 references)
+ GetVolumeInfoWithNumber (1 reference)
+ isatty (2 references)
+ lseek (9 references)
+ malloc (4 references)
+ opendir (4 references)
+ OpenLocalSemaphore (3 references)
+ putch (2 references)
+ raise (1 reference)
+ read (4 references)
+ readdir (5 references)
+ rename (1 reference)
+ SetFileInfo (2 references)
+ signal (1 reference)
+ SignalLocalSemaphore (6 references)
+ tell (3 references)
+ ThreadSwitch (1 reference)
+ ThreadSwitchWithDelay (3 references)
+ time (1 reference)
+ ungetch (1 reference)
+ unlink (1 reference)
+ WaitOnLocalSemaphore (3 references)
+ write (5 references)
+ __get_errno_ptr (10 references)
+ __Must_Have_Three_One_Or_Greater (1 reference)
+ __STK (1 reference)
+ Alloc (2 references)
+ ConsolePrintf (3 references)
+ localtime (1 reference)
+ open (7 references)
+ sopen (3 references)
+ stackavail (3 references)
+ sys_errlist (1 reference)
+ tzname (1 reference)
+ tzset (1 reference)
+ AllocateResourceTag (1 reference)
+Referenced Modules:      1
+ clib
+Fixups:                  4823
+Debug Records:           0
+Bag Data Start:          000BF6F2
+Bag Data Elements:       1
+Bag Data Version:        2.00
+Bag file #1, type 2, flags 00000000, size 00000010 (        16)
+ Name:                   MPK_Bag (MT Safe NLM)
+ Module is multi-tasking safe

@@ -278,13 +278,17 @@ int MFRestore_ShowFile(const char* fileName)
 #else
 	unsigned char szBuffer[8001];
 #endif	
+	std::string szFileName;
 	FILE* fp;
 	unsigned int size = 0;
 	
 	if (MFT_NLM_Exiting)
 		return -2;
 
-	fp = fopen(fileName,"rt");
+	szFileName = MF_GlobalConfiguration.MFLTRoot + "\\MFPROB\\DROP\\";
+	szFileName += fileName;
+
+	fp = fopen(szFileName.c_str(),"rt");
 	if (fp == NULL)
 	{
 			NWSDisplayInformation (
@@ -433,10 +437,17 @@ void NLM_Main(void)
 		szFile[13] = 0;
 		
 //		strftime (szDate, 60, "%04d/%02d/%02d %02d:%02d",  );   
-		time = localtime(&lTime);
+		MFD_Out(MFD_SOURCE_GENERIC,"lTime: %d\n",(long)lTime);
+		if (lTime == -1)
+		{
+			sprintf ( szDate, "% 12s","- no datetime -");
+		} else {
 
-		sprintf ( szDate, "%04d/%02d/%02d %02d:%02d", time->tm_year , time->tm_mon , time->tm_mday,
-														time->tm_hour , time->tm_min );
+			time = localtime(&lTime);
+
+			sprintf ( szDate, "%04d/%02d/%02d %02d:%02d", time->tm_year+1900 , time->tm_mon , time->tm_mday,
+															time->tm_hour , time->tm_min );
+		}
 		
 		sprintf ( szList, " %s | %s | %s | %6d kB ", (szFile[0] == 'S') ? "Out" : " In", szDate, szFile, ((dir.GetCurrentEntrySize())/1024)+1 );
 		

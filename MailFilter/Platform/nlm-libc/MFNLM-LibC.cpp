@@ -66,6 +66,8 @@ bool MF_NLM_OpenDebugScreen()
 
 void _NonAppStop ( void )
 {
+	OutputToScreen(0, "MAILFILTER: Unload Requested...\n");
+
 	MF_StatusFree();
 	MF_ExitProc();
 }

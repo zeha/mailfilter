@@ -33,6 +33,7 @@
 #include "MFZip.h"
 #include "MFRelayHost.h++"
 #include "MFConfig.h++"
+#include "MFAVA-NLM.h"
 
 #include <sys/utsname.h>
 
@@ -547,6 +548,12 @@ void MF_StatusUI_Update(const char* newText)
 			szDynamic += "Schedule ";
 			bHaveFeatures = true;
 		}
+		if (MailFilter_AV_Check() == 0)
+		{
+			szDynamic += "AV ";
+			bHaveFeatures = true;
+		}
+		
 		if (!bHaveFeatures)
 			szDynamic += "None";
 			

@@ -18,6 +18,7 @@
 #include "MFZip.h"
 #include "MFConfig-defines.h"
 #include "MFVersion.h"
+#include "MFAVA-NLM.h"
 
 static int MF_GoOn();
 
@@ -3042,6 +3043,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 	int tlc = 0;
 	int lc = 255;
 	int shallTerminate = 0;
+	bool bTriedAVInit = false;
 
 	MFT_NLM_ThreadCount++;
 	
@@ -3219,6 +3221,12 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 
 		if (MFC_MAILSCAN_Enabled)
 		{
+			if (MailFilter_AV_Check() && (!bTriedAVInit))
+			{
+				bTriedAVInit = true;
+				MailFilter_AV_Init();
+			}
+
 			MFVS_CheckQueue();
 		}
 
@@ -3304,6 +3312,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 			break;
 	}
 
+	MailFilter_AV_DeInit();
 	WinSockShutdown();
 
 	// Tell NLM that we've exited...
