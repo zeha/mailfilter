@@ -14,11 +14,19 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <errno.h>
+//#include <string.h>
 #include "config.h"
 #include "tnef.h"
 #include "mapidefs.h"
 #include "tnef-lib.h"
 #include "mapitags.h"
+
+extern "C" {
+	char* strncpy(char*, unsigned char*, unsigned int);
+	void* malloc(size_t length);
+	void free(void* p);
+	char* strcpy(char*, char*);
+}
 
 //#define VERSION "tnef-lib 0.1 (based on tnef2txt/1.3)"
 
