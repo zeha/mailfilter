@@ -6,7 +6,7 @@ echo.
 echo   EDIT MAILFILTER/MAIN/MFVERSION.H!
 echo.
 echo.
-
+cd ..
 set CMDIDE=call mftools\build.bat
 
 REM rd /s mailfilter\out
