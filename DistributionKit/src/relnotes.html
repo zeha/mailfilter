@@ -2,13 +2,43 @@
 
 <html>
 <head>
-	<title>MailFilter/ax professional: Release Notes</title>
-	<link rel="STYLESHEET" type="text/css" href="http://www.mailfilter.cc/assets/style.css">
+	<title>MailFilter professional: Release Notes</title>
+	<style>
+	P,TD,A,BODY { font-family : Verdana, Geneva, Arial, Helvetica, sans-serif; font-size : 9pt; font-variant : normal; line-height : 130%; color: black; background-color: white; }
+	h1 { line-height: 100%; font-size: 24pt; font-weight: bold; margin: 0 0 0 0; padding: 0 0 0 0; }
+	h2 { font-size: 17pt; }
+	body { padding-left: 10px; padding-right: 10px; padding-top: 0px; border: 0 0 0 0; margin: 0 0 0 0; }
+	pre { border: 1px solid red; padding: 4px 4px 4px 4px; margin-left: 10px; margin-right: 40px; }
+	</style>
 </head>
 <body>
-<h1><a href="http://www.mailfilter.cc/"><img src="http://www.mailfilter.cc/assets/menu-logo.png" border="0"></a> Release Notes</h1>
+<body><table width=600 align=center valign=top style="border: 1px solid black;" cellspacing=0 cellpadding=0>
+	<tr><td><a href="http://www.mailfilter.cc/"><img src="mailfilter-notes.png" border="0"></a></td></tr>
+	<tr><td style="padding-left: 5px;"><br><h1>Release Notes</h1></td></tr>
+	<tr><td style="padding-left: 5px; padding-right: 5px;">
 
-<h4>Version 1.5.5 | 1123</h4>
+<h4>Version 1.5.8 (1131)</h4>
+<ul>
+	<li>New Installation and Upgrade Wizard<br>
+	Does not require a drive mapping to SYS:<br>
+	MailFilter can be installed on another volume as SYS:<br>
+	MailFilter can be installed in a seperate directory (useful for Novell Cluster Services installations)<br>
+	</li>
+	<li>MFConfig has been merged into MailFilter.<br>
+	Online Configuration: Press F4 in MailFilter main screen<br>
+	Offline Configuration: <code>load mailflt -t config</code>
+	</li>
+	<li>"Legacy" MailFilter has been renamed to MFLT50.NLM. Only the LibC Version is named MAILFLT.NLM now.</li>
+	<li>MFNRM has been merged into MailFilter.<br>
+	If you have MailFilter running in the OS address space, you can enable MFNRM from the Configuration Editor.<br>
+	If you have MailFilter running in protected mode, you must <code>load mailflt -t nrm</code> to enable MFNRM.</li>
+	<li>Graphical Filter Editor for Windows included.</li>
+	<li>Updated MFFilterICE to match new configuration format.</li>
+	<li>Some memory corruption fixes in MailFilter.</li>
+</ul>
+		
+			
+<h4>Version 1.5.5 (1123)</h4>
 <ul>
 	<li>Added MailCopy module - this module requires an approaite license.</li>
 	<li>Added paging to MFNRM.NLM</li>
@@ -18,70 +48,19 @@
 	<li>Removed Filter2CSV</li>
 </ul>
 
-<h4>Version 1.5.4 | 1119</h4>
+<h4>Version 1.5.4 (1119)</h4>
 <ul>
 	<li>Spam DNS Blacklist feature is now a normal filter rule. <b>Your old setting does not get converted automatically.</b></li>
 	<li>Daily Admin Message now includes log file.</li>
 	<li>Filter2CSV: Updated.</li>
-	<li>MailFilter/ax Core: Fixed a bug where MFN files were left in the MFSCAN directory tree.</li>
-	<li>MailFilter/ax Core: Fixed an abend in the attachment decoder.</li>
-	<li>MailFilter/ax Core: Internal Configuration System rewrite.</li>
+	<li>MailFilter Core: Fixed a bug where MFN files were left in the MFSCAN directory tree.</li>
+	<li>MailFilter Core: Fixed an abend in the attachment decoder.</li>
+	<li>MailFilter Core: Internal Configuration System rewrite.</li>
 	<li>Local Installer: Updated, should cause less problems.</li>
 </ul>
 
-<h4>Build 1117</h4>
-<ul>
-	<li>Spam DNS Blacklist feature included.</li>
-	<li>Bandwith Limiting Part 1 included as a module.</li>
-	<li>Filter2CSV included</li>
-	<li>PFA Mail-Fixup functionality included</li>
-	<li>The NRM/Portal module has been reworked in most parts.</li>
-
-	<li>Novell Cluster Services Setup notice included.</li>
-	<li>MailFilter/ax Core: Fixed some memory leaks under rare conditions.</li>
-	<li>MailFilter/ax Core: Added LibC version, requires NW51SP5 or NW6SP3.</li>
-	<li>MailFilter/ax Core: changed idle scan delay to 3 seconds.</li>
-	<li>MailFilter/ax Core: fixed invalid UpTime display.</li>
-	<li>New MSI-based installer</li>
-
-</ul>
-
-<h4>Build 1116b</h4>
-<ul>
-<li>Fixed bug in Virus Scanning Code introduced in 1116<br>
-Sorry for any inconvience this has caused.</li>
-</ul>
-
-<h4>Build 1116</h4>
-<ul>
-<li>Fixed memory leak<br>
-<li>Cleaned up Virus Scanning Code<br>
-
-<li>Include a timestamp when scanning the mail<br>
-<li>Updated MFNRM, MFRestore to include timestamp when restoring a mail<br>
-<li>Screen and log improvements.<br>
-</ul>
-
-<h4>Build 1115</h4>
-<ul>
-<li>Included MIME Header Display decoding<br>
-<li>MailFilter/ax can now decode MIME Base64 and UUE attachments. (Virus Scanning required.)<br>
-</ul>
-
-(Builds 1113-1114 were beta only.)<br>
-
-<h3>Build 1112a</h3>
-<ul>
-<li>Fixed packaging problem.<br>
-</ul>
-
-<h3>Build 1112</h3>
-<ul>
-<li>Fixed possible abends.<br>
-<li>Screen and log improvements.<br>
-
-</ul>
-
-
+</td>
+</tr>
+</table>
 </body>
 </html>

@@ -13,6 +13,7 @@ SmtpHomeDlg::SmtpHomeDlg()
 	: CPropertyPage(SmtpHomeDlg::IDD)
 {
 	m_pPSP->dwFlags |= PSP_DEFAULT|PSP_USEHEADERTITLE|PSP_USEHEADERSUBTITLE;
+	m_pPSP->dwFlags &= ~PSP_HASHELP;
 	m_pPSP->pszHeaderTitle = "GroupWise Internet Agent Details";
 	m_pPSP->pszHeaderSubTitle = "SmtpHome Conflict Resolution";
 }

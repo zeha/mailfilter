@@ -32,7 +32,7 @@
 #define ID_DYNAMICTEXTS_MAILFILTERVERSION 156
 #define ID_DYNAMICTEXTS_ID              157
 #define IDB_BITMAP1                     160
-#define IDB_SPLASH                      160
+#define IDB_ABOUT                       161
 #define IDC_CONFIGLIST                  1001
 #define IDC_EDITVALUE                   1007
 #define IDC_BITMAP                      1009
@@ -64,6 +64,7 @@
 #define IDC_TEMPLATETYPE                1036
 #define IDC_VERSION                     1037
 #define IDC_TYPE_TAB                    1039
+#define IDC_BUTTON1                     1041
 #define IDC_TYPE_BIN                    1042
 #define ID_LIST_OPEN                    32771
 #define ID_LIST_SAVE                    32772
@@ -74,9 +75,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        161
+#define _APS_NEXT_RESOURCE_VALUE        162
 #define _APS_NEXT_COMMAND_VALUE         32777
-#define _APS_NEXT_CONTROL_VALUE         1040
+#define _APS_NEXT_CONTROL_VALUE         1042
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

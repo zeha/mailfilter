@@ -13,6 +13,7 @@ DomainDetailsDlg::DomainDetailsDlg()
 	: CPropertyPage(DomainDetailsDlg::IDD)
 {
 	m_pPSP->dwFlags |= PSP_DEFAULT|PSP_USEHEADERTITLE|PSP_USEHEADERSUBTITLE;
+	m_pPSP->dwFlags &= ~PSP_HASHELP;
 	m_pPSP->pszHeaderTitle = "Mail System Details";
 	m_pPSP->pszHeaderSubTitle = "Details about your GroupWise installation and mail domain";
 }
@@ -29,7 +30,14 @@ void DomainDetailsDlg::DoDataExchange(CDataExchange* pDX)
 	DDV_MaxChars(pDX, app->mf_DomainName, 128);
 	DDX_Text(pDX, IDC_HOSTNAME, app->mf_HostName);
 	DDV_MaxChars(pDX, app->mf_HostName, 128);
-	DDX_Radio(pDX, IDC_GW_VERSION6, app->mf_GroupwiseVersion6);
+	
+	INT foo = 0;
+	if (app->mf_GroupwiseVersion6)
+		foo = 0;
+	else
+		foo = 1;
+	DDX_Radio(pDX, IDC_GW_VERSION6, foo);
+	app->mf_GroupwiseVersion6 = (foo == 0);
 }
 
 

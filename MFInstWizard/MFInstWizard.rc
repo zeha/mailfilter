@@ -13,52 +13,22 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Deutsch (Deutschland) resources
+// Neutral resources
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
 #ifdef _WIN32
-LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 #pragma code_page(1252)
 #endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Dialog
+// Bitmap
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 235, 55
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
-CAPTION "Info über MFInstWizard"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
-    LTEXT           "MFInstWizard Version 1.0",IDC_STATIC,40,10,119,8,
-                    SS_NOPREFIX
-    LTEXT           "Copyright (C) 2004",IDC_STATIC,40,25,119,8
-    DEFPUSHBUTTON   "OK",IDOK,178,7,50,16,WS_GROUP
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
-    IDD_ABOUTBOX, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 228
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 48
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // Deutsch (Deutschland) resources
+IDB_WIZHEADER           BITMAP                  "res\\wizheader.bmp"
+IDB_WIZBMP              BITMAP                  "..\\Graphics\\mailfilter-wizard-new.bmp"
+#endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -73,8 +43,32 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Bitmap
+//
+
+IDB_MFTOP               BITMAP                  "..\\Graphics\\mailfilter-about.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Dialog
 //
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 300, 209
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "About"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "MailFilter Installation Wizard",IDC_STATIC,18,78,246,12,
+                    SS_NOPREFIX
+    LTEXT           "Copyright © 2000-2004 Christian Hofstädtler.\nAll Rights Reserved.",
+                    IDC_STATIC,18,114,246,24
+    CONTROL         133,IDC_STATIC,"Static",SS_BITMAP,0,0,300,62
+    LTEXT           "Version 1.5.8",IDC_STATIC,18,90,246,12
+    DEFPUSHBUTTON   "OK",IDOK,246,192,50,14
+    LTEXT           "Please see http://www.mailfilter.cc/ for updates and support.",
+                    IDC_STATIC,18,150,246,24
+END
 
 IDD_FOLDERSDLG DIALOGEX 0, 0, 307, 171
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
@@ -82,16 +76,17 @@ CAPTION "Folder Selection"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Install into SYS:&SYSTEM and SYS:ETC",IDC_SHAREDINSTALL,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,18,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,24,
                     12,141,10
     CONTROL         "Install into a seperate &directory (Novell Cluster Services compatible)",
                     IDC_PRIVATEINSTALL,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,18,24,226,10
-    EDITTEXT        IDC_APPDIR,36,48,222,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_GWIACFGPATH,18,102,190,12,ES_AUTOHSCROLL,
+                    WS_TABSTOP,24,24,226,10
+    EDITTEXT        IDC_APPDIR,42,48,222,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_GWIACFGPATH,24,102,192,12,ES_AUTOHSCROLL,
                     WS_EX_ACCEPTFILES
-    LTEXT           "Path to GWIA.CFG:",IDC_STATIC,18,90,160,9
-    GROUPBOX        "Application Directory:",IDC_STATIC,30,36,234,30
+    LTEXT           "Path to GWIA.CFG:",IDC_STATIC,24,90,160,9
+    GROUPBOX        "Application Directory:",IDC_STATIC,36,36,234,30
+    PUSHBUTTON      "Select &File",IDC_SELECTGWIACFG,222,102,48,18
 END
 
 IDD_SERVERDLG DIALOGEX 0, 0, 307, 171
@@ -99,15 +94,15 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Server Selection"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    EDITTEXT        IDC_SERVERNAME,18,24,114,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDC_SELECTSERVER,138,24,18,12
-    LTEXT           "Destination Server:",IDC_STATIC,18,12,197,9
+    PUSHBUTTON      "&Refresh",IDC_REFRESHLIST,90,120,48,18
+    LTEXT           "Destination Server:",IDC_STATIC,24,12,197,9
     LTEXT           "You have to be logged into the server with console operator rights.",
-                    IDC_STATIC,18,42,270,18
-    EDITTEXT        IDC_LICENSEKEY,18,102,270,12,ES_AUTOHSCROLL
-    LTEXT           "License Key:",IDC_STATIC,18,90,197,9
-    LTEXT           "If you do not enter a License Key, MailFilter will run in evaluation mode for 30 days.",
-                    IDC_STATIC,18,120,270,18
+                    IDC_STATIC,24,150,270,18
+    LISTBOX         IDC_SERVERLIST,24,24,114,90,LBS_SORT | 
+                    LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | 
+                    LBS_NOINTEGRALHEIGHT | LBS_WANTKEYBOARDINPUT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "-",IDC_SERVERVERSION,145,24,134,8
 END
 
 IDD_DOMAINDETAILS DIALOGEX 0, 0, 308, 171
@@ -115,17 +110,17 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Mail System Details"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    EDITTEXT        IDC_DOMAINNAME,18,24,114,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_HOSTNAME,18,66,114,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_DOMAINNAME,24,24,114,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_HOSTNAME,24,66,114,12,ES_AUTOHSCROLL
     CONTROL         "Version 6.0 or newer",IDC_GW_VERSION6,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,18,108,81,10
+                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,24,108,81,10
     CONTROL         "Version 5.5, 5.5 EP, 5.2",IDC_GW_VERSION5,"Button",
-                    BS_AUTORADIOBUTTON | WS_TABSTOP,18,120,91,10
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,24,120,91,10
     LTEXT           "Internet Domain Name: (e.g. mailfilter.cc)",IDC_STATIC,
-                    18,12,197,9
+                    24,12,197,9
     LTEXT           "Server Host Name: (e.g. mail.mailfilter.cc)",IDC_STATIC,
-                    18,54,197,9
-    LTEXT           "GroupWise Version:",IDC_STATIC,18,96,197,9
+                    24,54,197,9
+    LTEXT           "GroupWise Version:",IDC_STATIC,24,96,197,9
 END
 
 IDD_SMTPHOME DIALOGEX 0, 0, 308, 171
@@ -133,17 +128,17 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "GWIA Configuration Details"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    EDITTEXT        IDC_DHOME,18,49,264,12,ES_AUTOHSCROLL | ES_READONLY
-    EDITTEXT        IDC_SMTPHOME,18,78,264,12,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_DHOME,24,49,264,12,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_SMTPHOME,24,78,264,12,ES_AUTOHSCROLL | ES_READONLY
     CONTROL         "Set SmtpHome to <GWIA Home>\\MF",IDC_RESET_SMTPHOME,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,102,246,12
-    LTEXT           "Current GWIA SmtpHome Directory:",IDC_STATIC,18,66,258,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,102,246,12
+    LTEXT           "Current GWIA SmtpHome Directory:",IDC_STATIC,24,66,258,
                     9
     LTEXT           "If you do not reset the SmtpHome directory, you will have to configure this detail for MailFilter and GWIA manually!",
-                    IDC_STATIC,30,120,258,24
+                    IDC_STATIC,36,120,258,24
     LTEXT           "Installation Wizard detected a configured SmtpHome directory for GWIA. If set incorrectly, MailFilter will not receive mails from the GroupWise Internet Agent.",
-                    IDC_STATIC,18,6,258,24
-    LTEXT           "GWIA Home Directory:",IDC_STATIC,18,36,258,9
+                    IDC_STATIC,24,6,258,24
+    LTEXT           "GWIA Home Directory:",IDC_STATIC,24,36,258,9
 END
 
 IDD_PROGRESS DIALOGEX 0, 0, 307, 171
@@ -151,50 +146,37 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Progress"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "",IDC_PROGRESSBAR,"msctls_progress32",0x1,18,60,270,16
-    LTEXT           "Calculating configuration data ...",IDC_PROGRESSTEXT,18,
+    CONTROL         "",IDC_PROGRESSBAR,"msctls_progress32",0x1,24,60,270,16
+    LTEXT           "Calculating configuration data ...",IDC_PROGRESSTEXT,24,
                     42,270,12
     LTEXT           "MailFilter is now being installed to the target server. Please wait ...",
-                    IDC_STATIC,18,12,270,18
+                    IDC_STATIC,24,12,270,18
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,5,0,0
- PRODUCTVERSION 1,5,8,0
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x4L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
+IDD_WELCOME DIALOGEX 0, 0, 308, 215
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "MailFilter Installation Wizard"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "040904e4"
-        BEGIN
-            VALUE "CompanyName", "Hofstädtler IE GmbH -- www.mailfilter.cc"
-            VALUE "Copyright (C) 2004", "Copyright © 2000-2004 Christian Hofstädtler. All Rights Reserved."
-            VALUE "FileDescription", "MailFilter Server Installation Wizard"
-            VALUE "FileVersion", "1.50"
-            VALUE "InternalName", "MFInstallWizard.exe"
-            VALUE "OriginalFilename", "MFInstallWizard.exe"
-            VALUE "ProductName", "MailFilter professional for NetWare"
-            VALUE "ProductVersion", "1.5.8"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x409, 1252
-    END
+    LTEXT           "Welcome to the MailFilter Server Installation Wizard",
+                    IDC_TITLE,120,12,174,33
+    LTEXT           "Please click Next to continue.",IDC_STATIC,120,198,168,
+                    12
+    LTEXT           "This wizard will:",IDC_STATIC,120,60,168,18
+    LTEXT           " • Install MailFilter on a NetWare server\n\n • Set up interaction with GroupWise\n\n • Load MailFilter NLMs on the Server",
+                    IDC_STATIC,120,78,168,60
+END
+
+IDD_LICENSEDLG DIALOGEX 0, 0, 307, 171
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "License Key"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    EDITTEXT        IDC_LICENSEKEY,24,25,270,12,ES_AUTOHSCROLL
+    LTEXT           "MailFilter License Key:",-1,24,12,197,9
+    LTEXT           "If you do not enter a License Key, MailFilter will run in evaluation mode for 30 days.",
+                    -1,24,150,270,18
+    PUSHBUTTON      "Import License &File",IDC_READLICFILE,222,42,72,18
 END
 
 
@@ -206,6 +188,14 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 293
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 202
+    END
+
     IDD_FOLDERSDLG, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -245,8 +235,63 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 164
     END
+
+    IDD_WELCOME, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 301
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 208
+    END
+
+    IDD_LICENSEDLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 300
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 164
+    END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,50,0,0
+ PRODUCTVERSION 1,5,8,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "Christian Hofstädtler"
+            VALUE "Copyright", "Copyright © 2000-2004 Christian Hofstädtler. All Rights Reserved."
+            VALUE "FileDescription", "MailFilter Server Installation Wizard"
+            VALUE "FileVersion", "1.50"
+            VALUE "InternalName", "MFInstallWizard.exe"
+            VALUE "OriginalFilename", "MFInstallWizard.exe"
+            VALUE "ProductName", "MailFilter professional -- www.mailfilter.cc"
+            VALUE "ProductVersion", "1.5.8"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -257,13 +302,6 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "..\\Graphics\\MailFilter.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Bitmap
-//
-
-IDB_WIZHEADER           BITMAP                  "res\\wizheader.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

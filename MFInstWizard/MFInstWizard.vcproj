@@ -90,7 +90,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(ProjectDir)/../MailFilter/out/$(ProjectName).exe"
+				OutputFile="$(ProjectDir)\..\MailFilter\out\$(ProjectName).exe"
 				Version="4.0"
 				LinkIncremental="1"
 				GenerateDebugInformation="FALSE"
@@ -137,7 +137,13 @@
 				RelativePath=".\DomainDetailsDlg.cpp">
 			</File>
 			<File
+				RelativePath="..\..\libs\mfc\ExtendedListBox.cpp">
+			</File>
+			<File
 				RelativePath=".\FoldersDlg.cpp">
+			</File>
+			<File
+				RelativePath=".\LicenseDlg.cpp">
 			</File>
 			<File
 				RelativePath=".\MFInstWizard.cpp">
@@ -169,6 +175,9 @@
 						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\WelcomeDlg.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Headerdateien"
@@ -179,6 +188,9 @@
 			</File>
 			<File
 				RelativePath=".\FoldersDlg.h">
+			</File>
+			<File
+				RelativePath=".\LicenseDlg.h">
 			</File>
 			<File
 				RelativePath=".\MFInstWizard.h">
@@ -201,11 +213,20 @@
 			<File
 				RelativePath=".\stdafx.h">
 			</File>
+			<File
+				RelativePath=".\WelcomeDlg.h">
+			</File>
 		</Filter>
 		<Filter
 			Name="Ressourcendateien"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+			<File
+				RelativePath="..\Graphics\mailfilter-about.bmp">
+			</File>
+			<File
+				RelativePath="..\Graphics\mailfilter-wizard-new.bmp">
+			</File>
 			<File
 				RelativePath="..\Graphics\MailFilter.ico">
 			</File>

@@ -1516,8 +1516,10 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		printf("    Saving new configuration to file...\n");
 		MF_GlobalConfiguration.WriteToFile("");
 		printf("  MailFilter_Configuration::INSTALL complete!\n");
+#ifdef __NOVELL_LIBC__
 		if (MFT_Debug)
 			pressenter();
+#endif
 		
 		break;
 		

@@ -36,6 +36,8 @@
   !define MUI_ICON "nsis-src\install.ico"
   !define MUI_UNICON "nsis-src\uninst.ico"
 
+  !define MUI_WELCOMEFINISHPAGE_BITMAP "..\Graphics\mailfilter-wizard-new-small.bmp"
+
   !define MUI_LANGDLL_REGISTRY_ROOT "HKCU" 
   !define MUI_LANGDLL_REGISTRY_KEY "Software\${PROD_NAME}" 
   !define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
@@ -101,8 +103,11 @@ Section $(NAME_Section_Base) Section_Base
 
   ; Set output path to the installation directory.
   SetOutPath "$INSTDIR"
+  ; try again :/
+  SetOutPath "$INSTDIR"
 
 
+  File "..\Graphics\mailfilter-notes.png"
   File ".\src\relnotes.html"
   File ".\src\cluster.html"
 

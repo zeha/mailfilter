@@ -1,4 +1,6 @@
 #pragma once
+#include "afxwin.h"
+#include "..\..\libs\mfc\ExtendedListbox.h"
 
 
 // ServerDlg-Dialogfeld
@@ -21,4 +23,7 @@ protected:
 public:
 	LRESULT OnWizardNext(void);
 	BOOL OnSetActive(void);
+	afx_msg void OnBnRefreshList();
+	CExtendedListBox m_ServerListCtrl;
+	afx_msg void OnLbnSelChangeServerList();
 };

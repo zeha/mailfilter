@@ -26,18 +26,22 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 394, 265
+IDD_ABOUTBOX DIALOGEX 0, 0, 300, 209
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 CAPTION "About"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "Version",IDC_VERSION,6,246,378,11,SS_CENTERIMAGE,
-                    WS_EX_TRANSPARENT
-    CONTROL         160,IDC_BITMAP,"Static",SS_BITMAP | SS_REALSIZEIMAGE | 
-                    SS_SUNKEN,6,6,381,220
-    LTEXT           "MailFilter Import/Convert/Export Utility",IDC_STATIC,6,
-                    234,150,12,0,WS_EX_TRANSPARENT
+    LTEXT           "Version",IDC_VERSION,18,90,246,12,0,WS_EX_TRANSPARENT
+    CONTROL         161,IDC_BITMAP,"Static",SS_BITMAP | SS_REALSIZEIMAGE,0,0,
+                    300,62
+    LTEXT           "MailFilter Filter Editor for Windows",IDC_STATIC,18,78,
+                    246,12,0,WS_EX_TRANSPARENT
+    LTEXT           "Copyright © 2000-2004 Christian Hofstädtler.\nAll Rights Reserved.",
+                    IDC_STATIC,18,114,246,24,0,WS_EX_TRANSPARENT
+    LTEXT           "Please see http://www.mailfilter.cc/ for updates and support.",
+                    IDC_STATIC,18,150,246,24,0,WS_EX_TRANSPARENT
+    DEFPUSHBUTTON   "OK",IDOK,246,192,50,14
 END
 
 IDD_FILTERLIST DIALOGEX 0, 0, 432, 234
@@ -139,7 +143,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,0
+ FILEVERSION 1,50,0,0
  PRODUCTVERSION 1,5,8,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
@@ -157,11 +161,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Christian Hofstädtler"
             VALUE "FileDescription", "MailFilter Filter Editor"
-            VALUE "FileVersion", "1.5.8"
-            VALUE "InternalName", "FilterICE.exe"
+            VALUE "FileVersion", "1.50"
+            VALUE "InternalName", "FilterEdit.exe"
             VALUE "LegalCopyright", "Copyright © 2000-2004 Christian Hofstädtler. All Rights Reserved."
-            VALUE "OriginalFilename", "FilterICE.exe"
-            VALUE "ProductName", "MailFilter professional"
+            VALUE "OriginalFilename", "FilterEdit.exe"
+            VALUE "ProductName", "MailFilter professional -- www.mailfilter.cc"
             VALUE "ProductVersion", "1.5.8"
         END
     END
@@ -182,8 +186,8 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
-        RIGHTMARGIN, 380
-        BOTTOMMARGIN, 218
+        RIGHTMARGIN, 286
+        BOTTOMMARGIN, 162
     END
 
     IDD_FILTERLIST, DIALOG
@@ -256,13 +260,6 @@ BEGIN
     END
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Bitmap
-//
-
-IDB_SPLASH              BITMAP                  "..\\Graphics\\mailfilterax-splash_export.BMP"
 #endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -320,6 +317,13 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "..\\Graphics\\MailFilter.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_ABOUT               BITMAP                  "..\\Graphics\\mailfilter-about.bmp"
 #endif    // Deutsch (Österreich) resources
 /////////////////////////////////////////////////////////////////////////////
 

@@ -4,6 +4,8 @@
 
 class NetwareApi
 {
+protected:
+	unsigned int m_ClientConnection;
 public:
 	NetwareApi(void);
 	~NetwareApi(void);
@@ -26,6 +28,10 @@ public:
 	// Get the primary server name from Client32
 	bool GetPrimaryServerName(CString* szServerName);
 
-protected:
-	unsigned int m_ClientConnection;
+	// Return all to the Client known Servers
+	bool GetServerList(CStringArray &serverList);
+
+	// Returns the NetWare Server Version
+	bool GetServerVersion(unsigned int &majorVersion, unsigned int &minorVersion, unsigned int &revision);
+
 };

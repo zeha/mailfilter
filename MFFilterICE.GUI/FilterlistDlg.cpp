@@ -63,21 +63,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-	ON_STN_CLICKED(IDC_BITMAP, OnStnClickedBitmap)
-	ON_STN_DBLCLK(IDC_BITMAP, OnStnDblclickBitmap)
 END_MESSAGE_MAP()
-
-
-void CAboutDlg::OnStnClickedBitmap()
-{
-	this->DestroyWindow();
-//	OnOK();
-}
-void CAboutDlg::OnStnDblclickBitmap()
-{
-	this->DestroyWindow();
-//	OnOK();
-}
 
 
 // CFilterlistDlg dialog
@@ -356,3 +342,4 @@ void CFilterlistDlg::OnHelpTextfiledocumentation()
 {
 	ShellExecute(this->m_hWnd, "open", "MFFilterIce.txt", "", "", SW_SHOW);
 }
+

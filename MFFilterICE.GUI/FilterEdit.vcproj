@@ -252,10 +252,10 @@ makehm /h /a afxhh.h IDW_,HIDW_,0x50000 &quot;$(InputFileName)&quot; &gt;&gt; &q
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;jpg;jpeg;jpe;manifest">
 			<File
-				RelativePath="..\Graphics\MailFilter.ico">
+				RelativePath="..\Graphics\mailfilter-about.bmp">
 			</File>
 			<File
-				RelativePath="..\Graphics\mailfilterax-splash_export.BMP">
+				RelativePath="..\Graphics\MailFilter.ico">
 			</File>
 			<File
 				RelativePath="res\MFConfig.ico">

@@ -97,7 +97,51 @@ bool NetwareApi::SelectServerByName(const char* szServerName)
 		NWCCCloseConn(this->m_ClientConnection);
 
 	this->m_ClientConnection = -1;
-	NWCCOpenConnByName(0, szServerName, NWCC_NAME_FORMAT_WILD, NWCC_OPEN_LICENSED | NWCC_OPEN_PUBLIC, NWCC_TRAN_TYPE_WILD, &this->m_ClientConnection);
+	if (NWCCOpenConnByName(0, szServerName, NWCC_NAME_FORMAT_WILD, NWCC_OPEN_LICENSED | NWCC_OPEN_PUBLIC, NWCC_TRAN_TYPE_WILD, &this->m_ClientConnection) == 0)
+		return true;
+
+	return false;
+}
+
+// Return all to the Client known Servers
+bool NetwareApi::GetServerList(CStringArray &serverList)
+{
+	nuint32 scanIterator = 0;
+	nuint32 connRef = 0;
+	NWCCConnInfo connInfo;
+	CString tmp;
+
+	serverList.RemoveAll();
+
+	while (NWCCScanConnRefs(&scanIterator,&connRef) == 0)
+	{
+		if (NWCCGetAllConnRefInfo(connRef, NWCC_INFO_VERSION, &connInfo) == 0)
+		{
+			tmp = (char[49])(connInfo.serverName);
+			serverList.Add(tmp);
+		}
+	}
+	return true;
+}
+
+// Returns the NetWare Server Version
+bool NetwareApi::GetServerVersion(unsigned int &majorVersion, unsigned int &minorVersion, unsigned int &revision)
+{
+	majorVersion = 0;
+	minorVersion = 0;
+	revision = 0;
+
+	NWCCVersion vInfo;
+
+	if (this->m_ClientConnection == -1)
+		return false;
+
+	if (NWCCGetConnInfo(this->m_ClientConnection,NWCC_INFO_SERVER_VERSION,sizeof(NWCCVersion),&vInfo) != 0)
+		return false;
+
+	majorVersion = vInfo.major;
+	minorVersion = vInfo.minor;
+	revision = vInfo.revision;
 
 	return true;
 }

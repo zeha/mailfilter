@@ -2,28 +2,36 @@
 
 <html>
 <head>
-	<title>MailFilter/ax professional: Cluster Notes</title>
-	<link rel="STYLESHEET" type="text/css" href="http://www.mailfilter.cc/assets/style.css">
+	<title>MailFilter professional: Cluster Support</title>
+	<style>
+	P,TD,A,BODY { font-family : Verdana, Geneva, Arial, Helvetica, sans-serif; font-size : 9pt; font-variant : normal; line-height : 130%; color: black; background-color: white; }
+	h1 { line-height: 100%; font-size: 24pt; font-weight: bold; margin: 0 0 0 0; padding: 0 0 0 0; }
+	h2 { font-size: 17pt; }
+	body { padding-left: 10px; padding-right: 10px; padding-top: 0px; border: 0 0 0 0; margin: 0 0 0 0; }
+	pre { border: 1px solid red; padding: 4px 4px 4px 4px; margin-left: 10px; margin-right: 40px; }
+	</style>
 </head>
-<body>
-<h1><a href="http://www.mailfilter.cc/"><img src="http://www.mailfilter.cc/assets/menu-logo.png" border="0"></a> Cluster Notes</h1>
+<body><table width=600 align=center valign=top style="border: 1px solid black;" cellspacing=0 cellpadding=0>
+	<tr><td><a href="http://www.mailfilter.cc/"><img src="mailfilter-notes.png" border="0"></a></td></tr>
+	<tr><td style="padding-left: 5px;"><br><h1>Cluster Support</h1></td></tr>
+	<tr><td style="padding-left: 5px; padding-right: 5px;">
 
 <b>Version 1.5</b><br>
 <br>
 
-<h5>MailFilter/ax Cluster support features:</h5>
+<h2>Features</h2>
 <ul>
-<li>Every MailFilter/ax NLM supports passing a "configuration home directory" on the command line.<br>
+	<li>MailFilter does not need to be installed on SYS: - it can reside on any volume.</li>	
+	<li>You can customize MFSTOP.NCF in a way that unloading MailFilterx on one server migrates the Cluster Application to another server.</li>
+	<li>Every MailFilter NLM supports specifying the configuration directory on the command line.<br>
 	For example: load mailflt.nlm gwise:\mailfilter</li>
-<li>MailFilter/ax does not need to be installed on SYS: - it can reside on any volume.</li>	
-<li>You can customize MFSTOP.NCF in a way that unloading MailFilter/ax on one server migrates the Cluster Application to another server.</li>
 </ul>
 
-<h5>Installation Example</h5>
+<h3>Installation Example</h3>
 This instruction assumes that your shared cluster volume is named "GWISE" and the shared IP address is "192.168.130.215".
 
 <ol>
-<li>Install GroupWise/GWIA as normal and create your shared cluster volume.
+<li>Install GroupWise and GWIA as normal and create your shared cluster volume.
 
 <li>Install MailFilter to your workstation.
 
@@ -35,7 +43,7 @@ This instruction assumes that your shared cluster volume is named "GWISE" and th
 
 <li>Rename GWISE:\MAILFLT\CONFIG.NUL to CONFIG.BIN
 
-<li>Initial MailFilter/ax configuration:<br>
+<li>Initial MailFilter configuration:<br>
 	<code>
        SEARCH ADD GWISE:\SYSTEM<br>
        LOAD MFUPGR.NLM GWISE:\MAILFLT
@@ -62,12 +70,12 @@ This instruction assumes that your shared cluster volume is named "GWISE" and th
 <li>Add the following to your Cluster Object Unload Script:<br>
      <code>GWISE:\SYSTEM\mfstop.ncf</code>
 
-<li>Make sure you have unloaded MailFilter/ax and all related NLMs.<br>
-    You can try out your newly clustered MailFilter/ax now.
+<li>Make sure you have unloaded MailFilter and all related NLMs.<br>
+    You can try out your newly clustered MailFilter now.
 
 </ol>
 
-<h5>Sample Scripts</h5>
+<h3>Sample Scripts</h3>
 <b>Cluster Resource Load Script</b><br>
 <pre>
 search add gwise:\system
@@ -93,7 +101,7 @@ nss /pooldeactivate=GWISEPOOL /overridetype=question
 </pre>
 <br>
 
-<b>MailFilter/ax Startup: MFSTART.NCF</b><br>
+<b>MailFilter Startup: MFSTART.NCF</b><br>
 <pre>
 ##
 ## MFSTART.NCF - Starts the MailFilter System.
@@ -112,14 +120,14 @@ load address space = MailFilter mailflt gwise:\mailflt
 </pre>
 <br>
 
-<b>MailFilter/ax Unload: MFSTOP.NCF</b><br>
+<b>MailFilter Unload: MFSTOP.NCF</b><br>
 <pre>
 ##
 ## MFSTOP.NCF - Shuts down MailFilter System.
 ##
 #
 #######
-## Unload MailFilter Server/NLM
+## Unload MailFilter Server
 unload address space = mailfilter
 unload address space = mailflt
 #######
@@ -130,6 +138,8 @@ unload address space = mailflt
 </pre>
 <br>
 
-
+</td>
+</tr>
+</table>
 </body>
 </html>

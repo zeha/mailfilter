@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include ".\foldersdlg.h"
 
 // FoldersDlg-Dialogfeld
 
@@ -16,6 +17,7 @@ FoldersDlg::FoldersDlg()
 	: CPropertyPage(FoldersDlg::IDD)
 {
 	m_pPSP->dwFlags |= PSP_DEFAULT|PSP_USEHEADERTITLE|PSP_USEHEADERSUBTITLE;
+	m_pPSP->dwFlags &= ~PSP_HASHELP;
 	m_pPSP->pszHeaderTitle = "Folder Selection";
 	m_pPSP->pszHeaderSubTitle = "Please select the installation folders.";
 }
@@ -35,6 +37,7 @@ void FoldersDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(FoldersDlg, CPropertyPage)
+	ON_BN_CLICKED(IDC_SELECTGWIACFG, OnBnSelectGwiaCfg)
 END_MESSAGE_MAP()
 
 
@@ -65,11 +68,16 @@ LRESULT FoldersDlg::OnWizardNext(void)
 			if (line[0] == '/')
 			{
 				value = "";
-				i = line.find("-");
+				i = line.find("=");
 				if (i == npos) 
-					i = line.find("=");
+					i = line.find("-");
 				if (i != npos)
 					value = line.substr(++i);
+
+				if (value[0] == '"')
+					value = value.substr(1);
+				if (value[value.length()-1] == '"')
+					value = value.substr(0,value.length()-1);
 
 				// /PARAMETER
 				if (stricmp(line.substr(0,3).c_str(),"/hn") == 0)
@@ -131,4 +139,17 @@ BOOL FoldersDlg::OnSetActive(void)
 	CPropertySheet* psheet = (CPropertySheet*) GetParent();   
 	psheet->SetWizardButtons(PSWIZB_NEXT | PSWIZB_BACK);
 	return CPropertyPage::OnSetActive();
+}
+
+void FoldersDlg::OnBnSelectGwiaCfg()
+{
+	this->UpdateData(TRUE);
+	CInstApp* app = ((CInstApp*)AfxGetApp());
+
+	CFileDialog fileDlg(TRUE, NULL, app->mf_GwiaCfgPath, OFN_HIDEREADONLY, "Configuration Files (*.CFG)|*.CFG|");
+	if (fileDlg.DoModal() == IDOK)
+	{
+		app->mf_GwiaCfgPath = fileDlg.GetPathName();
+		this->UpdateData(FALSE);
+	}	
 }

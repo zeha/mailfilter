@@ -7,7 +7,9 @@
 #include "FoldersDlg.h"
 #include "DomainDetailsDlg.h"
 #include "SmtpHomeDlg.h"
+#include "WelcomeDlg.h"
 #include "ProgressDlg.h"
+#include "LicenseDlg.h"
 #include "netwareapi.h"
 
 #include <iostream>
@@ -30,8 +32,9 @@ END_MESSAGE_MAP()
 CInstApp::CInstApp()
 {
 	this->mf_SharedInstallation = FALSE;
-	this->mf_AppDir = "SYS:MAILFILTER";
+	this->mf_AppDir = "SYS:MAILFLT";
 	this->mf_InstallLegacyVersion = FALSE;
+	this->mf_GroupwiseVersion6 = TRUE;
 
 	NetwareApi api;
 	api.GetPrimaryServerName(&this->mf_ServerName);	
@@ -42,42 +45,75 @@ CInstApp::CInstApp()
 
 CInstApp theApp;
 
+static void WriteLog(CString szText)
+{
+	CTime time = CTime::GetCurrentTime();
 
-static unsigned int MF_CreateDirectory(const char* szDirectoryName)
+	std::ofstream logFile("mfinstall.log",std::ios_base::app);
+	logFile << time.Format("%c") << ": " << szText << std::endl;
+	logFile.close();
+}
+
+static unsigned int MF_CreateDirectory(CString szDirectoryName)
 {
 	CFileStatus status;
+	WriteLog(" CreateDirectory: " + szDirectoryName);
 	if (CFile::GetStatus(szDirectoryName,status))
 	{
 		if (!(status.m_attribute | 0x10))
+		{
+			WriteLog("   ==> ERROR rc 1: file already exists, but !directory");
 			return 1;
+		}
 		// ok directory already exists, no need to create it
+		WriteLog("   ==> rc 0: directory already exists");
 		return 0;
 	} else {
 		// no status --> nothing there, go create.
 		if (CreateDirectory(szDirectoryName,NULL) == FALSE)
+		{
+			WriteLog("   ==> ERROR rc 2: error when creating directory");
 			return 2;
+		}
+		WriteLog("   ==> rc 0: directory created");
 		return 0;
 	}
 }
 
 static unsigned int MF_CopyFile(CProgressCtrl *progressCtrl, CString sourcePath, CString destPath, CString fileName)
 {
+	unsigned int rc = 0;
+	char szTemp[40];
+
 	progressCtrl->SetPos(progressCtrl->GetPos()+1);
-	return CopyFile(sourcePath + "\\" + fileName, destPath + "\\" + fileName, FALSE);
+	WriteLog(" Copy file " + fileName + " from " + sourcePath + " to " + destPath);
+	rc = CopyFile(sourcePath + "\\" + fileName, destPath + "\\" + fileName, FALSE);
+	
+	CString buf = "  => rc: ";
+	itoa(rc,szTemp,10); 	WriteLog(buf + szTemp);
+	return rc;
 }
 
-static unsigned int MF_CreateNCFFile(const char* szNCFFilename, const char* szExecLine)
+static unsigned int MF_CreateNCFFile(CString szNCFFilename, CString szExecLine)
 {
 	DeleteFile(szNCFFilename);
+
+	WriteLog(" CreateNCFFile: " + szNCFFilename + " - '" + szExecLine + "'");
+
 	FILE* fp = fopen(szNCFFilename,"w");
 	if (fp == NULL)
+	{
+		WriteLog("  => ERROR fopen failed");
 		return 1;
+	}
 
 	fprintf(fp,"#\n# %s\n# NCF File created by MailFilter Installation Wizard\n",szNCFFilename);
 	fprintf(fp,"%s\n",szExecLine);
 	fprintf(fp,"#\n#\n\n");
 
 	fclose(fp);
+
+	WriteLog("  => done");
 
 	return 0;
 }
@@ -104,6 +140,8 @@ BOOL CInstApp::InitInstance()
 
 	CBitmap bmpWizHeader;
 	bmpWizHeader.LoadBitmap(IDB_WIZHEADER);
+	CBitmap bmpWizSpecial;
+	bmpWizSpecial.LoadBitmap(IDB_WIZBMP);
 
 	HICON hIcon;
 	hIcon = CWinApp::LoadIcon(IDR_MAINFRAME);
@@ -117,18 +155,24 @@ BOOL CInstApp::InitInstance()
 	szError = "";
 	// "ui" wizard = ask user bleh and blah
 	{
-		CPropertySheet wizard("MailFilter Installation Wizard",NULL, 0, NULL, NULL, bmpWizHeader);
+		CPropertySheet wizard("MailFilter Installation Wizard",NULL, 0, bmpWizSpecial, NULL, bmpWizHeader);
 		wizard.SetWizardMode();
+		// 0x198128|
 		wizard.m_psh.dwFlags |= PSH_WIZARD97|PSH_HEADER|PSH_USEHICON;
 		wizard.m_psh.hInstance = AfxGetInstanceHandle();
 		wizard.m_psh.hIcon = hIcon;
+		
 
+		WelcomeDlg welcomeDlg;
 		ServerDlg serverDlg;
+		LicenseDlg licenseDlg;
 		FoldersDlg foldersDlg;
 		DomainDetailsDlg domainDlg;
 		SmtpHomeDlg smtpHomeDlg;
 
+		wizard.AddPage(&welcomeDlg);
 		wizard.AddPage(&serverDlg);
+		wizard.AddPage(&licenseDlg);
 		wizard.AddPage(&foldersDlg);
 		wizard.AddPage(&domainDlg);
 		wizard.AddPage(&smtpHomeDlg);
@@ -148,6 +192,7 @@ BOOL CInstApp::InitInstance()
 
 			progress.Create();
 			progress.ShowWindow(SW_SHOW);
+			progress.SetWizardButtons(PSWIZB_DISABLEDFINISH);
 
 			CProgressCtrl *progressCtrl = &((ProgressDlg*)progress.GetPage(0))->m_ProgressCtrl;
 			progressCtrl->SetRange(0,100);
@@ -155,8 +200,74 @@ BOOL CInstApp::InitInstance()
 			CStatic* progressTextCtrl = (CStatic*)((ProgressDlg*)progress.GetPage(0))->GetDlgItem(IDC_PROGRESSTEXT);
 			progress.UpdateWindow();
 
-
 			// do what we want
+
+
+			NetwareApi api;
+			api.SelectServerByName(this->mf_ServerName);
+		
+			WriteLog("***************************************************************");
+			WriteLog("New Installation to server " + this->mf_ServerName + ", AppDir: " + this->mf_AppDir);
+			WriteLog("Gwia.Cfg: " + this->mf_GwiaCfgPath);
+
+			unsigned int server_majorVersion;
+			unsigned int server_minorVersion;
+			unsigned int server_revision;
+			if (!api.GetServerVersion(server_majorVersion,server_minorVersion,server_revision))
+			{
+				WriteLog("Unable to get server version!");
+				szError = "The NetWare Server Version could not be determined. Please check if you are still connected to the target server.";
+				bErrors = true;
+			} else {
+				CString verbuf;
+				verbuf.Format(" Raw Server Version Data: %d.%d.%d",server_majorVersion,server_minorVersion,server_revision);
+				WriteLog(verbuf);
+
+				this->mf_InstallLegacyVersion = false;
+				if (server_majorVersion < 5)
+				{
+					WriteLog(" Server reported Version < 5... too old for us.");
+					szError = "The NetWare Server reported Product Version 4.x or earlier. MailFilter requires at least NetWare 5.0.";
+					bErrors = true;
+				}
+				else
+				{
+					if ((server_minorVersion == 0) && (server_revision < 10))
+					{	WriteLog(" Server 5.0");
+						this->mf_InstallLegacyVersion = true;
+					}
+					if ((server_minorVersion == 0) && (server_revision == 10))
+					{	WriteLog(" Server 5.1");
+						this->mf_InstallLegacyVersion = true;
+					}
+					if ((server_minorVersion == 60) && (server_revision < 4))
+					{	WriteLog(" Server 6.0 SP3 or earlier");
+						this->mf_InstallLegacyVersion = true;
+					}
+					if ((server_minorVersion == 70) && (server_revision < 1))
+					{	WriteLog(" Server 6.5 SP0");
+						this->mf_InstallLegacyVersion = true;
+					}
+					if ((server_minorVersion == 70) && (server_revision > 0))
+					{	WriteLog(" Server 6.5 SP1 or newer");
+						this->mf_InstallLegacyVersion = false;
+					}
+					if (server_minorVersion >= 70)
+					{	WriteLog(" Server Version newer then 6.5");
+						this->mf_InstallLegacyVersion = false;
+					}
+				}
+			}
+
+			if (!bErrors)
+			{
+				if (this->mf_InstallLegacyVersion)
+					WriteLog("Installing LEGACY Version");
+				else
+					WriteLog("Installing LIBC Version");
+				WriteLog("License Key: " + this->mf_LicenseKey);
+			}
+
 			CString szAppConfigDest = "";
 			CString szAppBinaryDest = "";
 			CString szAppBaseDest = "";
@@ -165,44 +276,56 @@ BOOL CInstApp::InitInstance()
 			CString szServerAppConfigDest = "";
 			CString szServerAppBinaryDest = "";
 
-			if (this->mf_SharedInstallation == TRUE)
+			if (!bErrors)
 			{
-				szAppBaseDest = "\\\\" + this->mf_ServerName;
-				szAppBaseDest += "\\" + this->mf_AppDir;
-				szAppBaseDest.Replace(":","\\");
-				if (szAppBaseDest.Right(1) == "\\")
-					szAppBaseDest.Delete(szAppBaseDest.GetLength());
+				if (this->mf_SharedInstallation == TRUE)
+				{
+					szAppBaseDest = "\\\\" + this->mf_ServerName;
+					szAppBaseDest += "\\" + this->mf_AppDir;
+					szAppBaseDest.Replace(":","\\");
+					if (szAppBaseDest.Right(1) == "\\")
+						szAppBaseDest.Delete(szAppBaseDest.GetLength());
 
-				szAppConfigDest = szAppBaseDest + "\\ETC";
-				szAppBinaryDest = szAppBaseDest + "\\BIN";
+					szAppConfigDest = szAppBaseDest + "\\ETC";
+					szAppBinaryDest = szAppBaseDest + "\\BIN";
 
-				szServerAppBaseDest = this->mf_AppDir;
-				if (szServerAppBaseDest.Right(1) == "\\")
-					szServerAppBaseDest.Delete(szServerAppBaseDest.GetLength());
-				szServerAppConfigDest = szServerAppBaseDest + "\\ETC";
-				szServerAppBinaryDest = szServerAppBaseDest + "\\BIN";
+					szServerAppBaseDest = this->mf_AppDir;
+					if (szServerAppBaseDest.Right(1) == "\\")
+						szServerAppBaseDest.Delete(szServerAppBaseDest.GetLength());
+					szServerAppConfigDest = szServerAppBaseDest + "\\ETC";
+					szServerAppBinaryDest = szServerAppBaseDest + "\\BIN";
+
+				}
+				else
+				{
+					szAppBaseDest = "\\\\" + this->mf_ServerName + "\\SYS\\";
+					szAppBinaryDest = szAppBaseDest + "SYSTEM";
+					szAppConfigDest = szAppBaseDest + "ETC\\MAILFLT";
+					szAppBaseDest += "SYSTEM";
+
+					szServerAppBaseDest = "SYS:";
+					szServerAppBinaryDest = szServerAppBaseDest + "\\SYSTEM";
+					szServerAppConfigDest = szServerAppBaseDest + "\\ETC\\MAILFLT";
+					szServerAppBaseDest += "SYSTEM";
+				}
+
+				WriteLog("Local Directories: " + szAppBaseDest + ", " + szAppConfigDest + ", " + szAppBinaryDest);
+				WriteLog("Server Directories: " + szServerAppBaseDest + ", " + szServerAppConfigDest + ", " + szServerAppBinaryDest);
 
 			}
-			else
+
+
+			if (!bErrors)
 			{
-				szAppBaseDest = "\\\\" + this->mf_ServerName + "\\SYS\\";
-				szAppBinaryDest = szAppBaseDest + "SYSTEM";
-				szAppConfigDest = szAppBaseDest + "ETC\\MAILFLT";
-				szAppBaseDest += "SYSTEM";
-
-				szServerAppBaseDest = "SYS:";
-				szServerAppConfigDest = szServerAppBaseDest + "\\SYSTEM";
-				szServerAppBinaryDest = szServerAppBaseDest + "\\ETC\\MAILFLT";
-				szServerAppBaseDest += "SYSTEM";
-			}
-
-
-			// 1: Create Directory
-			{
+				// 1: Create Directories
+				WriteLog("1 - Create Directories.");
 				int rc = 0;
 				rc = MF_CreateDirectory(szAppBaseDest);
-				if (!rc) MF_CreateDirectory(szAppBinaryDest);
-				if (!rc) MF_CreateDirectory(szAppConfigDest);
+				if (!rc) 
+					MF_CreateDirectory(szAppBinaryDest);
+				if (!rc) 
+					MF_CreateDirectory(szAppConfigDest);
+
 				switch (rc) 
 				{
 				case 0:
@@ -222,6 +345,7 @@ BOOL CInstApp::InitInstance()
 			if (!bErrors)
 			{
 				// 2: Copy Files
+				WriteLog("2 - Copy files.");
 				progressCtrl->SetPos(progressCtrl->GetPos()+1);
 				progressTextCtrl->SetWindowText("Copying files");
 				{
@@ -247,6 +371,7 @@ BOOL CInstApp::InitInstance()
 					// config
 					if (!bErrors)
 						szError = "Could not copy configuration file.";
+					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "FILTERS.BIN") == FALSE)		bErrors = true;
 					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "MAILCOPY.TPL") == FALSE)		bErrors = true;
 					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "REPORT.TPL") == FALSE)			bErrors = true;
 					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "RINSIDE.TPL") == FALSE)		bErrors = true;
@@ -260,12 +385,15 @@ BOOL CInstApp::InitInstance()
 
 			if (!bErrors)
 			{
-				// 3: Create mfstart.ncf
+				// 3: Create ncf files
+				WriteLog("3 - Create NCF files.");
 				progressCtrl->SetPos(progressCtrl->GetPos()+1);
 				progressTextCtrl->SetWindowText("Creating NCF files");
 				{
 					// mfstart.ncf
-					CString line = "LOAD PROTECTED ";
+					CString line = "LOAD ";
+					if (!((server_majorVersion == 5) && (server_minorVersion == 0)))
+						line += "PROTECTED ";
 					line += szServerAppBinaryDest;
 					line += "\\";
 
@@ -280,7 +408,9 @@ BOOL CInstApp::InitInstance()
 					MF_CreateNCFFile(szAppBaseDest + "\\MFSTART.NCF", line);
 
 					// mfinst.ncf
-					line = "LOAD PROTECTED ";
+					line = "LOAD ";
+					if (!((server_majorVersion == 5) && (server_minorVersion == 0)))
+						line += "PROTECTED ";
 					line += szServerAppBinaryDest;
 					line += "\\";
 
@@ -298,27 +428,40 @@ BOOL CInstApp::InitInstance()
 
 			if (!bErrors)
 			{
-				// 5: Create Configuration
+				// 4: Create Configuration
+				WriteLog("4 - Create Install Configuration.");
 				progressCtrl->SetPos(progressCtrl->GetPos()+1);
 				progressTextCtrl->SetWindowText("Creating configuration files");
 				{
+					WriteLog("Writing install.cfg as " + szAppConfigDest + "\\INSTALL.CFG");
+					DeleteFile(szAppConfigDest + "\\INSTALL.CFG");
 					std::ofstream installCfg(szAppConfigDest + "\\INSTALL.CFG");
 					if (installCfg.is_open())
 					{
 						installCfg << "# created by MFInstallWizard" << std::endl;
 						installCfg << "/domain=" << this->mf_DomainName << std::endl;
+							WriteLog("  /domain="+this->mf_DomainName+"\n");
 						installCfg << "/hostname=" << this->mf_HostName << std::endl;
+							WriteLog("  /hostname="+this->mf_HostName+"\n");
 						installCfg << "/config-directory=" << szAppConfigDest << std::endl;
+							WriteLog("  /config-directory="+szAppConfigDest+"\n");
 						installCfg << "/gwia-version=" << (this->mf_GroupwiseVersion6 ? 600 : 550) << std::endl;
+							WriteLog(this->mf_GroupwiseVersion6 ? "  /gwia-version=600\n" : "  /gwia-version=550\n");
 						installCfg << "/home-gwia=" << this->mf_GwiaDHome << std::endl;
+							WriteLog("  /home-gwia="+this->mf_GwiaDHome+"\n");
 						installCfg << "/home-mailfilter=" << this->mf_GwiaSmtpHome << std::endl;
+							WriteLog("  /home-mailfilter="+this->mf_GwiaSmtpHome+"\n");
 						installCfg << "/licensekey=" << this->mf_LicenseKey << std::endl;
+							WriteLog("  /licensekey="+this->mf_LicenseKey+"\n");
 						installCfg << "/config-importfilterfile=" << szAppConfigDest + "\\FILTERS.BIN" << std::endl;
+							WriteLog("  /config-importfilterfile="+ szAppConfigDest + "\\FILTERS.BIN" +"\n");
 						installCfg << "/config-deleteinstallfile=yes" << std::endl;
+							WriteLog("  /config-deleteinstallfile=yes\n");
 						installCfg.close();
 
-						NetwareApi api;
-						api.SelectServerByName(this->mf_ServerName);
+						progressCtrl->SetPos(progressCtrl->GetPos()+1);
+						progressTextCtrl->SetWindowText("Contacting Server to create Configuration file...");
+						WriteLog("Executing NCF: " + szServerAppBaseDest + "\\MFINST.NCF");
 						if (!api.ExecuteNCF(szServerAppBaseDest + "\\MFINST.NCF"))
 						{
 							bErrors = true;
@@ -326,6 +469,7 @@ BOOL CInstApp::InitInstance()
 						}
 
 					} else {
+						WriteLog("  => ofstream() failed");
 						bErrors = true;
 						szError = "Could not write initial configuration file.";
 					}
@@ -334,18 +478,24 @@ BOOL CInstApp::InitInstance()
 
 			if (!bErrors)
 			{
-				// 6: patch autoexec.ncf
+				// 5: patch autoexec.ncf
+				WriteLog("5 - patch autoexec.ncf.");
 			}
 
 			if (!bErrors)
 			{
-				// 7: patch gwia.cfg
+				// 6: patch gwia.cfg
+				WriteLog("6 - patch gwia.ncf.");
 			}
 
 			// Done.
 
 			if (!bErrors)
 			{
+				WriteLog("----- -------------------------------------------------");
+				WriteLog("----- Installation Finished successfully.");
+				WriteLog("----- -------------------------------------------------");
+
 				// present finish dialog
 				int nLower; int nUpper;	progressCtrl->GetRange(nLower,nUpper);
 				progressCtrl->SetPos(nUpper);
@@ -355,6 +505,11 @@ BOOL CInstApp::InitInstance()
 				progress.RunModalLoop(MLF_SHOWONIDLE);
 
 			} else {
+				WriteLog("----- -------------------------------------------------");
+				WriteLog("----- Installation aborted:");
+				WriteLog("----- " + szError);
+				WriteLog("----- -------------------------------------------------");
+
 				AfxMessageBox("An Error occoured while installing MailFilter on the target server:\n " + szError + "\n\nPlease correct the problem and follow the Installation Wizard steps again.", MB_ICONERROR);
 				progress.DestroyWindow();
 			}
@@ -366,3 +521,4 @@ BOOL CInstApp::InitInstance()
 	//  Anwendung verlassen, anstatt das Nachrichtensystem der Anwendung zu starten.
 	return FALSE;
 }
+

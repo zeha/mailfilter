@@ -582,6 +582,8 @@ bool Configuration::CreateFromInstallFile(std::string installFile)
 	printf("   Done reading install data file!\n");
 	install.close();
 
+	this->config_build = MAILFILTER_CONFIGURATION_THISBUILD;
+
 	this->filterList.clear();
 	
 	this->setDefaults(myConfDir,myDomain);
