@@ -16,8 +16,8 @@
 
 
 int					 gLibId        = -1;
-void				*gModuleHandle = (void *) NULL;
 FILE				*gSysLogFile   = (FILE *) NULL;
+void				*gModuleHandle = (void *) NULL;
 scr_t				 gLibScreen     = NULL;
 rtag_t				 gLibAllocRTag  = NULL,
 					 sDownEventRTag = NULL;
@@ -216,6 +216,7 @@ int M_MFAVA_ScanFile(MFAVA_HANDLE hAVA, const char* szFileName, char* szVirusNam
 	pthread_t   thread;
 	size_t		fileNameLen;
 	int _iVirusType = iVirusType;
+	size_t _iVirusNameLength = iVirusNameLength;
 	
 	int err;
 	
@@ -236,6 +237,8 @@ int M_MFAVA_ScanFile(MFAVA_HANDLE hAVA, const char* szFileName, char* szVirusNam
 
 	thread = pthread_self();
 	
+	consoleprintf("MFAVA***** VirusNameLength: %d\n",iVirusNameLength);
+	
 /*	if (err = RxRegisterThreadResource(thread, CleanUpFooStuff))
 	{
 		if (szFileName)
@@ -245,7 +248,7 @@ int M_MFAVA_ScanFile(MFAVA_HANDLE hAVA, const char* szFileName, char* szVirusNam
 		return err;
 	} */
 	
-	err = MailFilter_AVA_ScanFile_sym(hAVA, szFileName, szVirusName, iVirusNameLength, _iVirusType);
+	err = MailFilter_AVA_ScanFile_sym(hAVA, szFileName, szVirusName, _iVirusNameLength, _iVirusType);
 
 
 	if (szFileName)
@@ -367,6 +370,11 @@ printf("DLL_PROCESS_DETACH called.\n");
 
 			if (RegisterMarshalledInterfaces())
 				return FALSE;
+
+			// pre-init all AV NLMs.
+			eTrust7_PreInit();
+
+			// done.
 
 			return TRUE;
 		case DLL_NLM_SHUTDOWN:

@@ -126,5 +126,6 @@ char *programMesgTable[] =
 	"Login as Username:",
 	"         Password:",
 	"Login",
-	"You have selected both of Restore and Re-Check. Only one selection is possible.\nPlease open this mail again and select your real choice!"
+	"You have selected both of Restore and Re-Check. Only one selection is possible.\nPlease open this mail again and select your real choice!",
+	"Virus Scan"
 };

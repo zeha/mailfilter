@@ -34,11 +34,12 @@ MFUnZip::~MFUnZip()
 	}
 }
 
-int MFUnZip::ExtractCurrentFile(const char* localFilename)
+long MFUnZip::ExtractCurrentFile(const char* localFilename)
 {
 	int err = MFUnZip_OK;
 	MFUnZip_Fileinfo zi;
 	char filename_inzip[256];
+	long bytesWritten = 0;
 
 	if (!this->zipFile)
 	{
@@ -96,6 +97,7 @@ int MFUnZip::ExtractCurrentFile(const char* localFilename)
 					err = MFUnZip_ERRNO;
 					break;
 				}
+				++bytesWritten;
 			}
 		} while (err>0);
 
@@ -111,21 +113,33 @@ int MFUnZip::ExtractCurrentFile(const char* localFilename)
 		unzCloseCurrentFile(this->zipFile);
 
 	_mfd_free(Buf,"MFUnZip::ExtractCurrentFile");
+	MFD_Out(MFD_SOURCE_ZIP,"MFUnZip: wrote %d bytes\n",bytesWritten);
+	if (err == MFUnZip_OK)
+		return bytesWritten;
+
 	return err;
 		
 }
 
 int MFUnZip::ExtractFile(const char* innerFilename, const char* localFilename)
 {
+	long rc = 0;
 	if (!this->zipFile)
 	{
 		MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: No Zip File open!\n");
 		return MFUnZip_NOZIPFILE;
 	}
 
-	if (unzLocateFile(this->zipFile,innerFilename,2) != MFUnZip_OK)
+	rc = unzGoToFirstFile(this->zipFile);
+	if (rc != MFUnZip_OK)
 	{
-		MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: Could not find '%s' in zipfile.\n",innerFilename);
+		MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: [%d] Could not goto first file in zipfile.\n",rc);
+	}
+
+	rc = unzLocateFile(this->zipFile,innerFilename,2);
+	if (rc != MFUnZip_OK)
+	{
+		MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: [%d] Could not find '%s' in zipfile.\n",rc,innerFilename);
 		return MFUnZip_FILENOTFOUND;
 	}
 	return this->ExtractCurrentFile(localFilename);

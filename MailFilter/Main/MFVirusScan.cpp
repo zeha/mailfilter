@@ -71,6 +71,7 @@ long MFVS_CheckZIPFile(const char* szAttFile, std::string szZipFilename, MailFil
 {
 	std::string szZipExt;
 	szZipExt = szZipFilename.substr(szZipFilename.length()-4);
+	long bytes = 0;
 	
 	if (szZipExt == ".zip")
 	{
@@ -90,6 +91,29 @@ long MFVS_CheckZIPFile(const char* szAttFile, std::string szZipFilename, MailFil
 				// weird stuff.
 				m->lstArchiveContents->AddValueBool(att->name,(bool)att->data);
 				MFD_Out(MFD_SOURCE_MAIL, "%s ", att->name );
+				
+				// try to extract the file.
+				char szAttFile[MAX_PATH]; sprintf(szAttFile,"%s%i.att",m->szScanDirectory,m->iNumOfAttachments+1);
+				bytes = unzip.ExtractFile(att->name,szAttFile);
+				if (bytes>0)
+				{
+					m->iNumOfAttachments++;
+					m->iTotalAttachmentSize += bytes;
+					
+					// write mfn
+					sprintf(szAttFile,"%s%i.mfn",m->szScanDirectory,m->iNumOfAttachments);
+					FILE* f = fopen(szAttFile,"w");
+					if (f)
+					{
+						fprintf(f,"%s\\%s\n",szZipFilename.c_str(),att->name);
+						fclose(f);
+					} else {
+						MFD_Out(MFD_SOURCE_ERROR,"MFVS: ZIP: Error writing %d.mfn\n",m->iNumOfAttachments);
+					}
+
+				} else {
+					MFD_Out(MFD_SOURCE_MAIL," --> Decoding failed for unknown reason (%d)\n",bytes);
+				}
 				
 				att = zipAttachments->GetNext(att);
 			}
@@ -137,12 +161,31 @@ long MFVS_CheckWinmailDat(const char* szAttFile, std::string szTNEFFilename, Mai
 					{
 						MFD_Out(MFD_SOURCE_MAIL," -> TNEF decoding attachment\n");
 						// Extract Attachment
-						char szAttFile[MAX_PATH]; sprintf(szAttFile,"%s%i.att",m->szScanDirectory,m->iNumOfAttachments);
+						char szAttFile[MAX_PATH]; sprintf(szAttFile,"%s%i.att",m->szScanDirectory,m->iNumOfAttachments+1);
 						if (LibTNEF_SaveAttachmentData(&data,szAttFile) == 0)
 						{
 							m->iNumOfAttachments++;
 							if (data.lAttachmentSize > 0)
 								m->iTotalAttachmentSize += data.lAttachmentSize;
+
+/*
+		TODO:
+				get the attachment name from libtned and
+				write our mfn file
+				hm.
+				
+				
+							// write mfn
+							sprintf(szAttFile,"%s%i.mfn",m->szScanDirectory,m->iNumOfAttachments);
+							FILE* f = fopen(szAttFile,"w");
+							if (f)
+							{
+								fwrite(f,"%s\\%s\n",szZipFilename.c_str(),att->name);
+								fclose(f);
+							} else {
+								MFD_Out(MFD_SOURCE_ERROR,"MFVS: ZIP: Error writing %d.mfn\n",m->iNumOfAttachments);
+							}
+*/
 						} else {
 							MFD_Out(MFD_SOURCE_MAIL," --> Decoding failed for unknown reason\n");
 						}
@@ -407,13 +450,11 @@ MFD_Out(MFD_SOURCE_VSCAN,"** Done...\n");
 	MimeEncoderDestroy(mimeCoder,false);
 	mimeCoder = NULL;
 
-MFD_Out(MFD_SOURCE_VSCAN,"** ftell...\n");
 	iSize = ftell(fOutFile);
 MFD_Out(MFD_SOURCE_VSCAN,"Encode made %d bytes\n",iSize);
 	fclose(fInFile);
 	fclose(fOutFile);
 
-MFD_Out(MFD_SOURCE_VSCAN,"** Almost Complete...\n");
 	/*if (szScanBuffer != NULL)	*/_mfd_free(szScanBuffer,"Encode");
 
 	if (iSize > 0)

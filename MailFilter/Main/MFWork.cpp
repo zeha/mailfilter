@@ -836,6 +836,59 @@ int MF_RuleExec( MailFilter_MailData* m )
 			if( bl->LookupDNS() == 2 )	{ iResult = 1; } else { iResult = 0; }
 			
 		    break;
+		case MailFilter_Configuration::virus:
+		{
+			// do evil MFAVA scanning.
+			char szVirusName[MAX_PATH];
+			char szAttachmentFile[MAX_PATH];
+			bool bFoundVirus = false;
+			int iVirusType;
+			
+			if ( (m->iNumOfAttachments > 0) && MFC_MAILSCAN_Enabled )
+			{
+				for (int i = 1; i < ( m->iNumOfAttachments +1 ); i++)
+				{
+					sprintf(szAttachmentFile,"%s%i.att",m->szScanDirectory,i);
+					szVirusName[0] = 0;
+					iVirusType = 0;
+					
+					if (MailFilter_AV_ScanFile(szAttachmentFile, szVirusName, MAX_PATH, iVirusType) == 0)
+					{
+						if (iVirusType != 0)
+						{
+							const char* szType = "Virus";
+							if (iVirusType == 2) szType = "Trojan";
+							if (iVirusType == 3) szType = "Macro Virus";
+							if (iVirusType == 4) szType = "Worm";
+
+							iResult = 1;
+							bOverrideErrorMessage = true;
+							
+							szFieldDescription = (char*)_mfd_malloc(1001,"szFieldDescription");
+							
+							sprintf(szFieldDescription,"The %s %s has been detected in an attachment.",szVirusName,szType);
+
+							break;
+
+						} else {
+							MFD_Out(MFD_SOURCE_VSCAN,"AVA %i: clean.\n",i);
+						}
+					} else {
+						MFD_Out(MFD_SOURCE_VSCAN,"AVA %i: error while scanning.\n",i);
+					}
+
+				}
+
+	/*					// cleanup ;)
+						unlink(szAttachmentFile);
+						
+						// we have a second file containing the original name of the attachment
+						sprintf(szAttachmentFile,"%s%i.mfn",m->szScanDirectory,i);
+						unlink(szAttachmentFile);
+				*/
+			}
+			break;
+		}		
 		default:
 			MFD_Out(MFD_SOURCE_RULE,"MF_RuleExec encountered unknown field %d!\n",MF_GlobalConfiguration.filterList[(unsigned int)curItem].matchfield);
 			break;
@@ -892,12 +945,10 @@ int MF_RuleExec( MailFilter_MailData* m )
 		
 		if (iResult)
 		{
-//MFD_Out("..break\n");
 			break;
 		}
 		
 		}
-//MFD_Out("\n");
 
 	}
 		
@@ -911,22 +962,12 @@ int MF_RuleExec( MailFilter_MailData* m )
 		delete(bl);
 	}
 
-MFD_Out(MFD_SOURCE_RULE,"\n->%i %u",iResult,iResult);
 	if (iResult == 2)
 	{
 		iResult = 0;
 		curItem = -2;
 	}
-	
-	if (iResult == 0)
-	{
-		// do evil MFAVA scanning.
-		char szTemp[MAX_PATH];
-		int iVirusType;
-		
-/*		MailFilter_AV_ScanFile(szAttachmentFile, szTemp, MAX_PATH, iVirusType);
-*/
-	}
+MFD_Out(MFD_SOURCE_RULE,"-> %i %i ",iResult,curItem);
 	
 	if (iResult == 1)
 	{	/* set these things approaite */
@@ -2579,9 +2620,6 @@ static void MFVS_CheckQueue()
 						continue;
 				}
 
-				// do evil MFAVA checking.
-				
-
 				/* Check for existance of the mail. */
 				if (access(m->szFileWork,F_OK) != 0)
 				{
@@ -3235,28 +3273,33 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 
 		if (MFC_MAILSCAN_Enabled)
 		{
-			if (MailFilter_AV_Check() && (!bTriedAVInit))
-			{
-				bTriedAVInit = true;
-				MailFilter_AV_Init();
-			}
-
 			MFVS_CheckQueue();
 		}
 
 		if ((tlc > 10) && (lc == 1))	// Ensure Certification is Done.
 		{
 			if (!MFL_GetFlag(MAILFILTER_MC_M_VIRUSSCAN))
-				MFC_MAILSCAN_Enabled = false;
+				MFC_MAILSCAN_Enabled = false;		// doh, not licensed.
 				else
 				{
 					if ( (MF_GlobalConfiguration.MailscanDirNum == 0) || (MF_GlobalConfiguration.MailscanTimeout == 0) )
-						MFC_MAILSCAN_Enabled = false;
+						MFC_MAILSCAN_Enabled = false;		// licensed but RT Scanner disabled.
 						else
-						MFC_MAILSCAN_Enabled = true;
-				
+						MFC_MAILSCAN_Enabled = true;		// ok, valid config + license for this.
+	
+					// AV NLM scanning only needs a scan dir.
+					if (MF_GlobalConfiguration.MailscanDirNum != 0)
+					{
+						// config okay, now init AV NLMs ASAP.
+						if (MailFilter_AV_Check() && (!bTriedAVInit))
+						{
+							bTriedAVInit = true;
+							MailFilter_AV_Init();
+						}
+					}
 				}
-				
+			
+			// scheduling licensed?
 			if (!MFL_GetFlag(MAILFILTER_MC_M_BWTHCNTRL))
 				MF_GlobalConfiguration.BWLScheduleTime = "";
 		}

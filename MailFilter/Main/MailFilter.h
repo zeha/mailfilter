@@ -353,7 +353,7 @@ typedef LONG rtag_t;
 	// Temporary Configuration Data	(MFT_)
 	_MFGS(	bool,			MFT_InOutSameServerVolume,			false	);
 	_MFGS(	bool,			MFT_RemoteDirectories,				false	);
-	_MFGS(	bool,			MFT_Verbose,						false	);
+	_MFGS(	bool,			MFT_AVAVerbose,						false	);
 	_MFGS(	int,			MFT_Debug,							0		);
 	_MFGS(	unsigned long,	MFT_I18N_MessageCount,				0		);
 	_MFGS(	unsigned long,	MFT_I18N_LanguageID,				0		);
@@ -435,9 +435,9 @@ typedef LONG rtag_t;
 #ifdef _MF_CLEANBUILD
 
 	// non-debug build.
-	#undef MFT_Verbose
+	#undef MFT_AVAVerbose
 	#undef MFT_Debug
-	#define MFT_Verbose	0
+	#define MFT_AVAVerbose	0
 	#define MFT_Debug	0
 
 	#define MFD_Out(...)

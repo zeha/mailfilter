@@ -200,13 +200,35 @@ void MFL_VerInfo()
 	MF_StatusNothing();
 }
 
+bool _mf_nutinit2(rtag_t tagID)
+{
+	long	ccode;
+	ccode=NWSInitializeNut(
+		/*	utility				*/	MSG_PROGRAM_NAME,
+		/*	version				*/	(long)-1,
+		/*	headerType			*/	NO_HEADER,	//SMALL_HEADER,
+		/*	compatibilityType	*/	NUT_REVISION_LEVEL,
+#ifdef __NOVELL_LIBC__
+		/*	messageTable		*/	(char **)programMesgTable,
+#else
+		/*	messageTable		*/	(unsigned char **)programMesgTable,
+#endif
+		/*	helpScreens			*/	NULL,
+		/*	screenID			*/	MF_ScreenID,
+		/*	resourceTag			*/	tagID,
+		/*	handle				*/	&MF_NutInfo
+		);
+	if(ccode != 0)
+		return false;
+	return true;
+}
+
 //
 //  NUT: Initialize NUT and Tags
 //
 bool MF_NutInit(void)
 {
 	rtag_t	tagID;
-	long	ccode;
 	char szTemp[80+2];
 
 
@@ -229,27 +251,18 @@ bool MF_NutInit(void)
 		return false;	
 	}
 
-	ccode=NWSInitializeNut(
-		/*	utility				*/	MSG_PROGRAM_NAME,
-		/*	version				*/	(long)-1,
-		/*	headerType			*/	NO_HEADER,	//SMALL_HEADER,
-		/*	compatibilityType	*/	NUT_REVISION_LEVEL,
-#ifdef __NOVELL_LIBC__
-		/*	messageTable		*/	(char **)programMesgTable,
-#else
-		/*	messageTable		*/	(unsigned char **)programMesgTable,
-#endif
-		/*	helpScreens			*/	NULL,
-		/*	screenID			*/	MF_ScreenID,
-		/*	resourceTag			*/	tagID,
-		/*	handle				*/	&MF_NutInfo
-		);
-	if(ccode != 0) 
+	if (!_mf_nutinit2(tagID))
 	{
-		MF_DisplayCriticalError("MAILFILTER: Error initializing NWSNUT!\n");
-		return false;	
-	}
+		// load threads.nlm for nwsnut
+		MF_DisplayCriticalError("MAILFILTER: Loading THREADS.NLM for NWSNUT.\n");
+		LoadModule(0, "THREADS.NLM", 0);
 
+		if (!_mf_nutinit2(tagID))
+		{
+			MF_DisplayCriticalError("MAILFILTER: Error initializing NWSNUT!\n");
+			return false;	
+		}
+	}
 
 	memset(szTemp,' ',81);
 	sprintf(szTemp,"  MailFilter Server %s", MAILFILTERVERNUM);
@@ -568,9 +581,6 @@ void MFD_Out_func(int source, const char* fmt, ...) {
 
 	va_list	argList;
 	unsigned char attr = 0;
-
-	if (!MFT_Verbose)
-		return;
 
 	if (!chkFlag(MFT_Debug,source))
 		return;
@@ -971,6 +981,8 @@ MF_MAIN_RUNLOOP:
 			
 			ThreadSwitch();
 		}
+		
+		MF_DisplayCriticalError("MAILFILTER: Changing run state.\n");
 
 		// 254 = restart
 		// 253 = config
@@ -1136,32 +1148,6 @@ int main( int argc, char *argv[ ])
 				MF_DisplayCriticalError("MAILFILTER: Detected NetWare 5.0.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
 				return 0;
 			}
-
-		// load threads.nlm for nwsnut
-		if (
-			(
-				(u.netware_major == 5) &&
-				(u.netware_minor == 1) &&
-				(u.servicepack < 7)
-			)
-			||
-			(
-				(u.netware_major == 6) &&
-				(u.netware_minor == 0) &&
-				(u.servicepack < 5)
-			)
-			||
-			(
-				(u.netware_major == 6) &&
-				(u.netware_minor == 50) &&
-				(u.servicepack < 2)
-			)
-		   )
-		{
-			MF_DisplayCriticalError("MAILFILTER: Loading threads.nlm\n");
-			LoadModule(0, "THREADS.NLM", 0);
-		}
-					
 	}
 #endif
 
@@ -1185,7 +1171,7 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 #endif
 
 	// debug screen
-	if (MFT_Verbose)
+	if (MFT_Debug)
 	{
 		extern bool MF_NLM_OpenDebugScreen();
 		if (!MF_NLM_OpenDebugScreen())
@@ -1229,8 +1215,6 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		break;
 		
 	case MailFilter_Configuration::CONFIG:
-	
-		bool rc;
 	
 		#ifdef __NOVELL_LIBC__
 		NXContextSetName(NXContextGet(),"MailFilterConfig");

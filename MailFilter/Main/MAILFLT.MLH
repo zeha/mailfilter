@@ -121,3 +121,4 @@
 #define EDIT_LOGIN_PASSWORD                      0x0075
 #define MSG_LOGIN                                0x0076
 #define MSG_ERROR_ONLY_ONE_OF_RESTORE_RECHECK    0x0077
+#define EDIT_FILTERS_MATCHFIELD_VIRUS            0x0078

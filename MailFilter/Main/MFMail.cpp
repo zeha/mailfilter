@@ -2,15 +2,8 @@
  +
  +		MFMail.cpp
  +		
- +		Mail Data Structure Functions
- +
- +		This is MailFilter!
- +		www.mailfilter.cc
+ +		Mail Data Structure + Parsing Functions
  +		
- +		Copyright 2002 Christian Hofstädtler.
- +		
- +		
- +		- Aug/2002 ; ch   ; Initial Code
  +		
  +		
  */
@@ -143,7 +136,7 @@ MailFilter_MailData* MailFilter_MailRead(const char* szInFile) {
 	int iListCount, i;
 	
 	szTemp[0]=0; fgets(szTemp,80,fp); iListCount=atol(szTemp);				// read number of array entries
-MFD_Out(MFD_SOURCE_MAIL,"mfmail: will read %d items\n",iListCount);
+MFD_Out(MFD_SOURCE_MAIL,"mfmail: will read %d items... ",iListCount);
 
 	for (i = 0; i < iListCount; i++)
 	{
@@ -152,7 +145,7 @@ MFD_Out(MFD_SOURCE_MAIL,"mfmail: will read %d items\n",iListCount);
 		m->lstCopies->AddValueChar(szTemp,szTemp2);
 	}
 
-MFD_Out(MFD_SOURCE_MAIL,"mfmail: done reading items\n");
+MFD_Out(MFD_SOURCE_MAIL,"done.\n");
 
 	iXList_Storage* ixlist_storage = m->lstCopies->GetFirst();
 	while (ixlist_storage != NULL) { MFD_Out(MFD_SOURCE_MAIL,"read: %s %s\n",ixlist_storage->name,ixlist_storage->data); ixlist_storage = ixlist_storage->next; }
@@ -161,7 +154,6 @@ MFD_Out(MFD_SOURCE_MAIL,"mfmail: done reading items\n");
 #undef _MFMW_READ_INT
 #undef _MFMW_READ_UL
 #undef _MFMW_READ_BOOL
-MFD_Out(MFD_SOURCE_MAIL,"Read iTotalAttachmentSize = %u from MFS.\n",m->iTotalAttachmentSize);
 
 	fclose(fp);
 	return m;
@@ -225,7 +217,7 @@ MailFilter_MailData* MailFilter_MailInit(const char* szFileName, int iMailSource
 		(mail->szReceivedFrom == NULL)
 		)
 		{
-			MF_DisplayCriticalError("MAILFILTER: MEMORY ALLOCATION ERROR!\n\tABEND IN A FEW SECONDS...\n\tGOOD ADVICE: SAVE AND LOG OUT NOW.\n");
+			MF_DisplayCriticalError("MAILFILTER: MEMORY ALLOCATION ERROR!\n\tGOOD ADVICE: SAVE AND LOG OUT NOW.\n");
 			return NULL;
 		}
 		
@@ -374,10 +366,8 @@ int MF_ParseMail(MailFilter_MailData* m, bool bMiniMode)
 				{
 					curChr = fgetc(mailFile);
 					ungetc(curChr,mailFile);
-					MFD_Out(MFD_SOURCE_MAIL,"bInMimeAttachment == TRUE; next char: %d (='%c')\n",curChr,curChr);
 					if (curChr != 'C')
 					{
-					
 						if ((MF_GlobalConfiguration.EnableAttachmentDecoder) && (!bMiniMode))
 						{
 							if ( !feof(mailFile) )
@@ -853,7 +843,7 @@ MFD_Out(MFD_SOURCE_MAIL,"UU Attachment: '%s'\n",szCmpBuffer);
 									if ( szCmpBuffer[curCmpPos] == '"' )	  //"
 										szCmpBuffer[curCmpPos]=0;
 
-	MFD_Out(MFD_SOURCE_MAIL,"--> ATT '%s'\n",szCmpBuffer);
+	MFD_Out(MFD_SOURCE_MAIL,"--> ATT '%s' ",szCmpBuffer);
 									strncpy(szThisAttachment,szCmpBuffer,250);
 									szThisAttachment[250] = 0;
 
@@ -942,7 +932,7 @@ MFD_Out(MFD_SOURCE_MAIL,"UU Attachment: '%s'\n",szCmpBuffer);
 								}
 								// Now we have a full attachment name.
 								szCmpBuffer[curCmpPos]=0;
-MFD_Out(MFD_SOURCE_MAIL,"--> TYPE '%s'\n",szCmpBuffer);
+MFD_Out(MFD_SOURCE_MAIL,"--> TYPE '%s' ",szCmpBuffer);
 
 								strncpy(szThisAttachment,szCmpBuffer,250);
 								szThisAttachment[250] = 0;

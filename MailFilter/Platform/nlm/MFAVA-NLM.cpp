@@ -114,7 +114,7 @@ int MailFilter_AV_Init()
 	
 	// 1 = eTrust AntiVirus 7
 	// FALSE = No Debug Stuff (goes to logger screen)
-	rc = MailFilter_AVA_Init_sym(1,FALSE,ghAgent);
+	rc = MailFilter_AVA_Init_sym(1,MFT_AVAVerbose,ghAgent);
 	MFD_Out(MFD_SOURCE_VSCAN,"%X Init rc: %d\n",ghAgent,rc);
 	if (rc)
 	{

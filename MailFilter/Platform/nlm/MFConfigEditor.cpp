@@ -247,6 +247,8 @@ static void MFConfig_AddFilterItem(MailFilter_Configuration::Filter flt, int cur
 	case MailFilter_Configuration::archiveContentName:
 	case MailFilter_Configuration::archiveContentCount:
 		szTemp[0] = 'Z';	break;
+	case MailFilter_Configuration::virus:
+		szTemp[0] = 'V';	break;
 	default:
 		szTemp[0] = '?';	break;
 	}
@@ -256,7 +258,15 @@ static void MFConfig_AddFilterItem(MailFilter_Configuration::Filter flt, int cur
 		szTemp[1] = '!';
 	}
 	
-	strncpy(szTemp+2,flt.expression.c_str(),70);
+	if (flt.matchfield == MailFilter_Configuration::virus)
+	{
+		// no useful expression here
+		strcpy(szTemp+2,"Virus Scan by AV NLM - if possible");
+	} else {
+		// use expression as text
+		strncpy(szTemp+2,flt.expression.c_str(),70);
+	}
+	
 	szTemp[73]=0;
 	NWSAppendToList((_MF_NUTCHAR)szTemp, cI, MF_NutInfo);
 }
@@ -503,7 +513,8 @@ static void MFConfig_Util_ExportListToFile(void* nutHandle)
 /****************************************************************************
 ** Edit filter detail dialog
 */
-static	FIELD		*MFConfig_EditFilterDialog_fieldDescription;
+static	FIELD		*MFConfig_EditFilterDialog_fieldDescriptionLbl;
+static	FIELD		*MFConfig_EditFilterDialog_fieldExpressionEdit;
 
 static int MFConfig_EditFilterDialog_MenuAction(int option, void *parameter)   {      parameter = parameter;	return option;   }
 static int MFConfig_EditFilterDialog_MenuActionAction(int option, void *parameter)   
@@ -511,11 +522,22 @@ static int MFConfig_EditFilterDialog_MenuActionAction(int option, void *paramete
 #pragma unused(parameter)
 
 	if(option==MAILFILTER_MATCHACTION_COPY)
-		MFConfig_EditFilterDialog_fieldDescription->fieldData = (unsigned char*)MF_NMsg(EDIT_FILTERS_DESTINATION);
+		MFConfig_EditFilterDialog_fieldDescriptionLbl->fieldData = (unsigned char*)MF_NMsg(EDIT_FILTERS_DESTINATION);
 		else
-		MFConfig_EditFilterDialog_fieldDescription->fieldData = (unsigned char*)MF_NMsg(EDIT_FILTERS_DESCRIPTION); 
-		
-	NWSSetFormRepaintFlag(TRUE,MF_NutInfo); return option; 
+		MFConfig_EditFilterDialog_fieldDescriptionLbl->fieldData = (unsigned char*)MF_NMsg(EDIT_FILTERS_DESCRIPTION); 
+	
+	NWSSetFormRepaintFlag(TRUE,MF_NutInfo);
+	return option;
+}
+static int MFConfig_EditFilterDialog_MenuActionMatchfield(int option, void *parameter)   
+{
+#pragma unused(parameter)
+
+	if (option==MailFilter_Configuration::virus)
+		MFConfig_EditFilterDialog_fieldExpressionEdit->fieldData = (unsigned char*)"-";
+	
+	NWSSetFormRepaintFlag(TRUE,MF_NutInfo);
+	return option;
 }
 int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 {
@@ -556,7 +578,7 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 //	line++;
 
 	NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_MATCHFIELD), MF_NutInfo);
-	ctlMatchfield = NWSInitMenuField (MSG_MENU_MAIN_EDIT_FILTERS, 10, 40, MFConfig_EditFilterDialog_MenuAction, 		MF_NutInfo);
+	ctlMatchfield = NWSInitMenuField (MSG_MENU_MAIN_EDIT_FILTERS, 10, 40, MFConfig_EditFilterDialog_MenuActionMatchfield,MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ALWAYS,		MailFilter_Configuration::always		,MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ATTACHMENT,	MailFilter_Configuration::attachment	,MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL,			MailFilter_Configuration::email			,MF_NutInfo);
@@ -570,6 +592,7 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ARCHIVECONTENTCOUNT,MailFilter_Configuration::archiveContentCount,MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_BLACKLIST,		MailFilter_Configuration::blacklist		,MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_IPUNRESOLVABLE,MailFilter_Configuration::ipUnresolvable,MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_VIRUS,			MailFilter_Configuration::virus			,MF_NutInfo);
 	NWSAppendMenuField (line, 20, REQUIRED_FIELD, &newMatchfield, ctlMatchfield, NULL, MF_NutInfo);   
 	line++;
 
@@ -593,10 +616,10 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 	
 	NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_EXPRESSION), MF_NutInfo);
 	strcpy (newExpression, flt->expression.c_str());
-	NWSAppendScrollableStringField  (line, 20, 55, REQUIRED_FIELD, (_MF_NUTCHAR)newExpression, 500, (_MF_NUTCHAR)"A..Za..z \\/:_-+.0..9{}[]()*#!\"§$%&=?~", EF_ANY, NULL, MF_NutInfo); 
+	MFConfig_EditFilterDialog_fieldExpressionEdit = NWSAppendScrollableStringField  (line, 20, 55, REQUIRED_FIELD, (_MF_NUTCHAR)newExpression, 500, (_MF_NUTCHAR)"A..Za..z \\/:_-+.0..9{}[]()*#!\"§$%&=?~", EF_ANY, NULL, MF_NutInfo); 
 	line++;
 
-	MFConfig_EditFilterDialog_fieldDescription = NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_DESCRIPTION), MF_NutInfo);
+	MFConfig_EditFilterDialog_fieldDescriptionLbl = NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_DESCRIPTION), MF_NutInfo);
 	strcpy (newDescription, flt->name.c_str());
 	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newDescription, 60, (_MF_NUTCHAR)"A..Za..z \\/:_-+.0..9{}[]()*#!\"§$%&=?~", EF_ANY, NULL, MF_NutInfo); 
 	
@@ -646,7 +669,7 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 
 	// fix some fields
 	if (newMatchaction==MAILFILTER_MATCHACTION_COPY) 
-		MFConfig_EditFilterDialog_fieldDescription->fieldData = (unsigned char*)"Destination";
+		MFConfig_EditFilterDialog_fieldDescriptionLbl->fieldData = (unsigned char*)"Destination";
 	
 	formSaved = NWSEditForm (
 		MSG_EDIT_FILTERS_EDITRULE,		//headernum	//0
@@ -702,7 +725,10 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 		}
 	}
 
-	if ( (newMatchfield != MailFilter_Configuration::size) || (newMatchfield != MailFilter_Configuration::blacklist) || (newMatchfield != MailFilter_Configuration::ipUnresolvable) )
+	if (
+			(newMatchfield != MailFilter_Configuration::size) || 
+			(newMatchfield != MailFilter_Configuration::blacklist) || (newMatchfield != MailFilter_Configuration::ipUnresolvable) 
+		)
 	{
 		MF_RegError(regcomp(&re,flt->expression.c_str(),0),&re);
 		regfree(&re);

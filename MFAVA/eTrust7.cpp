@@ -147,14 +147,14 @@ static int eTrust7_UnImportSymbols()
 	InoScanScanIT_sym = NULL;
 	InoScanDeInit_sym = NULL;
 
-	UnImportPublicObject(getnlmhandle(),"libwinc@LoadLibrary");
-	UnImportPublicObject(getnlmhandle(),"libwinc@FreeLibrary");
+	UnImportPublicObject(gModuleHandle,"libwinc@LoadLibrary");
+	UnImportPublicObject(gModuleHandle,"libwinc@FreeLibrary");
 
-	UnImportPublicObject(getnlmhandle(),"inoscan@InoScanSetActionOption");
-	UnImportPublicObject(getnlmhandle(),"inoscan@InoScanInit");
-	UnImportPublicObject(getnlmhandle(),"inoscan@InoScanSetConfig");
-	UnImportPublicObject(getnlmhandle(),"inoscan@InoScanScanIT");
-	UnImportPublicObject(getnlmhandle(),"inoscan@InoScanDeInit");
+	UnImportPublicObject(gModuleHandle,"inoscan@InoScanSetActionOption");
+	UnImportPublicObject(gModuleHandle,"inoscan@InoScanInit");
+	UnImportPublicObject(gModuleHandle,"inoscan@InoScanSetConfig");
+	UnImportPublicObject(gModuleHandle,"inoscan@InoScanScanIT");
+	UnImportPublicObject(gModuleHandle,"inoscan@InoScanDeInit");
 	
 	return ESUCCESS;
 }
@@ -179,14 +179,21 @@ static int eTrust7_ImportSymbols()
 {
 	eTrust7_UnImportSymbols();	// clean up before doing our new work
 
-	LoadLibrary_sym = (LoadLibrary_t)ImportPublicObject(getnlmhandle(),"libwinc@LoadLibrary");
-	FreeLibrary_sym = (FreeLibrary_t)ImportPublicObject(getnlmhandle(),"libwinc@FreeLibrary");
+	LoadLibrary_sym = (LoadLibrary_t)ImportPublicObject(gModuleHandle,"libwinc@LoadLibrary");
+	if (!LoadLibrary_sym) printf("MFAVA: Could not get symbol EA-01.\n");
+	FreeLibrary_sym = (FreeLibrary_t)ImportPublicObject(gModuleHandle,"libwinc@FreeLibrary");
+	if (!FreeLibrary_sym) printf("MFAVA: Could not get symbol EA-02.\n");
 
-	InoScanSetActionOption_sym = (InoScanSetActionOption_t)ImportPublicObject(getnlmhandle(),"inoscan@InoScanSetActionOption");
-	InoScanInit_sym = (InoScanInit_t)ImportPublicObject(getnlmhandle(),"inoscan@InoScanInit");
-	InoScanSetConfig_sym = (InoScanSetConfig_t)ImportPublicObject(getnlmhandle(),"inoscan@InoScanSetConfig");
-	InoScanScanIT_sym = (InoScanScanIT_t)ImportPublicObject(getnlmhandle(),"inoscan@InoScanScanIT");
-	InoScanDeInit_sym = (InoScanDeInit_t)ImportPublicObject(getnlmhandle(),"inoscan@InoScanDeInit");
+	InoScanSetActionOption_sym = (InoScanSetActionOption_t)ImportPublicObject(gModuleHandle,"inoscan@InoScanSetActionOption");
+	if (!InoScanSetActionOption_sym) printf("MFAVA: Could not get symbol EA-03.\n");
+	InoScanInit_sym = (InoScanInit_t)ImportPublicObject(gModuleHandle,"inoscan@InoScanInit");
+	if (!InoScanInit_sym) printf("MFAVA: Could not get symbol EA-04.\n");
+	InoScanSetConfig_sym = (InoScanSetConfig_t)ImportPublicObject(gModuleHandle,"inoscan@InoScanSetConfig");
+	if (!InoScanSetConfig_sym) printf("MFAVA: Could not get symbol EA-05.\n");
+	InoScanScanIT_sym = (InoScanScanIT_t)ImportPublicObject(gModuleHandle,"inoscan@InoScanScanIT");
+	if (!InoScanScanIT_sym) printf("MFAVA: Could not get symbol EA-06.\n");
+	InoScanDeInit_sym = (InoScanDeInit_t)ImportPublicObject(gModuleHandle,"inoscan@InoScanDeInit");
+	if (!InoScanDeInit_sym) printf("MFAVA: Could not get symbol EA-07.\n");
 	
 	if (eTrust7_Check())
 	{
@@ -196,6 +203,10 @@ static int eTrust7_ImportSymbols()
 	return ESUCCESS;
 }
 
+int eTrust7_PreInit()
+{
+	return eTrust7_ImportSymbols();
+}
 
 //VirusData_t* virus
 void callback(struct scanReturnData* data, VirusData_t* virus, int i3, int iErrorCode, int i5, void* unknown)
@@ -214,14 +225,14 @@ void callback(struct scanReturnData* data, VirusData_t* virus, int i3, int iErro
 		
 	}
 	
-	printf("virusnamelength = %d\n",virus->iVirusNameLength);
+	printf("MFAVADebug: virusnamelength = %d\n",virus->iVirusNameLength);
 	
 	strncpy(virus->szVirusName, data->szVirusName,virus->iVirusNameLength);
 	virus->lVirusType = (long) data->lVirusType;
 	virus->lErrorCode = (long) data->lErrorCode;
 	virus->lExtErrorCode = (long) data->lWin32ErrorCode;
 	
-	printf("set virus name: %X '%s'\n",virus->szVirusName,virus->szVirusName);
+	printf("MFAVADebug: set virus name: %X '%s'\n",virus->szVirusName,virus->szVirusName);
 }
 
 int eTrust7_ScanFile(MFAVA_HANDLE hAVA, const char* szFileName, char* szVirusName, size_t iVirusNameLength, int &iVirusType)
@@ -237,7 +248,7 @@ int eTrust7_ScanFile(MFAVA_HANDLE hAVA, const char* szFileName, char* szVirusNam
 	if (hAVA != (MFAVA_HANDLE)ETRUST7_MAGIC)
 	{
 		if (app->Debug)
-			printf("%X eTrust7: not doing ScanFile, magic wrong\n",hAVA);
+			printf("MFAVADebug: %X eTrust7: not doing ScanFile, magic wrong\n",hAVA);
 		return ESUCCESS;
 	}
 
@@ -250,7 +261,7 @@ int eTrust7_ScanFile(MFAVA_HANDLE hAVA, const char* szFileName, char* szVirusNam
 	if ((virus = (VirusData_t*)malloc(sizeof(VirusData_t))) == NULL)
 		return ENOMEM;
 		
-	printf("%X iVirusNameLength = %d\n",iVirusNameLength);
+	printf("MFAVADebug: %X VirusNameLength = %d\n",hAVA,iVirusNameLength);
 
 	virus->sig = 0xBA7F0000;
 	virus->Debug = app->Debug;
@@ -270,11 +281,11 @@ int eTrust7_ScanFile(MFAVA_HANDLE hAVA, const char* szFileName, char* szVirusNam
 	}
 
 	if (app->Debug)
-		printf("%X calling InoScanScanIT [%X,%X,%X]\n",hAVA,app->eTrust_hInoScan, szFileName, virus);
+		printf("MFAVADebug: %X calling InoScanScanIT [%X,%X,%X]\n",hAVA,app->eTrust_hInoScan, szFileName, virus);
 
 	rc = InoScanScanIT_sym(app->eTrust_hInoScan, szFileName, virus);
-	printf("%X InoScanScanIT rc = %X %i\n",hAVA,rc,rc);
-	printf("%X -> %X %X %X\n\t%s\n",hAVA,virus,virus->szVirusName,szVirusName,szVirusName);
+	printf("MFAVADebug: %X InoScanScanIT rc = %X %i\n",hAVA,rc,rc);
+	printf("MFAVADebug: %X -> %X %X %X\n\t%s\n",hAVA,virus,virus->szVirusName,szVirusName,szVirusName);
 
 	iVirusType = virus->lVirusType;
 	rc = (int)virus->lErrorCode;
@@ -296,7 +307,7 @@ int eTrust7_DeInit(MFAVA_HANDLE hAVA)
 	if ((hAVA != NULL) && (hAVA != (MFAVA_HANDLE)ETRUST7_MAGIC))
 	{
 		if (app->Debug)
-			printf("%X eTrust7: not doing DeInit, magic wrong\n",hAVA);
+			printf("MFAVADebug: %X eTrust7: not doing DeInit, magic wrong\n",hAVA);
 		return ESUCCESS;
 	}
 	
@@ -309,15 +320,15 @@ int eTrust7_DeInit(MFAVA_HANDLE hAVA)
 	rc = InoScanDeInit_sym(app->eTrust_hInoScan);
 	
 	if (app->Debug)
-		printf("%X InoScanDeInit rc = %X %i\n",hAVA,rc,rc);
+		printf("MFAVADebug: %X InoScanDeInit rc = %X %i\n",hAVA,rc,rc);
 	
 	rc = FreeLibrary_sym(app->eTrust_hLibInoScan);
 	if (app->Debug)
-		printf("%X FreeLibrary INOSCAN: %x\n",hAVA,rc);
+		printf("MFAVADebug: %X FreeLibrary INOSCAN: %x\n",hAVA,rc);
 		
 	rc = FreeLibrary_sym(app->eTrust_hLibLibWinC);
 	if (app->Debug)
-		printf("%X FreeLibrary LIBWINC: %x\n",hAVA,rc);
+		printf("MFAVADebug: %X FreeLibrary LIBWINC: %x\n",hAVA,rc);
 	
 	return ESUCCESS;
 }
@@ -332,8 +343,7 @@ int eTrust7_Init(MFAVA_HANDLE &hAVA)
 		return ENOMEM;
 	
 	if (eTrust7_Check())
-		if (eTrust7_ImportSymbols())
-			return ENOTSUP;
+		return ENOTSUP;
 	
 	hAVA = (MFAVA_HANDLE)ETRUST7_MAGIC;
 		
@@ -380,29 +390,29 @@ int eTrust7_Init(MFAVA_HANDLE &hAVA)
 	
 	app->eTrust_hLibLibWinC = LoadLibrary_sym("LIBWINC");
 	if (app->Debug)
-		printf("LoadLibrary LIBWINC: %x.\n",app->eTrust_hLibLibWinC);
+		printf("MFAVADebug: LoadLibrary LIBWINC: %x.\n",app->eTrust_hLibLibWinC);
 
 	app->eTrust_hLibInoScan = LoadLibrary_sym("INOSCAN");
 	if (app->Debug)
-		printf("LoadLibrary INOSCAN: %x.\n",app->eTrust_hLibInoScan);
+		printf("MFAVADebug: LoadLibrary INOSCAN: %x.\n",app->eTrust_hLibInoScan);
 	
 	// set up config etc
 	
 	memset(actionConf.padding,0,999);
 	rc = InoScanSetActionOption_sym(&actionConf);
 	if (app->Debug)
-		printf("InoScanSetActionOption rc = %X\n",rc);
+		printf("MFAVADebug: InoScanSetActionOption rc = %X\n",rc);
 
 	rc = InoScanInit_sym(&app->eTrust_hInoScan);
 	if (app->Debug)
 	{
-		printf("InoScanInit rc = %X, hIno = %X\n",rc,app->eTrust_hInoScan);
-//		printf(" %c %c %c %c\n");
+		printf("MFAVADebug: InoScanInit rc = %X, hIno = %X\n",rc,app->eTrust_hInoScan);
+//		printf("MFAVADebug:  %c %c %c %c\n");
 	}
 	
 	rc = InoScanSetConfig_sym(app->eTrust_hInoScan, &cf, &cf2, callback, 0);
 	if (app->Debug)
-		printf("InoScanSetConfig rc = 0x%X %i\n",rc,rc);
+		printf("MFAVADebug: InoScanSetConfig rc = 0x%X %i\n",rc,rc);
 	
 	app->eTrust_InitComplete = 1;
 	

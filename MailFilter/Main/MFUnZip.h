@@ -124,7 +124,7 @@ public:
 protected:
 	unzFile zipFile;
 	/* extract the currently selected file */
-	int ExtractCurrentFile(const char* localFilename);
+	long ExtractCurrentFile(const char* localFilename);
 };
 
 #endif	// MFUnZip_H

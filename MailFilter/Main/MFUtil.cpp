@@ -144,7 +144,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 	while (1)
 	{
 
-		c = ix_getopt(argc, argv, "dh?vxt");
+		c = ix_getopt(argc, argv, "dh?avxt");
 		if (c == -1)
 			break;
 			
@@ -157,20 +157,21 @@ int MF_ParseCommandLine( int argc, char **argv )
 					MFT_Debug = atoi(argv[ix_optind]);
 					ix_optind++;
 				}
-				MFT_Verbose = true;
 				break;
 				
 			case 'd':
 				MFT_Debug = 0xFFFF;
-				MFT_Verbose = true;
 				break;
-			case 'v':
-				MFT_Verbose = true;
+			case 'a':
+				MFT_AVAVerbose = true;
 				break;
 #endif
+			case 'v':
+				MF_DisplayCriticalError("MAILFILTER: Option -v is now obsolete.\n");
+				break;
 			case '?':
 			case 'h':
-				MF_DisplayCriticalError("MAILFILTER: Usage:\n\t%s [-dv] [-t app] [ConfigurationPath]\n\t-d debug\n\t-v verbose\n\t-t args are: \"server\" \"config\" \"restore\" \"nrm\"\n",argv[0]);
+				MF_DisplayCriticalError("MAILFILTER: Usage:\n\t%s [-d | -x debugflags] [-t app] [ConfigurationPath]\n\t-d debug\n\t-v verbose\n\t-t args are: \"server\" \"config\" \"restore\" \"nrm\"\n",argv[0]);
 				return false;
 				break;
 			case 't':
