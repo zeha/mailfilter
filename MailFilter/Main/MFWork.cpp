@@ -3237,7 +3237,8 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 		(
 			(
 				MF_GlobalConfiguration.RequireAVA &&
-				(MailFilter_AV_Check() == 0)
+				(MailFilter_AV_Check() == 0) &&
+				MFL_GetFlag(MAILFILTER_MC_M_VIRUSSCAN)
 			)
 			||
 			(
