@@ -28,10 +28,14 @@ int MFC_CurrentList = 0;
 #define MFCONFIG_KEYS_EXIT			0x0020
 #define MFCONFIG_KEYS_SAVE			0x0040
 #define MFCONFIG_KEYS_CANCEL		0x0080
+#define MFCONFIG_KEYS_SORT			0x0100
 
 #ifndef NUT_SEVERITY_FATAL
 #define NUT_SEVERITY_FATAL 2
 #endif
+
+
+static void MFConfig_Util_Sort(void* nutHandle);
 
 
 static void MFConfig_UI_ShowKeys(int keys)
@@ -43,13 +47,14 @@ static void MFConfig_UI_ShowKeys(int keys)
 	NWSShowLineAttribute ( 24 , 0 , (_MF_NUTCHAR)szTemp , VREVERSE , 80 , (struct ScreenStruct*)MF_NutInfo->screenID );
 	
 	curItem=1;
-	if (chkFlag(keys,MFCONFIG_KEYS_IMPORT)) 	{	strncpy(szTemp+curItem, "<F8> Import ",12);		curItem=curItem+14;	}
-	if (chkFlag(keys,MFCONFIG_KEYS_EXPORT)) 	{	strncpy(szTemp+curItem, "<F9> Export ",12);		curItem=curItem+14; }
-	if (chkFlag(keys,MFCONFIG_KEYS_NEW)) 		{	strncpy(szTemp+curItem, "<INS> New   ",12);		curItem=curItem+14;	}
+	if (chkFlag(keys,MFCONFIG_KEYS_SORT)) 		{	strncpy(szTemp+curItem, "<F7> Sort",9);			curItem=curItem+12;	}
+	if (chkFlag(keys,MFCONFIG_KEYS_IMPORT)) 	{	strncpy(szTemp+curItem, "<F8> Import",11);		curItem=curItem+14;	}
+	if (chkFlag(keys,MFCONFIG_KEYS_EXPORT)) 	{	strncpy(szTemp+curItem, "<F9> Export",11);		curItem=curItem+14; }
+	if (chkFlag(keys,MFCONFIG_KEYS_NEW)) 		{	strncpy(szTemp+curItem, "<INS> New",9);			curItem=curItem+12;	}
 	if (chkFlag(keys,MFCONFIG_KEYS_DELETE)) 	{	strncpy(szTemp+curItem, "<DEL> Delete",12); 	curItem=curItem+14;	}
 	if (chkFlag(keys,MFCONFIG_KEYS_SELECT)) 	{	strncpy(szTemp+curItem, "<RET> Select",12);		curItem=curItem+14; }
-	if (chkFlag(keys,MFCONFIG_KEYS_EXIT)) 		{	strncpy(szTemp+curItem, "<ESC> Exit  ",12);		curItem=curItem+14; }
-	if (chkFlag(keys,MFCONFIG_KEYS_SAVE)) 		{	strncpy(szTemp+curItem, "<ESC> Save  ",12);		curItem=curItem+14; }
+	if (chkFlag(keys,MFCONFIG_KEYS_EXIT)) 		{	strncpy(szTemp+curItem, "<ESC> Exit",10);		curItem=curItem+13; }
+	if (chkFlag(keys,MFCONFIG_KEYS_SAVE)) 		{	strncpy(szTemp+curItem, "<ESC> Save",10);		curItem=curItem+13; }
 	if (chkFlag(keys,MFCONFIG_KEYS_CANCEL)) 	{	strncpy(szTemp+curItem, "<ESC> Cancel",12);		curItem=curItem+14; }
 
 	NWSShowLineAttribute ( 24 , (unsigned long)((80-curItem)/2) , (_MF_NUTCHAR)szTemp , VREVERSE , (unsigned long)curItem , (struct ScreenStruct*)MF_NutInfo->screenID );
@@ -240,54 +245,72 @@ public:
 		}
 };
 
-static void MF_Filter_Sort()
+
+static void MFConfig_AddFilterItem(MailFilter_Configuration::Filter flt, int curItem)
 {
-	sort(MF_GlobalConfiguration.filterList.begin(),MF_GlobalConfiguration.filterList.end(),CompareFilters());
-	consoleprintf("i have %d filters\n",MF_GlobalConfiguration.filterList.size());
-/*
-	int fltItem;
-	int curId = 0;
+	 char				szTemp[80+1];
 
-	// pass 1 ...
-	for (fltItem = 0; fltItem<MailFilter_MaxFilters; fltItem++)
+	int *cI;
+	cI = (int*)malloc(sizeof(int));
+	*cI = curItem;
+	
+	szTemp[0] = ' '; szTemp[1] = ' ';
+	switch (flt.matchfield)
 	{
-		if (MFC_Filters[fltItem].expression[0] == 0)
-			break;
-			
-		if (MFC_Filters[fltItem].action == MAILFILTER_MATCHACTION_PASS)
-		{
-			id[curId] = MFC_Filters[fltItem];
-			if (curId+1 > MailFilter_MaxFilters) {	ConsolePrintf("***ERROR*** %s > %s\n",curId,MailFilter_MaxFilters);	break; }
-			curId++;	id[curId].expression[0] = 0;
-		}
+	case MAILFILTER_MATCHFIELD_ALWAYS:
+		szTemp[0] = '*';	break;
+	case MAILFILTER_MATCHFIELD_ATTACHMENT:
+		szTemp[0] = 'A';	break;
+	case MAILFILTER_MATCHFIELD_EMAIL:
+	case MAILFILTER_MATCHFIELD_EMAIL_BOTHANDCC:
+		szTemp[0] = 'E';	break;
+	case MAILFILTER_MATCHFIELD_SUBJECT:
+		szTemp[0] = 'S';	break;
+	case MAILFILTER_MATCHFIELD_SIZE:
+		szTemp[0] = 's';	break;
+	case MAILFILTER_MATCHFIELD_EMAIL_FROM:
+		szTemp[0] = 'F';	break;
+	case MAILFILTER_MATCHFIELD_EMAIL_TO:
+	case MAILFILTER_MATCHFIELD_EMAIL_TOANDCC:
+		szTemp[0] = 'T';	break;
+	case MAILFILTER_MATCHFIELD_BLACKLIST:
+		szTemp[0] = 'B';	break;
+	case MAILFILTER_MATCHFIELD_IPUNRESOLVABLE:
+		szTemp[0] = 'U';	break;
+	default:
+		szTemp[0] = '?';	break;
 	}
-
-	// pass 2 ...
-	for (fltItem = 0; fltItem<MailFilter_MaxFilters; fltItem++)
+	
+	if (flt.type == MAILFILTER_MATCHTYPE_NOMATCH)
 	{
-		if (MFC_Filters[fltItem].expression[0] == 0)
-			break;
-			
-		if (MFC_Filters[fltItem].action != MAILFILTER_MATCHACTION_PASS)
+		szTemp[1] = '!';
+	}
+	
+	strncpy(szTemp+2,flt.expression.c_str(),70);
+	szTemp[73]=0;
+	NWSAppendToList((_MF_NUTCHAR)szTemp, cI, MF_NutInfo);
+}
+	
+static void MFConfig_UpdateFilterList()
+{
+	{
+		LIST* start = NWSGetListHead(MF_NutInfo);
+		while (start)
 		{
-			id[curId] = MFC_Filters[fltItem];
-			if (curId+1 > MailFilter_MaxFilters) {	ConsolePrintf("***ERROR*** %s > %s\n",curId,MailFilter_MaxFilters);	break; }
-			curId++;	id[curId].expression[0] = 0;
+			start = NWSDeleteFromList(start,MF_NutInfo);
 		}
 	}
 	
-	// and now put it back ...
-	for (fltItem = 0; fltItem<MailFilter_MaxFilters; fltItem++)
+	MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator first = MF_GlobalConfiguration.filterList.begin();
+	MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator last = MF_GlobalConfiguration.filterList.end();
+
+	int curItem = 0;
+	for (; first != last; ++first)
 	{
-		if (id[fltItem].expression[0] == 0)
-			break;
-
-		MFC_Filters[fltItem] = id[fltItem];
+		MFConfig_AddFilterItem(*first,curItem);
+		++curItem;
 	}
-	*/
-	return;
 }
-
 
 
 static void MFU_strxor(char* string, char xorVal)
@@ -643,7 +666,6 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 			//
 			
 			NWSStartWait(0,0,MF_NutInfo);
-			ActivateScreen(MFD_ScreenID);
 		
 			fImp = fopen(szTemp,"rb");
 			fseek(fImp, 54, SEEK_SET);
@@ -685,7 +707,7 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 				
 				fgetc(fImp);
 
-				szTemp[0] = ' '; szTemp[1] = ' ';
+/*				szTemp[0] = ' '; szTemp[1] = ' ';
 				switch (flt->matchfield)
 				{
 				case MAILFILTER_MATCHFIELD_ALWAYS:
@@ -718,7 +740,7 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 				}
 				
 				strncpy(szTemp+2,flt->expression.c_str(),70);
-				NWSAppendToList((_MF_NUTCHAR)szTemp, flt, MF_NutInfo);
+				NWSAppendToList((_MF_NUTCHAR)szTemp, flt, MF_NutInfo); */
 
 			}
 			
@@ -726,14 +748,14 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 			
 			NWSEndWait(MF_NutInfo);
 			
-			NWSUngetKey(UGK_SPECIAL_KEY,UGK_REFRESH_KEY,MF_NutInfo);
+			MFConfig_UpdateFilterList();
+//			NWSUngetKey(UGK_SPECIAL_KEY,UGK_REFRESH_KEY,MF_NutInfo);
 		}
 		
 	
 	} else return;
 				
 }
-
 
 static void MFConfig_Util_ExportListToFile(void* nutHandle)
 {
@@ -1079,7 +1101,7 @@ static int MFConfig_EditFilters_Act(LONG keyPressed, LIST **elementSelected,
 			
 			rc = MFConfig_EditFilterDialog(&myItem);
 			MF_GlobalConfiguration.filterList.push_back(myItem);
-			MF_Filter_Sort();
+//			MF_Filter_Sort();
 			return rc;
 
 		case M_DELETE:
@@ -1107,13 +1129,13 @@ static int MFConfig_EditFilters_Act(LONG keyPressed, LIST **elementSelected,
 //			MF_GlobalConfiguration.filterList.erase(MF_GlobalConfiguration.filterList[*(unsigned int *)((*elementSelected)->otherInfo)]);
 //			MF_GlobalConfiguration.filterList.erase(find(MF_GlobalConfiguration.filterList.begin(),MF_GlobalConfiguration.filterList.end(),&MF_GlobalConfiguration.filterList[*(unsigned int *)((*elementSelected)->otherInfo)]));
 			
-			MF_Filter_Sort();
+//			MF_Filter_Sort();
 			return(-2);
 
 
 		case M_SELECT:
 			rc = MFConfig_EditFilterDialog(&MF_GlobalConfiguration.filterList[*(unsigned int *)((*elementSelected)->otherInfo)]);
-			MF_Filter_Sort();
+//			MF_Filter_Sort();
 			return rc;
 		}
 
@@ -1123,14 +1145,12 @@ static int MFConfig_EditFilters_Act(LONG keyPressed, LIST **elementSelected,
 	}
 
 
-
 /****************************************************************************
 ** Edit filters.
 */
 static void MFConfig_EditFilters()
 	{
 	
-	 char				szTemp[80+1];
 //	int							curItem = 0;
 	long						rc = 0;
 //	int*						cI = NULL;
@@ -1150,6 +1170,7 @@ static void MFConfig_EditFilters()
 	// init function keys ...
 	NWSEnableInterruptKey	(	K_F8,	MFConfig_Util_ImportListFromFile,	MF_NutInfo	);
 	NWSEnableInterruptKey	(	K_F9,	MFConfig_Util_ExportListToFile,	MF_NutInfo	);
+	NWSEnableInterruptKey   (	K_F7,	MFConfig_Util_Sort, MF_NutInfo );
 	
 	/*------------------------------------------------------------------------
 	*/
@@ -1157,51 +1178,11 @@ static void MFConfig_EditFilters()
 	MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator first = MF_GlobalConfiguration.filterList.begin();
 	MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator last = MF_GlobalConfiguration.filterList.end();
 
-	int *cI;	int curItem = 0;
+	int curItem = 0;
 	for (; first != last; ++first)
 	{
-//		if (MFC_Filters[curItem].expression[0] == 0)
-//			break;
-
-		cI = (int*)malloc(sizeof(int));
-		*cI = curItem;
+		MFConfig_AddFilterItem(*first,curItem);
 		++curItem;
-		
-		szTemp[0] = ' '; szTemp[1] = ' ';
-		switch ((*first).matchfield)
-		{
-		case MAILFILTER_MATCHFIELD_ALWAYS:
-			szTemp[0] = '*';	break;
-		case MAILFILTER_MATCHFIELD_ATTACHMENT:
-			szTemp[0] = 'A';	break;
-		case MAILFILTER_MATCHFIELD_EMAIL:
-		case MAILFILTER_MATCHFIELD_EMAIL_BOTHANDCC:
-			szTemp[0] = 'E';	break;
-		case MAILFILTER_MATCHFIELD_SUBJECT:
-			szTemp[0] = 'S';	break;
-		case MAILFILTER_MATCHFIELD_SIZE:
-			szTemp[0] = 's';	break;
-		case MAILFILTER_MATCHFIELD_EMAIL_FROM:
-			szTemp[0] = 'F';	break;
-		case MAILFILTER_MATCHFIELD_EMAIL_TO:
-		case MAILFILTER_MATCHFIELD_EMAIL_TOANDCC:
-			szTemp[0] = 'T';	break;
-		case MAILFILTER_MATCHFIELD_BLACKLIST:
-			szTemp[0] = 'B';	break;
-		case MAILFILTER_MATCHFIELD_IPUNRESOLVABLE:
-			szTemp[0] = 'U';	break;
-		default:
-			szTemp[0] = '?';	break;
-		}
-		
-		if ((*first).type == MAILFILTER_MATCHTYPE_NOMATCH)
-		{
-			szTemp[1] = '!';
-		}
-		
-		strncpy(szTemp+2,(*first).expression.c_str(),70);
-		szTemp[73]=0;
-		NWSAppendToList((_MF_NUTCHAR)szTemp, cI, MF_NutInfo);
 	}
 
 	/*------------------------------------------------------------------------
@@ -1241,14 +1222,24 @@ static void MFConfig_EditFilters()
 	return;
 	}
 
+static void MFConfig_Util_Sort(void* nutHandle)
+{
+#pragma unused(nutHandle)
+	sort(MF_GlobalConfiguration.filterList.begin(),MF_GlobalConfiguration.filterList.end(),CompareFilters());
+	MFConfig_UpdateFilterList();
+	
+	NWSUngetKey(UGK_SPECIAL_KEY,UGK_REFRESH_KEY,MF_NutInfo);
+}
+
+
+
 /****************************************************************************
 ** MFConfig: Edit License Key
 */
 static void MFConfig_EditLicense()
 	{
-//	unsigned long	line;
 	int	formSaved;
-	 char	newLicenseKey[MAILFILTER_CONFIGURATION_LENGTH];
+	char	newLicenseKey[MAILFILTER_CONFIGURATION_LENGTH];
 
 
 	newLicenseKey[0]=0;
@@ -1622,7 +1613,7 @@ static int NLM_MenuMainAct(int index, void *parm)
 			break;
 
 		case MENU_MAIN_EDIT_FILTERS:
-			MFConfig_UI_ShowKeys(MFCONFIG_KEYS_IMPORT|MFCONFIG_KEYS_EXPORT|MFCONFIG_KEYS_NEW|MFCONFIG_KEYS_DELETE|MFCONFIG_KEYS_SELECT);
+			MFConfig_UI_ShowKeys(MFCONFIG_KEYS_IMPORT|MFCONFIG_KEYS_EXPORT|MFCONFIG_KEYS_NEW|MFCONFIG_KEYS_DELETE|MFCONFIG_KEYS_SELECT|MFCONFIG_KEYS_SORT);
 			MFConfig_EditFilters();
 			break;
 
