@@ -674,7 +674,9 @@ bool Configuration::CreateFromInstallFile(std::string installFile)
 		printf("      ... FAILED.\n");
 		MF_DisplayCriticalError("MailFilter Installation: Could not write "MAILFILTER_CONFIGURATION_PATHFILE"!\n");
 	}
-		
+	
+	unlink(installFile.c_str());
+	
 	return true;
 }
 

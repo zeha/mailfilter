@@ -3,10 +3,7 @@
  +		
  +		Utility Functions
  +		
- +		Copyright 2001 Christian Hofstädtler.
- +		
- +		
- +		- Aug/2001 ; ch   ; Initial Code
+ +		Copyright 2001-2004 Christian Hofstädtler.
  +		
  +		
 +*/

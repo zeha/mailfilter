@@ -200,7 +200,7 @@ void MF_NutHandlerKeyF2 (void *handle)		// debug stuff
 
 	MFUtil_CheckCurrentVersion();
 
-	MF_LoginUser();
+//	MF_LoginUser();
 }
 
 void MFL_VerInfo()
