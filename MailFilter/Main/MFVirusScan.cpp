@@ -54,6 +54,8 @@ long MFVS_CheckAttachment(const char* szAttFile, const char* szAttachmentFilenam
 	long iNumAdditionalAttachments = 0;
 	std::string szAttachmentFilename2;
 
+	MFD_Out(MFD_SOURCE_VSCAN,"->%s %s\n",szAttFile,szAttachmentFilename);
+
 	szAttachmentFilename2 = szAttachmentFilename;
 	transform (szAttachmentFilename2.begin(),szAttachmentFilename2.end(), szAttachmentFilename2.begin(), (char(*)(int))tolower);
 
@@ -71,6 +73,11 @@ long MFVS_CheckAttachment(const char* szAttFile, const char* szAttachmentFilenam
 long MFVS_CheckZIPFile(const char* szAttFile, std::string szZipFilename, MailFilter_MailData* m)
 {
 	std::string szZipExt;
+	
+	/* fix abort() call / ABEND when filename < 5 characters */
+	if (szZipFilename.length() < 5)
+		return 0;
+		
 	szZipExt = szZipFilename.substr(szZipFilename.length()-4);
 	long bytes = 0;
 	

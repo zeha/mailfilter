@@ -1156,6 +1156,8 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 	fprintf(cfgFile,"/multi2one=%s\n",this->Multi2One.c_str());
 	fprintf(cfgFile,"/schedule-time=%s\n",this->BWLScheduleTime.c_str());
 	
+	fprintf(cfgFile,"/defaultnotify-adminincoming=%s\n",this->DefaultNotification_AdminIncoming == 0 ? "0" : "1");
+	fprintf(cfgFile,"/defaultnotify-adminoutgoing=%s\n",this->DefaultNotification_AdminOutgoing == 0 ? "0" : "1");
 	fprintf(cfgFile,"/defaultnotify-internalsender=%s\n",this->DefaultNotification_InternalSender == 0 ? "0" : "1");
 	fprintf(cfgFile,"/defaultnotify-internalrecipient=%s\n",this->DefaultNotification_InternalRecipient == 0 ? "0" : "1");
 	fprintf(cfgFile,"/defaultnotify-externalsender=%s\n",this->DefaultNotification_ExternalSender == 0 ? "0" : "1");

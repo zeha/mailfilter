@@ -403,6 +403,8 @@ int MF_ParseMail(MailFilter_MailData* m, bool bMiniMode)
 							}
 #endif
 
+							MFD_Out(MFD_SOURCE_VSCAN," * Attachment done\n");
+
 							if (iThisAttSize > 0)
 							{
 								m->iTotalAttachmentSize += iThisAttSize;
@@ -884,19 +886,6 @@ MFD_Out(MFD_SOURCE_MAIL,"UU Attachment: '%s'\n",szCmpBuffer);
 										void *closure);	
 	*/								
 									bInMimeAttachment = true;
-	/*								if (MFC_EnableAttachmentDecoder)
-									{
-										// Extract Attachment
-										iThisAttSize = 0;
-										m->iNumOfAttachments++;
-										char szAttFile[MAX_PATH]; sprintf(szAttFile,"%s%i.att",m->szScanDirectory,m->iNumOfAttachments);
-										iThisAttSize = MFVS_DecodeAttachment(szAttFile,mailFile,mimeEncodingBase64);
-										if (iThisAttSize > 0)
-										{
-											m->iTotalAttachmentSize += iThisAttSize;
-											MF_CheckWinmailDat(szAttFile,szThisAttachment,m);
-										}
-									}*/
 								} else {
 									MFD_Out(MFD_SOURCE_GENERIC,"WAH: could not decode c-d:a filename= filename correctly. maybe empty or something like that.\n");
 									MF_StatusText("  WARNING: could not decode attachment filename [A]");
@@ -977,19 +966,6 @@ MFD_Out(MFD_SOURCE_MAIL,"-=> TYPE '%s'\n",szThisAttachment);
 									
 
 								bInMimeAttachment = true;
-								
-/*								if (MFC_EnableAttachmentDecoder)
-								{
-									// Extract Attachment
-									m->iNumOfAttachments++;
-									char szAttFile[MAX_PATH]; sprintf(szAttFile,"%s%i.att",m->szScanDirectory,m->iNumOfAttachments);
-									iThisAttSize = MFVS_DecodeAttachment(szAttFile,mailFile,mimeEncodingBase64);
-									if (iThisAttSize > 0)
-									{
-										m->iTotalAttachmentSize += iThisAttSize;
-										MF_CheckWinmailDat(szAttFile,szThisAttachment,m);
-									}
-								}*/
 								
 							}	// name=
 						}

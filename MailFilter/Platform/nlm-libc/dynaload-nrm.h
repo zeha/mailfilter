@@ -8,8 +8,8 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#ifdef __cplusplus
-extern "C" {
+#ifndef __cplusplus
+#error Cplusplus required
 #endif
 
 #include "nrm.h"
@@ -39,7 +39,3 @@ extern int DL_HttpReturnPathBuffers(HINTERNET hrequest, UINT32_PTR lpszPathBufs,
 extern int DLSetupNRM();
 extern int DLDeSetupNRM();
 
-
-#ifdef __cplusplus
-} // extern C
-#endif

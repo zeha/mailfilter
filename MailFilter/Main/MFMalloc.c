@@ -8,6 +8,8 @@
 #include <errno.h>
 #include "MFVersion.h"
 
+#ifdef _MF_WITH_MALLOC_LIBRARY
+
 static void *(*malloc_sym) (size_t length_);
 static void *(*calloc_sym) (size_t n, size_t size);
 static void* myNlmHandle = 0;
@@ -93,4 +95,10 @@ void* calloc(size_t n, size_t size)
 	return NULL;
 }
 
+#else
+
+int __init_malloc()			{	return 0;	}
+int __deinit_malloc()		{	return 0;	}
+
+#endif
 

@@ -11,6 +11,10 @@
  +		
  */
 
+#ifndef __cplusplus
+#error No Cpp support!
+#endif
+
 #ifdef N_PLAT_NLM
 
 // Using _MAIN_ to get variables defined here.
