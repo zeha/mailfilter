@@ -192,7 +192,7 @@ static bool outputMailList(HINTERNET hndl, int startPage)
 							szFileOut)
 							);
 
-					szLink = "<a href=\"" + szHttpPath + e; szLink+="\">View E-Mail Source</a>";
+					szLink = "<a href=\"/" + szHttpPath + e; szLink+="\">View E-Mail Source</a>";
 					DL_HttpSendData(hndl, strprintf("<tr bgcolor=\"#ffffff\"><td colspan=2></td><td>From:</td><td colspan=3>%s</td></tr>\n", m->szMailFrom));
 					DL_HttpSendData(hndl, strprintf("<tr bgcolor=\"#ffffff\"><td colspan=2></td><td>To:</td><td colspan=3>%s</td></tr>\n", m->szMailRcpt));
 					DL_HttpSendData(hndl, strprintf("<tr bgcolor=\"#ffffff\"><td colspan=2></td><td>Subject:</td><td colspan=3>%s</td></tr>\n", m->szMailSubject));
