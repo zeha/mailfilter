@@ -22,6 +22,9 @@ NetwareApi::~NetwareApi(void)
 // Asks the specified server if the logged in user has console operator rights
 bool NetwareApi::CheckConsoleOperatorRight()
 {
+	if (this->m_ClientConnection == -1)
+		return false;
+
 	if (NWCheckConsolePrivileges(this->m_ClientConnection) == 0)
 		return true;
 
@@ -32,6 +35,9 @@ bool NetwareApi::CheckConsoleOperatorRight()
 // Loads the specified NLM on the specified server
 bool NetwareApi::LoadNLM(const char* szNLMName)
 {
+	if (this->m_ClientConnection == -1)
+		return false;
+
 	if (NWSMLoadNLM(this->m_ClientConnection,szNLMName) == 0)
 		return true;
 
@@ -41,6 +47,9 @@ bool NetwareApi::LoadNLM(const char* szNLMName)
 // Runs the specified NCF on the specified server
 bool NetwareApi::ExecuteNCF(const char* szNCFName)
 {
+	if (this->m_ClientConnection == -1)
+		return false;
+
 	if (NWSMExecuteNCFFile(this->m_ClientConnection,szNCFName) == 0)
 		return true;
 

@@ -10,6 +10,9 @@
 #include "ProgressDlg.h"
 #include "netwareapi.h"
 
+#include <iostream>
+#include <fstream>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -158,6 +161,10 @@ BOOL CInstApp::InitInstance()
 			CString szAppBinaryDest = "";
 			CString szAppBaseDest = "";
 
+			CString szServerAppBaseDest = "";
+			CString szServerAppConfigDest = "";
+			CString szServerAppBinaryDest = "";
+
 			if (this->mf_SharedInstallation == TRUE)
 			{
 				szAppBaseDest = "\\\\" + this->mf_ServerName;
@@ -165,8 +172,16 @@ BOOL CInstApp::InitInstance()
 				szAppBaseDest.Replace(":","\\");
 				if (szAppBaseDest.Right(1) == "\\")
 					szAppBaseDest.Delete(szAppBaseDest.GetLength());
+
 				szAppConfigDest = szAppBaseDest + "\\ETC";
 				szAppBinaryDest = szAppBaseDest + "\\BIN";
+
+				szServerAppBaseDest = this->mf_AppDir;
+				if (szServerAppBaseDest.Right(1) == "\\")
+					szServerAppBaseDest.Delete(szServerAppBaseDest.GetLength());
+				szServerAppConfigDest = szServerAppBaseDest + "\\ETC";
+				szServerAppBinaryDest = szServerAppBaseDest + "\\BIN";
+
 			}
 			else
 			{
@@ -174,6 +189,11 @@ BOOL CInstApp::InitInstance()
 				szAppBinaryDest = szAppBaseDest + "SYSTEM";
 				szAppConfigDest = szAppBaseDest + "ETC\\MAILFLT";
 				szAppBaseDest += "SYSTEM";
+
+				szServerAppBaseDest = "SYS:";
+				szServerAppConfigDest = szServerAppBaseDest + "\\SYSTEM";
+				szServerAppBinaryDest = szServerAppBaseDest + "\\ETC\\MAILFLT";
+				szServerAppBaseDest += "SYSTEM";
 			}
 
 
@@ -246,7 +266,7 @@ BOOL CInstApp::InitInstance()
 				{
 					// mfstart.ncf
 					CString line = "LOAD PROTECTED ";
-					line += szAppBinaryDest;
+					line += szServerAppBinaryDest;
 					line += "\\";
 
 					if (!this->mf_InstallLegacyVersion)
@@ -255,13 +275,13 @@ BOOL CInstApp::InitInstance()
 						line += "MFLT50";
 
 					line += ".NLM -t server ";
-					line += szAppConfigDest;
+					line += szServerAppConfigDest;
 
 					MF_CreateNCFFile(szAppBaseDest + "\\MFSTART.NCF", line);
 
 					// mfinst.ncf
 					line = "LOAD PROTECTED ";
-					line += szAppBinaryDest;
+					line += szServerAppBinaryDest;
 					line += "\\";
 
 					if (!this->mf_InstallLegacyVersion)
@@ -270,7 +290,7 @@ BOOL CInstApp::InitInstance()
 						line += "MFLT50";
 
 					line += ".NLM -t install ";
-					line += szAppConfigDest;
+					line += szServerAppConfigDest;
 
 					MF_CreateNCFFile(szAppBaseDest + "\\MFINST.NCF", line);
 				}
@@ -279,6 +299,37 @@ BOOL CInstApp::InitInstance()
 			if (!bErrors)
 			{
 				// 5: Create Configuration
+				progressCtrl->SetPos(progressCtrl->GetPos()+1);
+				progressTextCtrl->SetWindowText("Creating configuration files");
+				{
+					std::ofstream installCfg(szAppConfigDest + "\\INSTALL.CFG");
+					if (installCfg.is_open())
+					{
+						installCfg << "# created by MFInstallWizard" << std::endl;
+						installCfg << "/domain=" << this->mf_DomainName << std::endl;
+						installCfg << "/hostname=" << this->mf_HostName << std::endl;
+						installCfg << "/config-directory=" << szAppConfigDest << std::endl;
+						installCfg << "/gwia-version=" << (this->mf_GroupwiseVersion6 ? 600 : 550) << std::endl;
+						installCfg << "/home-gwia=" << this->mf_GwiaDHome << std::endl;
+						installCfg << "/home-mailfilter=" << this->mf_GwiaSmtpHome << std::endl;
+						installCfg << "/licensekey=" << this->mf_LicenseKey << std::endl;
+						installCfg << "/config-importfilterfile=" << szAppConfigDest + "\\FILTERS.BIN" << std::endl;
+						installCfg << "/config-deleteinstallfile=yes" << std::endl;
+						installCfg.close();
+
+						NetwareApi api;
+						api.SelectServerByName(this->mf_ServerName);
+						if (!api.ExecuteNCF(szServerAppBaseDest + "\\MFINST.NCF"))
+						{
+							bErrors = true;
+							szError = "MFINST.NCF could not be executed on the Server. Please check the Server Console for errors!";
+						}
+
+					} else {
+						bErrors = true;
+						szError = "Could not write initial configuration file.";
+					}
+				}
 			}
 
 			if (!bErrors)
