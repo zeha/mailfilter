@@ -573,7 +573,10 @@ MimeDecoderData *
 MimeUUDecoderInit (int (*output_fn) (const char *, int, void *),
 				   void *closure)
 {
-  return mime_decoder_init (mime_uuencode, output_fn, closure);
+  MimeDecoderData * tmp = mime_decoder_init (mime_uuencode, output_fn, closure);
+  if (tmp != NULL)
+    tmp->uue_state = UUE_BODY;
+  return tmp;
 }
 
 int

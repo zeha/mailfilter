@@ -398,6 +398,14 @@ int MF_ParseMail(MailFilter_MailData* m, bool bMiniMode)
 							}
 							
 							iThisAttSize = MFVS_DecodeAttachment(szAttFile,mailFile,mimeEncodingBase64);
+							if (iThisAttSize == 0)
+							{	// try with uuencode
+								iThisAttSize = MFVS_DecodeAttachment(szAttFile,mailFile,mimeEncodingUUEncode);
+							}
+							if (iThisAttSize == 0)
+							{	// try with qp
+								iThisAttSize = MFVS_DecodeAttachment(szAttFile,mailFile,mimeEncodingQuotedPrintable);
+							}
 							
 							if (iThisAttSize > 0)
 							{
@@ -719,7 +727,11 @@ if ( feof(mailFile) )
 				{
 					szCmpBuffer[0]=0;
 					
-					strncpy(szCmpBuffer,szScanBuffer+9,245);
+					// trim string ...
+					iFirstNonSpaceCharacter = 0;	pszFirstNonSpaceCharacter = (szScanBuffer+9);
+					while ( isspace(*pszFirstNonSpaceCharacter) )	pszFirstNonSpaceCharacter++;
+
+					strncpy(szCmpBuffer,pszFirstNonSpaceCharacter,245);
 					szCmpBuffer[245]=0;
 MFD_Out(MFD_SOURCE_MAIL,"UU Attachment: '%s'\n",szCmpBuffer);
 		
@@ -736,6 +748,19 @@ MFD_Out(MFD_SOURCE_MAIL,"UU Attachment: '%s'\n",szCmpBuffer);
 						// Extract Attachment
 						m->iNumOfAttachments++;
 						char szAttFile[MAX_PATH]; sprintf(szAttFile,"%s%i.att",m->szScanDirectory,m->iNumOfAttachments);
+/*						ungetc('b',mailFile);
+						ungetc('e',mailFile);
+						ungetc('g',mailFile);
+	BUG TODO			ungetc('i',mailFile);
+						ungetc('n',mailFile);		//stupid.
+						ungetc(' ',mailFile);
+						ungetc('6',mailFile);
+						ungetc('0',mailFile);
+						ungetc('0',mailFile);
+						ungetc(' ',mailFile);
+						ungetc('x',mailFile);
+						ungetc(IX_CR,mailFile);
+						ungetc(IX_LF,mailFile); */
 						iThisAttSize = MFVS_DecodeAttachment(szAttFile,mailFile,mimeEncodingUUEncode);
 						if (iThisAttSize > 0)
 						{
@@ -894,10 +919,11 @@ MFD_Out(MFD_SOURCE_MAIL,"UU Attachment: '%s'\n",szCmpBuffer);
 						{
 							{
 								// see if this could be Content-Type: message/partial; total=...
-								curPos = 12;
-								if (szScanBuffer[curPos] == ' ')
-									curPos++;
-								if (memicmp(szScanBuffer+curPos,"message/partial",15) == 0)
+								iFirstNonSpaceCharacter = 0;	pszFirstNonSpaceCharacter = (szScanBuffer+13);
+								while ( isspace(*pszFirstNonSpaceCharacter) )	pszFirstNonSpaceCharacter++;
+
+								MFD_Out(MFD_SOURCE_MAIL,"%s\n",pszFirstNonSpaceCharacter);
+								if (memicmp(pszFirstNonSpaceCharacter,"message/partial",15) == 0)
 									m->bPartialMessage = true;
 							}
 						
