@@ -1,0 +1,90 @@
+
+MODULE LIBC.NLM
+MODULE NWSNUT.NLM
+
+IMPORT @/opt/novell/ndk/libc/imports/libc.imp
+IMPORT @/opt/novell/ndk/libc/imports/netware.imp
+IMPORT @/opt/novell/ndk/libc/imports/nwsnut.imp
+IMPORT DeRegisterSetableParameter RegisterSetableParameter
+
+START _LibCPrelude
+EXIT _LibCPostlude
+check _LibCCheckUnload
+
+PSEUDOPREEMPTION
+
+input alloca.o
+input ../nlm/MFNLM.o
+input dynaload-nrm.o
+input MFNLM-LibC.o
+input ../../Main/DCCInterface.o
+input ../../Main/MFChecksum.o
+input ../../Main/MFCleanup.o
+input ../../Main/MFConfig.o
+input ../../Main/MFExports.o
+input ../../Main/MFMail.o
+input ../../Main/MFMalloc.o
+input ../../Main/MFNLM-UI.o
+input ../../Main/MFRelayHost.o
+input ../../Main/MFStatus.o
+input ../../Main/MFUnZip.o
+input ../../Main/MFUtil.o 
+input ../../Main/MFVirusScan.o
+input ../../Main/MFWork.o 
+input ../../Main/MFZip.o
+input ../nlm/MFAVA-NLM.o
+input ../../Main/DCCInterface.o
+input ../nlm/MFConfigEditor.o
+input ../nlm/MFRestore.o
+input ../nlm/MFNLM-NRM.o
+input ../../Config/MFConfig.o
+input ../../Licensing/MFLic.o
+
+input ../../Libs/src/pcre-4.5/maketables.o 
+input ../../Libs/src/pcre-4.5/pcre.o 
+input ../../Libs/src/pcre-4.5/study.o 
+input ../../Libs/src/pcre-4.5/get.o
+
+input ../../Libs/src/tnef/tnef-lib.o 
+input ../../Libs/mime/comi18n.o 
+input ../../Libs/mime/mimeenc.o
+
+input ../../../iXplat/source/ix_getopt.o
+input ../../../iXplat/source/ix_dir.o
+input ../../../iXplat/source/iXDir.o 
+input ../../../iXplat/source/iXList.o
+input ../../../iXplat/source/ix_memicmp.o
+
+input ../../Libs/src/zlib-libc/contrib/minizip/zip.o
+input ../../Libs/src/zlib-libc/contrib/minizip/unzip.o 
+input ../../Libs/src/zlib-libc/infutil.o 
+input ../../Libs/src/zlib-libc/trees.o 
+input ../../Libs/src/zlib-libc/uncompr.o 
+input ../../Libs/src/zlib-libc/zutil.o 
+input ../../Libs/src/zlib-libc/adler32.o 
+input ../../Libs/src/zlib-libc/compress.o 
+input ../../Libs/src/zlib-libc/crc32.o 
+input ../../Libs/src/zlib-libc/deflate.o 
+input ../../Libs/src/zlib-libc/gzio.o 
+input ../../Libs/src/zlib-libc/infblock.o 
+input ../../Libs/src/zlib-libc/infcodes.o 
+input ../../Libs/src/zlib-libc/inffast.o 
+input ../../Libs/src/zlib-libc/inflate.o 
+input ../../Libs/src/zlib-libc/inftrees.o
+
+
+# GCC Libs
+input /opt/novell/ndk/libc/imports/libcpre.gcc.o
+input /opt/cross/i586-netware/lib/libstdc++.a
+input /opt/cross/i586-netware/lib/libsupc++.a
+input /opt/cross/lib/gcc-lib/i586-netware/3.2.3/libgcc.a
+
+
+##output MAILFLT.NLM
+VERSION 0, 1, 0
+copyright "foo"
+description "MailFilter professional (Server,gcc)"
+stack 264000
+screenname "MailFilter professional (Server,gcc)"
+threadname "MAILFLT"
+
