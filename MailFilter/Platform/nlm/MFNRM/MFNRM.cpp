@@ -245,7 +245,7 @@ void NLM_SignalHandler(int sig)
 			
 			NLM_exiting = NLM_TRUE;
 
-			ResumeThread(NLM_mainThreadID);
+//			ResumeThread(NLM_mainThreadID);
 			//ungetch(27);
 			
 			MF_NLM_RM_DeInit();
