@@ -122,5 +122,9 @@ char *programMesgTable[] =
 	"Delete previous filter rules?",
 	//
 	"Archive Content: Filename",
-	"Archive Content: Count of files"
+	"Archive Content: Count of files",
+	"The requested operation failed for an unkown reason.",
+	"Login as Username:",
+	"         Password:",
+	"Login"
 };

@@ -23,7 +23,7 @@
 namespace MailFilter_Configuration
 {
 
-	const int CurrentConfigVersion = 10;
+	const int CurrentConfigVersion = 11;
 
 //#define MAILFILTER_CONFIGURATION_SIGNATURE			"MAILFILTER_R001_009"		//*** MODIFY THESE
 //#define MAILFILTER_CONFIGURATION_THISBUILD			9							//    TWO BUILD NUMBERS ***
@@ -56,6 +56,8 @@ public:
 	std::string DomainEmailMailFilter;
 	std::string LicenseKey;
 	std::string ControlPassword;
+	MailFilter_Configuration::Notification DefaultNotification_AdminIncoming;
+	MailFilter_Configuration::Notification DefaultNotification_AdminOutgoing;
 	MailFilter_Configuration::Notification DefaultNotification_InternalRecipient;
 	MailFilter_Configuration::Notification DefaultNotification_InternalSender;
 	MailFilter_Configuration::Notification DefaultNotification_ExternalRecipient;
@@ -77,6 +79,9 @@ public:
 	std::string BWLScheduleTime;
 	std::string Multi2One;
 	std::string LogDirectory;
+
+ 	std::string LoginUserName;
+ 	std::string LoginUserPassword;
 	
 	std::string	MessageFooterText;
 	
@@ -94,9 +99,9 @@ public:
 	bool WriteToFile(std::string alternateFilename);
 
 	// don't use ReadFilterList -- use ReadFilterListFromConfig or ReadFilterListFromRulePackage
-	bool ReadFilterList(std::string filterFile, long startAt);
 	bool ReadFilterListFromConfig();
 	bool ReadFilterListFromRulePackage(std::string filterFile);
+	bool WriteFilterList(std::string filterList);
 
 	bool CreateFromInstallFile(std::string installFile);
 	
@@ -104,7 +109,7 @@ public:
 	~Configuration();
 
 private:
-//	std::iostream filestream;
+	bool ReadFilterList(std::string filterFile, long startAt);
 
 };
 

@@ -196,12 +196,27 @@ Configuration::~Configuration()
 
 bool Configuration::ReadFilterListFromConfig()
 {
-	return this->ReadFilterList("",4001);
+	long startAt;
+	std::string myFilterFile;
+
+	// select correct config file
+	if (this->config_build >= 11)
+	{
+		myFilterFile = this->config_directory + "\\filters.bin";
+		startAt = 54;
+	}
+	else
+	{
+		myFilterFile = this->config_file;
+		startAt = 4000;
+	}
+
+	return this->ReadFilterList(myFilterFile,startAt);
 }
 
 bool Configuration::ReadFilterListFromRulePackage(std::string filterFile)
 {
-	return this->ReadFilterList(filterFile,(long)54);
+	return this->ReadFilterList(filterFile,(long)52);
 }
 
 bool Configuration::ReadFilterList(std::string filterFile, long startAt)
@@ -223,9 +238,13 @@ bool Configuration::ReadFilterList(std::string filterFile, long startAt)
 		pcre *re;
 	#endif
 
+		if (filterFile == "")
+		{
+			assert("ReadFilterList called with empty filterList");
+		}
 
-		fFile = fopen( filterFile == "" ? this->config_file.c_str() : filterFile.c_str(),"rb");
-		fseek(fFile,startAt,SEEK_SET);
+		fFile = fopen( filterFile.c_str(),"rb");
+		fseek(fFile,startAt+1,SEEK_SET);
 
 		while (!feof(fFile))
 		{
@@ -239,6 +258,18 @@ bool Configuration::ReadFilterList(std::string filterFile, long startAt)
 			flt.enabled = (bool)(fgetc(fFile));
 			flt.enabledIncoming = (bool)(fgetc(fFile));
 			flt.enabledOutgoing = (bool)(fgetc(fFile));
+
+			if (this->config_build >= 11)
+			{
+				// stock filter
+				fgetc(fFile);
+				// 4 bytes for counter
+				fgetc(fFile);
+				fgetc(fFile);
+				fgetc(fFile);
+				fgetc(fFile);
+			}
+
 			
 			if (filterFile == "")
 			{
@@ -553,7 +584,9 @@ bool Configuration::CreateFromInstallFile(std::string installFile)
 			{
 				param = line.substr(1,pos-1);
 				value = line.substr(pos+1);
+#ifdef _TRACE
 				printf("     config: '%s'='%s'\n",param.c_str(),value.c_str());
+#endif
 				
 				if (param == "licensekey")
 					myLicenseKey = value;
@@ -639,84 +672,74 @@ bool Configuration::CreateFromInstallFile(std::string installFile)
 	return true;
 }
 
+static bool mkBoolFromStr(std::string checkStr)
+{
+	if (checkStr.size() == 0)
+		return false;
+
+	if (checkStr.at(0) == '0')
+		return false;
+
+	if (checkStr.at(0) == 'n')
+		return false;
+		
+	if (checkStr.at(0) == 'N')
+		return false;
+		
+	if (checkStr.at(0) == '1')
+		return true;
+
+	if (checkStr.at(0) == 'y')
+		return true;
+		
+	if (checkStr.at(0) == 'Y')
+		return true;
+		
+	return false;
+}
+
 bool Configuration::ReadFromFile(std::string alternateFilename)
 {
 	int rc = 0;
 	struct stat statInfo;
+	bool bOldStyleFile = false;
 	
-/*	try {
-	
-		const char* pConfigFile = (alternateFilename == "" ? config_file.c_str() : alternateFilename.c_str());
-		MFD_Out(MFD_SOURCE_CONFIG,"MFC: Starting with %s.\n",pConfigFile);
-
-		std::string fileversion;
-		std::ifstream filestream(pConfigFile, std::fstream::in); // | std::fstream::binary);
-		
-		filestream >> fileversion;
-		std::cout << "checking version..." << std::endl << fileversion << std::endl  << "..." << std::endl;
-		
-		filestream >> this->GWIARoot;
-		std::cout << "gwia root: " << this->GWIARoot << std::endl;
-
-		filestream.close();
-		
-
-	} catch (std::exception e)
-	{
-//	 	NetwareAlert(
-		MF_DisplayCriticalError("MAILFILTER: Uncaught Exception in the configuration reader.\n\n");
-	}
-*/
-
-
-	///////////////////////////
-	//
-	// --- end of test area ---
-	//
-	///////////////////////////
-	// place definitions here!
-
 	std::string pConfigFile = (alternateFilename == "" ? this->config_file : alternateFilename);
 
-	MF_DisplayCriticalError("MAILFILTER: Configuration: %s\n",this->config_directory.c_str());
-	MFD_Out(MFD_SOURCE_CONFIG,"MFC: Starting with %s.\n",pConfigFile.c_str());
+//	MF_DisplayCriticalError("MAILFILTER: Configuration: %s\n",this->config_directory.c_str());
+//	MFD_Out(MFD_SOURCE_CONFIG,"MFC: Starting with %s.\n",pConfigFile.c_str());
 
 	// compatiblity for MF Licensing Stages
 	strncpy(MFC_ConfigFile,pConfigFile.c_str(),MAX_PATH-1);
-
 
 	if (stat(pConfigFile.c_str(),&statInfo))
 		rc = 98;
 	if (rc != 0)	goto MF_ConfigRead_ERR;
 
-	if (this->config_mode_strict)
-	{
-		if (statInfo.st_size < 3999)
-			rc = 97;	
-		if (rc != 0)	goto MF_ConfigRead_ERR;
-	}
-			
+	// determine configuration file version
 	std::string ConfigVersion;
-	ConfigVersion = MF_ConfigReadString(pConfigFile, 0);
+	ConfigVersion = MF_ConfigReadString2(pConfigFile, 0);
 
-	char szSignature[sizeof(MAILFILTER_CONFIGURATION_BASESIGNATURE) + 4];
-	sprintf(szSignature,"%s%03i",MAILFILTER_CONFIGURATION_BASESIGNATURE,MailFilter_Configuration::CurrentConfigVersion);
-
-	if (this->config_mode_strict)
+	if (strncmp(ConfigVersion.c_str(),MAILFILTER_CONFIGURATION_BASESIGNATURE,sizeof(MAILFILTER_CONFIGURATION_BASESIGNATURE)-1) != 0)
 	{
-		if (ConfigVersion != szSignature)
+		// hm, new style?
+		#define _MF_NEWSTYLE_SIG	"# MailFilter Configuration File"
+		if (strncmp(ConfigVersion.c_str(),_MF_NEWSTYLE_SIG,sizeof(_MF_NEWSTYLE_SIG)-1) != 0)
 		{
+			// No! error out...
 			rc = 99;
 			goto MF_ConfigRead_ERR;	
 		}
 	} else {
-		if (strncmp(ConfigVersion.c_str(),MAILFILTER_CONFIGURATION_BASESIGNATURE,sizeof(MAILFILTER_CONFIGURATION_BASESIGNATURE)-1) != 0)
+		// old style config. have to upgrade it...
+		bOldStyleFile = true;
+		this->config_build = (unsigned int)atoi(ConfigVersion.c_str()+sizeof(MAILFILTER_CONFIGURATION_BASESIGNATURE));
+		
+		if (this->config_mode_strict)
 		{
-			// eek
+			// so then, error out.
 			rc = 99;
 			goto MF_ConfigRead_ERR;	
-		} else {
-			this->config_build = (unsigned int)atoi(ConfigVersion.c_str()+sizeof(MAILFILTER_CONFIGURATION_BASESIGNATURE));
 		}
 	}
 	
@@ -736,98 +759,225 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 	}
 	MF_GetServerName ( MFT_Local_ServerName, _MAX_SERVER );
 
-	// Control Password
-	this->ControlPassword = MF_ConfigReadString2(pConfigFile, 60);
-	
-	// License Key || Licensing reads this itself.
-	this->LicenseKey = MF_ConfigReadString2(pConfigFile, 240);
 
+	if (!bOldStyleFile)
+	{
+		// new file format.
 
-	this->GWIARoot = MF_MakeValidPath(MF_ConfigReadString(pConfigFile, 1));
-	if (this->config_mode_strict && (this->GWIARoot == "")) {	rc = 303;	goto MF_ConfigRead_ERR;	}
-
-	this->MFLTRoot = MF_MakeValidPath(MF_ConfigReadString(pConfigFile, 2));
-	if (this->config_mode_strict && (this->MFLTRoot == "")) {	rc = 304;	goto MF_ConfigRead_ERR;	}
-
-/*#ifndef WIN32
-	MFT_InOutSameServerVolume = (MF_CheckPathSameVolume( MFC_GWIA_ROOT , MFC_MFLT_ROOT ) == 1);
-	MFT_RemoteDirectories = (!MF_CheckPathSameServer( MFC_GWIA_ROOT , "SYS:SYSTEM" ));
-	if (!MFT_RemoteDirectories) MFT_RemoteDirectories = (!MF_CheckPathSameServer( MFC_MFLT_ROOT , "SYS:SYSTEM" ));
-#else
-	MFT_InOutSameServerVolume = false;
+		std::string line;
+		unsigned int pos;
+		std::string param;
+		std::string value;
+		
+		std::ifstream cfgFile(pConfigFile.c_str());
+		
+		if (!cfgFile.good())
+		{
+			rc = 98;
+			goto MF_ConfigRead_ERR;
+		}
+		
+		while (cfgFile >> line)
+		{
+			if (line.at(0) == '/')
+			{
+				pos = line.find("=");
+				if (pos != -1)
+				{
+					param = line.substr(1,pos-1);
+					if (line.size() > pos)
+						value = line.substr(pos+1);
+					else
+						value = "";
+					
+#ifdef _TRACE
+					MF_DisplayCriticalError("     config: '%s'='%s'\n",param.c_str(),value.c_str());
 #endif
-*/
-	this->LogDirectory = this->MFLTRoot + IX_DIRECTORY_SEPARATOR_STR + "MFLOG" + IX_DIRECTORY_SEPARATOR_STR; //,this->LogDirectory);
+					
+					if (param == "licensekey")
+						this->LicenseKey = value;
+
+					// Strings
+					if (param == "home-gwia")
+						this->GWIARoot = value;
+					if (param == "home-mailfilter")
+						this->MFLTRoot = value;
+
+					if (param == "login-username")
+						this->LoginUserName = value;
+					if (param == "login-password")
+						this->LoginUserPassword = value;
+
+					if (param == "domain")
+						this->DomainName = value;
+					if (param == "hostname")
+						this->DomainHostname = value;
+					if (param == "email-mailfilter")
+						this->DomainEmailMailFilter = value;
+					if (param == "email-postmaster")
+						this->DomainEmailPostmaster = value;
+
+					if (param == "multi2one")
+						this->Multi2One = value;
+
+					if (param == "schedule-time")
+						this->BWLScheduleTime = value;
+
+					// Numbers
+					if (param == "version-config")
+						this->config_build = (unsigned int)atoi(value.c_str());
+					
+					if (param == "version-gwia")
+						this->GWIAVersion = (unsigned int)atoi(value.c_str());
+
+					if (param == "scandirs")
+						this->MailscanDirNum = (unsigned int)atoi(value.c_str());
+
+					if (param == "scantimeout")
+						this->MailscanTimeout = (unsigned int)atoi(value.c_str());
+
+					if (param == "problemdir-maxage")
+						this->ProblemDirMaxAge = (unsigned int)atoi(value.c_str());
+
+					if (param == "problemdir-maxsize")
+						this->ProblemDirMaxSize = (unsigned int)atoi(value.c_str());
+
+					// enums. damn concept.
+					if (param == "defaultnotify-internalsender")
+						this->DefaultNotification_InternalSender = (MailFilter_Configuration::Notification)atoi(value.c_str());
+
+					if (param == "defaultnotify-internalrecipient")
+						this->DefaultNotification_InternalRecipient = (MailFilter_Configuration::Notification)atoi(value.c_str());
+
+					if (param == "defaultnotify-externalsender")
+						this->DefaultNotification_ExternalSender = (MailFilter_Configuration::Notification)atoi(value.c_str());
+
+					if (param == "defaultnotify-externalrecipient")
+						this->DefaultNotification_ExternalRecipient = (MailFilter_Configuration::Notification)atoi(value.c_str());
+
+					if (param == "defaultnotify-adminincoming")
+						this->DefaultNotification_AdminIncoming = (MailFilter_Configuration::Notification)atoi(value.c_str());
+
+					if (param == "defaultnotify-adminoutgoing")
+						this->DefaultNotification_AdminOutgoing = (MailFilter_Configuration::Notification)atoi(value.c_str());
+
+					// bools
+					if (param == "sendadmin-logs")
+						this->NotificationAdminLogs = mkBoolFromStr(value);
+
+					if (param == "sendadmin-cleanup")
+						this->NotificationAdminMailsKilled = mkBoolFromStr(value);
+
+					if (param == "sendadmin-dailyreport")
+						this->NotificationAdminDailyReport = mkBoolFromStr(value);
+
+					if (param == "check-incomingrecipients")
+						this->EnableIncomingRcptCheck = mkBoolFromStr(value);
+
+					if (param == "scan-attachments")
+						this->EnableAttachmentDecoder = mkBoolFromStr(value);
+
+					if (param == "pfa")
+						this->EnablePFAFunctionality = mkBoolFromStr(value);
+
+					if (param == "nrm-enableinprocess")
+						this->EnableNRMThread = mkBoolFromStr(value);
+
+					if (param == "nrm-enablerestore")
+						this->EnableNRMRestore = mkBoolFromStr(value);
+				}
+			}
+		}
+		cfgFile.close();
+
+	} else {
 	
-//	MF_DisplayCriticalError("Logging to: %s\n",this->LogDirectory.c_str());
+ 		int iIntegerBase = 3500;
+ 		this->LoginUserName = "";
+ 		this->LoginUserPassword = "";
+ 		
+		// Control Password
+		this->ControlPassword = MF_ConfigReadString2(pConfigFile, 60);
+		// License Key || Licensing reads this itself.
+		this->LicenseKey = MF_ConfigReadString2(pConfigFile, 240);
 
-	this->DomainName = MF_ConfigReadString(pConfigFile, 3);
-
-	this->DomainEmailMailFilter = MF_ConfigReadString(pConfigFile, 4);
-
-	this->DomainEmailPostmaster = MF_ConfigReadString(pConfigFile, 5);
-
-	this->DomainHostname = MF_ConfigReadString(pConfigFile, 6);
-
-	this->Multi2One = MF_ConfigReadString(pConfigFile, 7);
-
-	this->BWLScheduleTime = MF_ConfigReadString(pConfigFile, 8);
-	
-	this->DefaultNotification_InternalSender = (MailFilter_Configuration::Notification)
-		MF_ConfigReadInt(pConfigFile, 3500);
-
-	this->MailscanDirNum = (unsigned int)
-		MF_ConfigReadInt(pConfigFile, 3502);
-
-	this->MailscanTimeout = (unsigned int)
-		MF_ConfigReadInt(pConfigFile, 3506);
-
-	this->DefaultNotification_InternalRecipient = (MailFilter_Configuration::Notification)
-		MF_ConfigReadInt(pConfigFile, 3510);
-
-	this->NotificationAdminLogs = (bool)
-		MF_ConfigReadInt(pConfigFile, 3512);
-
-	this->NotificationAdminMailsKilled = (bool)
-		MF_ConfigReadInt(pConfigFile, 3514);
-
-	this->ProblemDirMaxAge = (unsigned int)
-		MF_ConfigReadInt(pConfigFile, 3516);
-
-	this->ProblemDirMaxSize = (unsigned int)
-		MF_ConfigReadInt(pConfigFile, 3521);
-
-	this->NotificationAdminDailyReport = (bool)
-		MF_ConfigReadInt(pConfigFile, 3529);
-
-	this->DefaultNotification_ExternalSender = (MailFilter_Configuration::Notification)
-		MF_ConfigReadInt(pConfigFile, 3531);
-
-	this->DefaultNotification_ExternalRecipient = (MailFilter_Configuration::Notification)
-		MF_ConfigReadInt(pConfigFile, 3533);
-
-	this->GWIAVersion = (unsigned int)
-		MF_ConfigReadInt(pConfigFile, 3535);
-
-	this->EnableIncomingRcptCheck = (bool)
-		MF_ConfigReadInt(pConfigFile, 3539);
+ 		this->GWIARoot = MF_MakeValidPath(MF_ConfigReadString(pConfigFile, 1));
+ 		this->MFLTRoot = MF_MakeValidPath(MF_ConfigReadString(pConfigFile, 2));
+ 		this->DomainName = MF_ConfigReadString(pConfigFile, 3);
+ 		this->DomainEmailMailFilter = MF_ConfigReadString(pConfigFile, 4);
+ 		this->DomainEmailPostmaster = MF_ConfigReadString(pConfigFile, 5);
+ 		this->DomainHostname = MF_ConfigReadString(pConfigFile, 6);
+ 		this->Multi2One = MF_ConfigReadString(pConfigFile, 7);
+ 		this->BWLScheduleTime = MF_ConfigReadString(pConfigFile, 8);
 		
-	this->EnableAttachmentDecoder = (bool)
-		MF_ConfigReadInt(pConfigFile, 3541);
-		
-	this->EnablePFAFunctionality = (bool)
-		MF_ConfigReadInt(pConfigFile, 3543);
+		this->DefaultNotification_InternalSender = (MailFilter_Configuration::Notification)
+			MF_ConfigReadInt(pConfigFile, iIntegerBase);
 
-	this->EnableNRMThread = (bool)
-		MF_ConfigReadInt(pConfigFile, 3545);
+		this->MailscanDirNum = (unsigned int)
+			MF_ConfigReadInt(pConfigFile, iIntegerBase+2);
 
-	this->EnableNRMRestore = (bool)
-		MF_ConfigReadInt(pConfigFile, 3547);
+		this->MailscanTimeout = (unsigned int)
+			MF_ConfigReadInt(pConfigFile, iIntegerBase+6);
 
-	// Next start at 3549
+		this->DefaultNotification_InternalRecipient = (MailFilter_Configuration::Notification)
+			MF_ConfigReadInt(pConfigFile, iIntegerBase+10);
+
+		this->NotificationAdminLogs = (bool)
+			MF_ConfigReadInt(pConfigFile, iIntegerBase+12);
+
+		this->NotificationAdminMailsKilled = (bool)
+			MF_ConfigReadInt(pConfigFile, iIntegerBase+14);
+
+		this->ProblemDirMaxAge = (unsigned int)
+			MF_ConfigReadInt(pConfigFile, iIntegerBase+16);
+
+		this->ProblemDirMaxSize = (unsigned int)
+			MF_ConfigReadInt(pConfigFile, iIntegerBase+21);
+
+		this->NotificationAdminDailyReport = (bool)
+			MF_ConfigReadInt(pConfigFile, iIntegerBase+29);
+
+		this->DefaultNotification_ExternalSender = (MailFilter_Configuration::Notification)
+			MF_ConfigReadInt(pConfigFile, iIntegerBase+31);
+
+		this->DefaultNotification_ExternalRecipient = (MailFilter_Configuration::Notification)
+			MF_ConfigReadInt(pConfigFile, iIntegerBase+33);
+
+		this->EnableIncomingRcptCheck = (bool)
+			MF_ConfigReadInt(pConfigFile, iIntegerBase+39);
+			
+		this->EnableAttachmentDecoder = (bool)
+			MF_ConfigReadInt(pConfigFile, iIntegerBase+41);
+			
+		this->EnablePFAFunctionality = (bool)
+			MF_ConfigReadInt(pConfigFile, iIntegerBase+43);
+
+		this->EnableNRMThread = (bool)
+			MF_ConfigReadInt(pConfigFile, iIntegerBase+45);
+
+		this->EnableNRMRestore = (bool)
+			MF_ConfigReadInt(pConfigFile, iIntegerBase+47);
+
+		// Next start at 49
+	}
 	
-	// require at least 10 dirs
+
+	// fixups and stuff.
+	if (this->config_mode_strict)
+	{	
+		if (this->GWIARoot == "") 			{	rc = 303;	goto MF_ConfigRead_ERR;	}
+		if (this->MFLTRoot == "") 			{	rc = 304;	goto MF_ConfigRead_ERR;	}
+
+		// Check for existence of directories ...
+		if (chdir(this->MFLTRoot.c_str()))	{	rc=301; goto MF_ConfigRead_ERR;	}
+		if (chdir(this->GWIARoot.c_str()))	{	rc=302; goto MF_ConfigRead_ERR;	}
+
+	}
+	
 	if (this->MailscanDirNum < 10) this->MailscanDirNum = 10;
+
+	this->LogDirectory = this->MFLTRoot + IX_DIRECTORY_SEPARATOR_STR + "MFLOG" + IX_DIRECTORY_SEPARATOR_STR;
+	if (chdir(this->LogDirectory.c_str()))		mkdir(this->LogDirectory.c_str(),S_IRWXU);
 
 	/* read in the optional footer message */
 /*	strncpy(szTemp,MFC_ConfigDirectory,MAX_PATH);
@@ -836,14 +986,6 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 	MFC_Message_FooterText = (char*)malloc(4000);
 	MF_ConfigReadFile(szTemp,MFC_Message_FooterText,3999);
 */	
-	if (this->config_mode_strict && (!MFT_RemoteDirectories))
-	{
-		// Check for existence of directories ...
-		if (chdir(this->MFLTRoot.c_str())) {	rc=301; goto MF_ConfigRead_ERR;	}
-		if (chdir(this->GWIARoot.c_str())) {	rc=302; goto MF_ConfigRead_ERR;	}
-
-		if (chdir(this->LogDirectory.c_str()))				mkdir(this->LogDirectory.c_str(),S_IRWXU);
-	}
 
 	this->filterList.clear();
 
@@ -906,6 +1048,16 @@ class PrintFilter{
 			fputc(filter.enabledIncoming,m_fFile);
 			fputc(filter.enabledOutgoing,m_fFile);
 		
+			// v11+
+				// stock filter
+				fputc(0,m_fFile);
+				// 4 bytes for counter
+				fputc(0,m_fFile);
+				fputc(0,m_fFile);
+				fputc(0,m_fFile);
+				fputc(0,m_fFile);
+			// ////
+		
 			fprintf(m_fFile,"%s",filter.expression.c_str());
 			fputc(0,m_fFile);
 			fprintf(m_fFile,"%s",filter.name.c_str());
@@ -913,40 +1065,31 @@ class PrintFilter{
 		}
 };
 
+bool Configuration::WriteFilterList(std::string filterList)
+{
+	FILE* cfgFile = fopen(filterList.c_str(),"wb");
+	if (cfgFile == NULL)
+		return false;
+
+	fprintf(cfgFile,"MAILFILTER_FILTER_EXCHANGEFILE");
+	fputc(0,cfgFile);
+	fprintf(cfgFile,"%s%03i",MAILFILTER_CONFIGURATION_BASESIGNATURE,MailFilter_Configuration::CurrentConfigVersion);
+	fputc(0,cfgFile);
+	fputc(0,cfgFile);
+	fputc(0,cfgFile);
+	fputc(0,cfgFile);
+
+	for_each(this->filterList.begin(),this->filterList.end(),PrintFilter(cfgFile));
+
+	fclose(cfgFile);
+
+	return true;
+}
+
 bool Configuration::WriteToFile(std::string alternateFilename)
 {
 	int rc = 0;
 	
-/*	try {
-	
-		const char* pConfigFile = (alternateFilename == "" ? config_file.c_str() : alternateFilename.c_str());
-		MFD_Out(MFD_SOURCE_CONFIG,"MFC: Starting with %s.\n",pConfigFile);
-
-		std::string fileversion;
-		std::ifstream filestream(pConfigFile, std::fstream::in); // | std::fstream::binary);
-		
-		filestream >> fileversion;
-		std::cout << "checking version..." << std::endl << fileversion << std::endl  << "..." << std::endl;
-		
-		filestream >> this->GWIARoot;
-		std::cout << "gwia root: " << this->GWIARoot << std::endl;
-
-		filestream.close();
-		
-
-	} catch (std::exception e)
-	{
-//	 	NetwareAlert(
-		MF_DisplayCriticalError("MAILFILTER: Uncaught Exception in the configuration reader.\n\n");
-	}
-*/
-
-
-	///////////////////////////
-	//
-	// --- end of test area ---
-	//
-	///////////////////////////
 	// place definitions here!
 	std::string ConfigVersion;
 
@@ -955,139 +1098,66 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 
 	MFD_Out(MFD_SOURCE_CONFIG,"MFC: Saving to %s.\n",pConfigFile.c_str());
 
+	// make backup of old conf
+	unlink(pConfigFileBackup.c_str());
 	rename(pConfigFile.c_str(),pConfigFileBackup.c_str());
 
-
-	// config fix-ups
-
-	// require at least 10 dirs
-	if (this->MailscanDirNum < 10) this->MailscanDirNum = 10;
-
-
-/*	
-	ConfigVersion = MF_ConfigReadString(pConfigFile, 0);
-	if (ConfigVersion != MAILFILTER_CONFIGURATION_SIGNATURE)
-	{
-		rc = 99;
-		goto MF_ConfigRead_ERR;	
-	}
-*/
-
-	FILE* cfgFile = fopen(pConfigFile.c_str(),"wb");
+	// write out new config
+	FILE* cfgFile = fopen(pConfigFile.c_str(),"wt");
 	if (cfgFile == NULL)
 		return false;
+		
+	fprintf(cfgFile,"# MailFilter Configuration File\n");
+	fprintf(cfgFile,"# Do NOT MODIFY this file MANUALLY. It will NOT WORK.\n");
 	
-	long iMax, iCnt = 0; // macro helpers
-#define doNull(howMany)	{ ThreadSwitch(); iMax = ftell(cfgFile); for (iCnt=0;iCnt<(howMany-iMax);iCnt++) fputc(0,cfgFile); }
-
-	// write out header:	
-	fprintf(cfgFile,"%s%03i",MAILFILTER_CONFIGURATION_BASESIGNATURE,MailFilter_Configuration::CurrentConfigVersion);
 	
-	doNull(60);
-	fprintf(cfgFile,"%s",this->ControlPassword.c_str());
+//	doNull(60);
+//	fprintf(cfgFile,"%s",this->ControlPassword.c_str());
 
-	// License Key
-	doNull(240);
-	fprintf(cfgFile,"%s",this->LicenseKey.c_str());
+
+	// "Signature"
+	fprintf(cfgFile,"/version-config=%i\n",MailFilter_Configuration::CurrentConfigVersion);
 
 	// Values
-	doNull(330);
-	fprintf(cfgFile,"%s",this->GWIARoot.c_str());
-
-	doNull(660);
-	fprintf(cfgFile,"%s",this->MFLTRoot.c_str());
-
-	doNull(990);
-	fprintf(cfgFile,"%s",this->DomainName.c_str());
-
-	doNull(1320);
-	fprintf(cfgFile,"%s",this->DomainEmailMailFilter.c_str());
-
-	doNull(1650);
-	fprintf(cfgFile,"%s",this->DomainEmailPostmaster.c_str());
+	fprintf(cfgFile,"/version-gwia=%d\n", this->GWIAVersion);
+	fprintf(cfgFile,"/licensekey=%s\n", this->LicenseKey.c_str());
+	fprintf(cfgFile,"/home-gwia=%s\n",this->GWIARoot.c_str());
+	fprintf(cfgFile,"/home-mailfilter=%s\n",this->MFLTRoot.c_str());
+	fprintf(cfgFile,"/login-username=%s\n",this->LoginUserName.c_str());
+	fprintf(cfgFile,"/login-password=%s\n",this->LoginUserPassword.c_str());
+	fprintf(cfgFile,"/domain=%s\n",this->DomainName.c_str());
+	fprintf(cfgFile,"/email-mailfilter=%s\n",this->DomainEmailMailFilter.c_str());
+	fprintf(cfgFile,"/email-postmaster=%s\n",this->DomainEmailPostmaster.c_str());
+	fprintf(cfgFile,"/hostname=%s\n",this->DomainHostname.c_str());
+	fprintf(cfgFile,"/multi2one=%s\n",this->Multi2One.c_str());
+	fprintf(cfgFile,"/schedule-time=%s\n",this->BWLScheduleTime.c_str());
 	
-	doNull(1980);
-	fprintf(cfgFile,"%s",this->DomainHostname.c_str());
+	fprintf(cfgFile,"/defaultnotify-internalsender=%s\n",this->DefaultNotification_InternalSender == 0 ? "0" : "1");
+	fprintf(cfgFile,"/defaultnotify-internalrecipient=%s\n",this->DefaultNotification_InternalRecipient == 0 ? "0" : "1");
+	fprintf(cfgFile,"/defaultnotify-externalsender=%s\n",this->DefaultNotification_ExternalSender == 0 ? "0" : "1");
+	fprintf(cfgFile,"/defaultnotify-externalrecipient=%s\n",this->DefaultNotification_ExternalRecipient == 0 ? "0" : "1");
+
+	fprintf(cfgFile,"/scandirs=%d\n", this->MailscanDirNum);
+	fprintf(cfgFile,"/scantimeout=%d\n", this->MailscanTimeout);
 	
-	// version 7
-	doNull(2310);
-	fprintf(cfgFile,"%s",this->Multi2One.c_str());
-	
-	// // removed in a later v8
-	//doNull(2475);
-	//fprintf(cfgFile,"%s",MFC_DNSBL_Zonename);
+	fprintf(cfgFile,"/sendadmin-logs=%s\n",this->NotificationAdminLogs == 0 ? "0" : "1");
+	fprintf(cfgFile,"/sendadmin-cleanup=%s\n",this->NotificationAdminMailsKilled == 0 ? "0" : "1");
+	fprintf(cfgFile,"/sendadmin-dailyreport=%s\n", this->NotificationAdminDailyReport == 0 ? "0" : "1");
 
-	// version 8
-	doNull(2640);
-	fprintf(cfgFile,"%s",this->BWLScheduleTime.c_str());
-	
-	doNull(2970);
-	// next one goes here...
+	fprintf(cfgFile,"/problemdir-maxage=%d\n", this->ProblemDirMaxAge);
+	fprintf(cfgFile,"/problemdir-maxsize=%d\n", this->ProblemDirMaxSize);
 
-	doNull(3500);
-	fprintf(cfgFile, this->DefaultNotification_InternalSender == 0 ? "0" : "1");
-	
-	doNull(3502);
-	fprintf(cfgFile, "%d", this->MailscanDirNum);
-	
-	doNull(3506);
-	fprintf(cfgFile, "%d", this->MailscanTimeout);
-	
-	doNull(3510);
-	fprintf(cfgFile, this->DefaultNotification_InternalRecipient == 0 ? "0" : "1");
-	
-	doNull(3512);
-	fprintf(cfgFile, this->NotificationAdminLogs == 0 ? "0" : "1");
-
-	doNull(3514);
-	fprintf(cfgFile, this->NotificationAdminMailsKilled == 0 ? "0" : "1");
-
-	doNull(3516);
-	fprintf(cfgFile, "%d", this->ProblemDirMaxAge);
-
-	doNull(3521);
-	fprintf(cfgFile, "%d", this->ProblemDirMaxSize);
-	
-	doNull(3529);
-	fprintf(cfgFile, this->NotificationAdminDailyReport == 0 ? "0" : "1");
-	
-	doNull(3531);
-	fprintf(cfgFile, this->DefaultNotification_ExternalSender == 0 ? "0" : "1");
-	
-	doNull(3533);
-	fprintf(cfgFile, this->DefaultNotification_ExternalRecipient == 0 ? "0" : "1");
-	
-	doNull(3535);
-	fprintf(cfgFile, "%d", this->GWIAVersion);
-
-	doNull(3539);
-	fprintf(cfgFile, this->EnableIncomingRcptCheck == 0 ? "0" : "1");
-
-	doNull(3541);
-	fprintf(cfgFile, this->EnableAttachmentDecoder == 0 ? "0" : "1");
-
-	doNull(3543);
-	fprintf(cfgFile, this->EnablePFAFunctionality == 0 ? "0" : "1");
-
-	// version 10
-	doNull(3545);
-	fprintf(cfgFile, this->EnableNRMThread == 0 ? "0" : "1");
-	
-	//removed in a later v8
-	//fprintf(cfgFile, MFC_DropUnresolvableRelayHosts == 0 ? "0" : "1");
-
-	doNull(3547);
-	fprintf(cfgFile, this->EnableNRMRestore == 0 ? "0" : "1");
-
-	// Next start at 3549
-
-	// version 9
-	doNull(4000);
-
-	for_each(this->filterList.begin(),this->filterList.end(),PrintFilter(cfgFile));
+	fprintf(cfgFile,"/check-incomingrecipients=%s\n",this->EnableIncomingRcptCheck == 0 ? "0" : "1");
+	fprintf(cfgFile,"/scan-attachments=%s\n",this->EnableAttachmentDecoder == 0 ? "0" : "1");
+	fprintf(cfgFile,"/pfa=%s\n",this->EnablePFAFunctionality == 0 ? "0" : "1");
+	fprintf(cfgFile,"/nrm-enableinprocess=%s\n",this->EnableNRMThread == 0 ? "0" : "1");
+	fprintf(cfgFile,"/nrm-enablerestore=%s\n",this->EnableNRMRestore == 0 ? "0" : "1");
 
 	fclose(cfgFile);
 
+	if (!this->WriteFilterList(this->config_directory + "\\FILTERS.BIN"))
+		return false;
+	
 	return true;
 	
 }

@@ -44,6 +44,7 @@
 
 
 
+extern char MFL_LicenseKey[MAX_PATH];
 
 extern void MailFilter_NRM_sigterm();
 
@@ -203,6 +204,8 @@ void MF_NutHandlerKeyF9 (void *handle)		// SHOW CONFIG
 }
 
 
+	extern bool MF_UI_PromptUsernamePassword(std::string prompt, std::string username, std::string password);
+
 void MF_NutHandlerKeyF2 (void *handle)		// debug stuff
 {
 	handle = handle;			// Keep compiler quiet.
@@ -216,6 +219,13 @@ void MF_NutHandlerKeyF2 (void *handle)		// debug stuff
 
 	sprintf(buf,"StackAvail: %d, DebugLevel: %d",stackavail(),MFT_Debug);
 	MF_StatusUI_UpdateLog(buf);
+
+	std::string u;
+	std::string p;
+
+	MF_UI_PromptUsernamePassword("",u,p);
+	MF_StatusUI_UpdateLog(u.c_str());
+	MF_StatusUI_UpdateLog(p.c_str());
 
 }
 
@@ -820,16 +830,31 @@ static void LoadNRMThreadStartup(void *dummy)
 static NXPathCtx_t	MFT_PathCtxt_ServerConnection = 0;
 static NXPathCtx_t	MFT_PathCtxt_UserConnection = 0;
 static int			MFT_ServerIdentity = 0;
-
+static bool			MFT_IdentitiesOkay = false;
 
 static bool MailFilterApp_Server_LoginToServer()
 {	
 	int            err; 
-	 
-	err = create_identity ("ICC", "cn=MailFilter.ou=System.o=ICC", "mf", NULL, XPORT_WILD|USERNAME_ASCII, &MFT_ServerIdentity);
+
+	if (MFT_IdentitiesOkay)
+		return true;
+
+	MFT_IdentitiesOkay = false;
+
+	if (
+		 (MF_GlobalConfiguration.LoginUserName == "") &&
+		 (MF_GlobalConfiguration.LoginUserPassword == "")
+		)
+		return true;		// we shouldnt log in?
+
+	MF_DisplayCriticalError("logging in with: %s %s\n",
+				MF_GlobalConfiguration.LoginUserName.c_str(), MF_GlobalConfiguration.LoginUserPassword.c_str());
+
+	err = create_identity ("", MF_GlobalConfiguration.LoginUserName.c_str(), MF_GlobalConfiguration.LoginUserPassword.c_str(),
+								NULL, XPORT_WILD|USERNAME_ASCII, &MFT_ServerIdentity);
 	if (err)
 	{
-		printf(" * Details: create_identity failed with rc=%d, errno: %d\n",err,errno);
+		MF_DisplayCriticalError(" * Details: create_identity failed with rc=%d, errno: %d\n",err,errno);
 		return false;
 	}
 
@@ -839,11 +864,16 @@ static bool MailFilterApp_Server_LoginToServer()
 	err = NXCreatePathContext(0, "SYS:", NX_PNF_DEFAULT, (void *) MFT_ServerIdentity, &MFT_PathCtxt_UserConnection);
 	if (err)	return false;
 
+	MFT_IdentitiesOkay = true;
+
 	return true;
 }
 
 bool MailFilterApp_Server_SelectServerConnection()
 {
+	if (!MFT_IdentitiesOkay)
+		return true;
+
 	int err = setcwd(MFT_PathCtxt_ServerConnection);
 	if (err)	return false;
 	
@@ -852,6 +882,9 @@ bool MailFilterApp_Server_SelectServerConnection()
 
 bool MailFilterApp_Server_SelectUserConnection()
 {
+	if (!MFT_IdentitiesOkay)
+		return true;
+
 	int err = setcwd(MFT_PathCtxt_UserConnection);
 	if (err)	return false;
 	
@@ -860,6 +893,11 @@ bool MailFilterApp_Server_SelectUserConnection()
 
 static bool MailFilterApp_Server_LogoutFromServer()
 {
+	if (!MFT_IdentitiesOkay)
+		return true;
+
+	MFT_IdentitiesOkay = false;
+
 	NXFreePathContext(MFT_PathCtxt_ServerConnection);
 	MFT_PathCtxt_ServerConnection = 0;
 	
@@ -867,6 +905,7 @@ static bool MailFilterApp_Server_LogoutFromServer()
 	MFT_PathCtxt_UserConnection = 0;
 	
 	delete_identity(MFT_ServerIdentity);
+	MFT_ServerIdentity = 0;
 	return true;
 }
 
@@ -949,6 +988,8 @@ MF_MAIN_RUNLOOP:
 		MF_StatusUI_Update(MSG_BOOT_LOADING);
 		
 		MFWorker_SetupPaths();
+		
+		strncpy(MFL_LicenseKey,MF_GlobalConfiguration.LicenseKey.c_str(),MF_GlobalConfiguration.LicenseKey.size() > MAX_PATH ? MAX_PATH : MF_GlobalConfiguration.LicenseKey.size() );
 	    
 		// Start Thread: ** WORK **
 	#ifdef __NOVELL_LIBC__

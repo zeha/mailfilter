@@ -3,7 +3,7 @@
  +		
  +		MailFilter Configuration C++ Interface
  +		
- +		Copyright 2001-2003 Christian Hofstädtler
+ +		Copyright 2001-2004 Christian Hofstädtler
  +		
  +		
  +		
@@ -41,23 +41,10 @@ public:
 	FilterType type;
 	Notification notify;
 	FilterAction action;
+	bool fromStock;
+	unsigned int hitCounter;
 	
-	Filter(){ sig = "MFMFMF"; }
-};
-
-// Compatiblity Only:
-struct OldC_FilterStruct
-{
-	char matchfield;
-	char expression[500];
-	char name[60];
-	char enabled;
-	char enabledIncoming;
-	char enabledOutgoing;
-	char type;
-	char notify;
-	char action;
-//	char action2[1000];
+	Filter(){ sig = "FILT"; }
 };
 
 } // namespace MailFilter_Configuration

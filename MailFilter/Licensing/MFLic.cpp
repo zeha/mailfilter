@@ -51,14 +51,14 @@ extern "C" { void  delay( unsigned milliseconds ); }
 	#define MAX_PATH _MAX_SERVER+_MAX_VOLUME+_MAX_PATH+10
 
 extern char* MFT_Local_ServerName;
-extern char MFC_ConfigFile[MAX_PATH];
+char MFL_LicenseKey[MAX_PATH];
 int MFL_Certified = -1;
 
 static unsigned char keyA[25];
 static unsigned char keyB[25];
 static unsigned int  fFlags	= 0;
 static unsigned char key[100];
-static unsigned char kec[100];
+static char kec[100];
 static int fOffset = 0;
 
 #include "MFLic.h"
@@ -190,26 +190,10 @@ int MFL_Stage0(int prevCert)
 	int rc = -1;
 	unsigned int p = 0;
 	
-	int f;
-	
-	if( (f = open(MFC_ConfigFile,O_BINARY|O_RDONLY)) == -1)
-	{	MFL_Certified = 2;
-#if (defined( _TRACE ) && (!defined( WIN32 )))
-ConsolePrintf("\nMFD: Read File -> Eval\n");
-#endif
-		return MFL_Certified;
-	}
 	unsigned int nb = 65;	//, br;
 	kec[0]=0;
-
-	lseek( f, 240, SEEK_SET );
 	
-	if( (unsigned)read( f, kec, nb ) < nb )
-		rc = 2;
-	close(f);
-#if (defined( _TRACE ) && (!defined( WIN32 )))
-ConsolePrintf("\nMFD: \"%s\"\n",kec);
-#endif
+	strncpy(kec,MFL_LicenseKey,65);
 
 	kec[65]=0;
 	if (kec[0] == 0)

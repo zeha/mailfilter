@@ -82,7 +82,99 @@ void MF_UI_ShowConfiguration(void)
 	sprintf(szTemp, "  Logging To..: %s",MF_GlobalConfiguration.LogDirectory.c_str()); 
 	MF_StatusUI_UpdateLog(szTemp);
 
+	if (MF_GlobalConfiguration.LoginUserName != "")
+	{
+		sprintf(szTemp, "Logging in as.: %s",MF_GlobalConfiguration.LoginUserName.c_str());
+		MF_StatusUI_UpdateLog(szTemp);
+	}
 
+}
+
+static int _MF_UI_PromptUsernamePassword_Login(FIELD* fp, int selectKey, int *changedField, NUTInfo *handle)
+{
+}
+
+static int _MF_UI_PromptUsernamePassword_Cancel(FIELD* fp, int selectKey, int *changedField, NUTInfo *handle)
+{
+}
+
+bool MF_UI_PromptUsernamePassword(std::string prompt, std::string username, std::string password)
+{
+	unsigned long	line;
+	int		formSaved;
+	char	newUser[MAX_PATH];
+	char	newPass[MAX_PATH];
+	std::string myPrompt = prompt;
+	
+	if (myPrompt == "")
+		myPrompt = "Please enter your NDS Username (fully qualified) and your password.";
+
+	NWSPushList(MF_NutInfo);
+	NWSInitForm(MF_NutInfo);
+	
+	/*------------------------------------------------------------------------
+	** Define the fields in the form
+	*/
+	line = 0;
+	
+	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)(myPrompt.c_str()), MF_NutInfo);
+	line += 2;
+	
+	// pad
+	line++;
+	
+	// username+password
+	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Enter NDS Username:", MF_NutInfo);
+	line++;
+
+	newUser[0] = 0;
+	NWSAppendScrollableStringField  (line, 5, 44, NORMAL_FIELD, (_MF_NUTCHAR)newUser, MAX_PATH, NULL, EF_ANY, NULL, MF_NutInfo);
+	line++;
+
+
+	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Password:", MF_NutInfo);
+	line++;
+	
+	newPass[0] = 0;
+	NWSAppendPasswordField  (line, 5, 44, NORMAL_FIELD, (_MF_NUTCHAR)newPass, MAX_PATH, NULL, false, NULL, '*', MF_NutInfo);
+	line++;
+
+	line++;
+	
+	NWSAppendHotSpotField ( line, 10, NORMAL_FIELD, (_MF_NUTCHAR)"Login", _MF_UI_PromptUsernamePassword_Login, MF_NutInfo); 
+	NWSAppendHotSpotField ( line, 25, NORMAL_FIELD, (_MF_NUTCHAR)"Cancel", _MF_UI_PromptUsernamePassword_Cancel, MF_NutInfo); 
+
+	
+
+	formSaved = NWSEditForm (
+		0,	//headernum
+		4,			//line
+		14,			//col
+		line+5,		//portalHeight
+		50,			//portalWidth
+		line+1,		//virtualHeight,
+		50,			//virtualWidth,
+		FALSE,		//ESCverify,
+		FALSE,		//forceverify,
+		NULL,		//confirmMessage,
+		MF_NutInfo
+	);
+
+	/*------------------------------------------------------------------------
+	** This function returns TRUE if the form was saved, FALSE if not.
+	** If the form was not saved you must restore all variables to their
+	** original values manually
+	*/
+	if (formSaved)
+	{
+		username = newUser;
+		password = newPass;
+	}
+
+	NWSDestroyForm (MF_NutInfo);
+	NWSPopList(MF_NutInfo);
+
+	return (bool)formSaved;
 }
 
 /* eof */
