@@ -1366,7 +1366,7 @@ static void MFConfig_EditConfig()
 	BOOL	newEnableIncomingRcptCheck = (BOOL)MF_GlobalConfiguration.EnableIncomingRcptCheck;
   	BOOL	newEnableAttachmentDecoder = (BOOL)MF_GlobalConfiguration.EnableAttachmentDecoder;
   	BOOL	newEnablePFA = (BOOL)MF_GlobalConfiguration.EnablePFAFunctionality;
-//  	BOOL	newDropUnresolvableRelayHosts = (BOOL)MFC_DropUnresolvableRelayHosts;
+  	BOOL	newEnableNRMThread = (BOOL)MF_GlobalConfiguration.EnableNRMThread;
 
 	NWSPushList(MF_NutInfo);
 	NWSInitForm(MF_NutInfo);
@@ -1438,9 +1438,9 @@ static void MFConfig_EditConfig()
 	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newEnableIncomingRcptCheck, NULL, MF_NutInfo);
 	line++;
 	
-//	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Drop Unresolvable Relay Hosts:", MF_NutInfo);
-//	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newDropUnresolvableRelayHosts, NULL, MF_NutInfo);
-//	line++;
+	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable NRM on load (OS address space only):", MF_NutInfo);
+	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newEnableNRMThread, NULL, MF_NutInfo);
+	line++;
 	
 	line++;
 
@@ -1564,6 +1564,7 @@ static void MFConfig_EditConfig()
 		MF_GlobalConfiguration.MailscanDirNum				=(unsigned int)newScanDirNum;
 		MF_GlobalConfiguration.EnableAttachmentDecoder		=(bool)newEnableAttachmentDecoder;
 		MF_GlobalConfiguration.EnablePFAFunctionality		=(bool)newEnablePFA;
+		MF_GlobalConfiguration.EnableNRMThread				=(bool)newEnableNRMThread;
 
 		MF_GlobalConfiguration.GWIAVersion					=(unsigned int)newGwiaVersion;
 		

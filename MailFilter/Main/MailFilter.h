@@ -375,9 +375,11 @@ int __cdecl ConsolePrintf(const char* format, ... );
 	// Thread Handles
 #ifdef __NOVELL_LIBC__
 	_MFGS(	NXThreadId_t,	MF_Thread_Work,						0		);
+	_MFGS(	NXThreadId_t,	MF_Thread_NRM,						0		);
 	_MFGS(	NXThreadId_t,	MF_Thread_SMTP,						0		);
 #else
 	_MFGS(	HANDLE,			MF_Thread_Work,						0		);
+	_MFGS(	HANDLE,			MF_Thread_NRM,						0		);
 	_MFGS(	HANDLE,			MF_Thread_SMTP,						0		);
 #endif
 

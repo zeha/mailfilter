@@ -34,6 +34,9 @@
 // Include Version Header
 #include "..\..\Main\MFVersion.h"
 #include <sys/utsname.h>
+#ifdef __NOVELL_LIBC__
+#include <nks/netware.h>
+#endif
 
 // And undef it ... ;)
 #undef _MAILFILTER_MAIN_
@@ -749,7 +752,7 @@ void NLM_SignalHandler(int sig)
 					NWSUngetKey ( K_ESCAPE , 0 , MF_NutInfo );
 				}
 				
-				if (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::NRM)
+				if ( (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::NRM) || (MF_GlobalConfiguration.NRMInitialized == true) )
 				{
 					MailFilter_NRM_sigterm();
 				}
@@ -1037,6 +1040,13 @@ static void _mfd_tellallocccountonexit()
 #endif //_MF_MEMTRACE
 
 
+
+static void LoadNRMThreadStartup(void *dummy)
+{
+	MF_GlobalConfiguration.NRMInitialized = true;
+	MailFilter_Main_RunAppNRM();
+}
+
 //
 //
 //  NLM Application Startup Function:
@@ -1097,9 +1107,10 @@ MF_MAIN_RUNLOOP:
 
 		#endif
 	    }
+
+		MF_StatusUI_Update(MSG_BOOT_LOADING);
 	    
 		// Start Thread: ** WORK **
-		MF_StatusUI_Update(MSG_BOOT_LOADING);
 	#ifdef __NOVELL_LIBC__
 		NXContext_t ctx;
 
@@ -1118,6 +1129,37 @@ MF_MAIN_RUNLOOP:
 			MF_Thread_Work = 0;
 			goto MF_MAIN_TERMINATE;
 		}
+		
+		if (MF_GlobalConfiguration.EnableNRMThread == true)
+		{
+			if (!nlmisloadedprotected())
+			{
+				// Start Thread: ** NRM **
+				#ifdef __NOVELL_LIBC__
+				NXContext_t ctx;
+
+				if (NXThreadCreateSx( LoadNRMThreadStartup , 
+					NULL,
+					NX_THR_JOINABLE|NX_THR_BIND_CONTEXT,
+					&ctx, 
+					&MF_Thread_NRM
+					))
+				#else
+				MF_Thread_NRM = BeginThread(LoadNRMThreadStartup,NULL,2*65536,NULL);						// Set 64k Stack for new thread
+				if( MF_Thread_NRM == EFAILURE )
+				#endif
+				{
+					//ConsolePrintf(MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
+					MF_StatusText("ERROR: NRM Thread Startup Error. NRM NOT loaded.");
+					MF_Thread_NRM = 0;
+		//			goto MF_MAIN_TERMINATE;
+				}
+			} else {
+				MF_StatusText("NOTE: NOT loading NRM -- MailFilter is not loaded in OS address space");
+			}
+		}
+
+		
 			/*
 	#ifndef _MF_CLEANBUILD
 		MFD_Out("Starting SMTP Thread...\n");
@@ -1188,6 +1230,12 @@ MF_MAIN_RUNLOOP:
 			if (MF_Thread_SMTP > 0)
 				NXThreadContinue (MF_Thread_SMTP);
 #endif
+
+			if ( (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::NRM) || (MF_GlobalConfiguration.NRMInitialized == true) )
+			{
+				MailFilter_NRM_sigterm();
+			}
+
 
 			// wait for other threads to exit
 			// we lied above, anyway.
@@ -1400,6 +1448,7 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		NXContextSetName(NXContextGet(),"MailFilterServer");
 		#endif
 		rc = MailFilter_Main_RunAppServer();
+		
 		break;
 		
 	case MailFilter_Configuration::CONFIG:
@@ -1425,6 +1474,12 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		NXContextSetName(NXContextGet(),"MailFilterNRM");
 		#endif
 		rc = MailFilter_Main_RunAppNRM();
+		
+		break;
+		
+	case MailFilter_Configuration::INSTALL:
+	
+		// buh!
 		
 		break;
 		

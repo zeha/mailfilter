@@ -170,6 +170,7 @@ int Configuration::setDefaults(std::string directory, std::string domainname)
 	this->EnableIncomingRcptCheck = false;
 	this->EnableAttachmentDecoder = true;
 	this->EnablePFAFunctionality = false;
+	this->EnableNRMThread = false;
 	
 	this->MessageFooter = "";
 	this->Multi2One = "";
@@ -180,6 +181,8 @@ int Configuration::setDefaults(std::string directory, std::string domainname)
 
 Configuration::Configuration()
 {
+	this->NRMInitialized = false;
+	this->ApplicationMode = SERVER;
 }
 
 Configuration::~Configuration()
@@ -663,6 +666,9 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 	this->EnablePFAFunctionality = (bool)
 		MF_ConfigReadInt(pConfigFile, 3543);
 
+	this->EnableNRMThread = (bool)
+		MF_ConfigReadInt(pConfigFile, 3545);
+
 //	MFC_DropUnresolvableRelayHosts = 
 //		MF_ConfigReadInt(pConfigFile, 3545);
 
@@ -916,6 +922,7 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 
 	// version 8
 	doNull(3545);
+	fprintf(cfgFile, this->EnableNRMThread == 0 ? "0" : "1");
 	//removed in a later v8
 	//fprintf(cfgFile, MFC_DropUnresolvableRelayHosts == 0 ? "0" : "1");
 

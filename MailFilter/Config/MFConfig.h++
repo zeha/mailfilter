@@ -70,6 +70,7 @@ public:
 	bool EnableIncomingRcptCheck;
 	bool EnableAttachmentDecoder;
 	bool EnablePFAFunctionality;
+	bool EnableNRMThread;
 	std::string MessageFooter;
 	std::string BWLScheduleTime;
 	std::string Multi2One;
@@ -80,7 +81,8 @@ public:
 	//std::vector<MailFilter_Configuration::Filter> filterList;
 	MAILFILTER_CONFIGURATION_FILTERLISTTYPE filterList;
 
-	ApplicationModeType ApplicationMode;	
+	ApplicationModeType ApplicationMode;
+	bool NRMInitialized;
 
 	int setDefaults(std::string directory = "", std::string domainname = "");
 
