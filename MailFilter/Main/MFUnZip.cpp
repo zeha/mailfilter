@@ -96,8 +96,9 @@ long MFUnZip::ExtractCurrentFile(const char* localFilename)
 					MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: cant write to local file\n");
 					err = MFUnZip_ERRNO;
 					break;
+				} else {
+					bytesWritten += err;
 				}
-				++bytesWritten;
 			}
 		} while (err>0);
 
