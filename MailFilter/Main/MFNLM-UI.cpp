@@ -21,7 +21,7 @@ void MF_UI_ShowConfiguration(void)
 	uname(&u);
 #endif
 		
-	sprintf(szTemp, "Active Configuration:        [MailFilter compiled: %s]",MAILFILTERCOMPILED);
+	sprintf(szTemp, "Active Configuration:             [MailFilter compiled: %s]",MAILFILTERCOMPILED);
 	MF_StatusUI_UpdateLog(szTemp);
 
 	/*------------------------------------------------------------------------
@@ -32,11 +32,11 @@ void MF_UI_ShowConfiguration(void)
 	char szHost[82];
 	if (!gethostname (szHost,81))
 	{
-		sprintf(szTemp, " OS Host Name.: %s ",szHost);
+		sprintf(szTemp, " OS Host Name.: Novell NOS %d.%d SP%d reports: %s ",u.netware_major,u.netware_minor,u.servicepack,szHost);
 		MF_StatusUI_UpdateLog(szTemp);
 	}
 
-	sprintf(szTemp, " Host Name....: %s (%s - %d.%d SP%d)",MF_GlobalConfiguration.DomainHostname.c_str(),MF_GlobalConfiguration.ServerName.c_str(),u.netware_major,u.netware_minor,u.servicepack);
+	sprintf(szTemp, " Host Name....: %s (%s)",MF_GlobalConfiguration.DomainHostname.c_str(),MF_GlobalConfiguration.ServerName.c_str());
 #else
 	sprintf(szTemp, " Host Name....: %s (%s)",MF_GlobalConfiguration.DomainHostname.c_str(),MF_GlobalConfiguration.ServerName.c_str());
 #endif

@@ -265,16 +265,19 @@ bool MF_NutInit(void)
 	}
 
 	memset(szTemp,' ',81);
-	sprintf(szTemp,"  MailFilter Server %s", MAILFILTERVERNUM);
+	sprintf(szTemp,"  MailFilter Server");
 
 #ifdef MAILFILTER_VERSION_BETA
 	char* szBeta = "** BETA **";
-	memcpy(szTemp+55,szBeta,strlen(szBeta));
+	memcpy(szTemp+35,szBeta,strlen(szBeta));
 #endif
 #ifdef _TRACE
 	char* szTrace = "** DEBUG **";
-	memcpy(szTemp+55,szTrace,strlen(szTrace));
+	memcpy(szTemp+35,szTrace,strlen(szTrace));
 #endif
+
+	memcpy(szTemp+62,"Version",7);
+	memcpy(szTemp+70,MAILFILTERVERNUM,strlen(MAILFILTERVERNUM));
 
 	NWSShowLineAttribute ( 0 , 0 , (_MF_NUTCHAR)szTemp , VINTENSE , 80 , (struct ScreenStruct*)MF_NutInfo->screenID );
 
