@@ -1,3 +1,8 @@
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <ostream>
+
 #include <screen.h>
 #include <stdio.h>
 #include <string.h>
@@ -5,6 +10,7 @@
 #include <netware.h>
 #include <malloc.h>
 #include <library.h>
+
 
 #include "MFAVA.h"
 #include "library.h"
@@ -348,12 +354,59 @@ int eTrust7_Init(MFAVA_HANDLE &hAVA)
 	if (eTrust7_Check())
 		return ENOTSUP;
 	
+	char szAvEnginePath[1000];
+	szAvEnginePath[0] = 0;
+	{
+		std::string line;
+		unsigned int pos;
+		std::string param;
+		std::string value;
+		
+		std::ifstream cfgFile("SYS:\\SYSTEM\\CAENV.INI");
+		
+		if (!cfgFile.good())
+		{
+			return ENOTSUP;
+		} else {
+		
+			while (cfgFile >> line)
+			{
+				if (line.at(0) != ';')
+				{
+					pos = line.find("=");
+					if (pos != -1)
+					{
+						param = line.substr(0,pos);
+						if (line.size() > pos)
+							value = line.substr(pos+1);
+						else
+							value = "";
+						
+						if (app->Debug)
+							printf(" etrust config: '%s'='%s'\n",param.c_str(),value.c_str());
+
+						if (param == "AVENGINE_LOC")
+							strncpy(szAvEnginePath,value.c_str(),260);
+						
+					}
+				}
+			}
+			
+			cfgFile.close();
+		}
+	}
+	szAvEnginePath[260] = 0;
+	if (szAvEnginePath[0] == 0)
+		return ENOTSUP;
+	
 	hAVA = (MFAVA_HANDLE)ETRUST7_MAGIC;
 		
-//	long arcTypes[20];
-	struct actionConfig actionConf = { 3, "SYS:eTrustAV\\AVEngine", "SYS:eTrustAV\\AVEngine", 0 };
+	struct actionConfig actionConf = { 3, "", "", 0 };
 	struct inoConfig2 cf2 = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	struct inoConfig cf = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	
+	strcpy(actionConf.avEng,szAvEnginePath);
+	strcpy(actionConf.avEng2,szAvEnginePath);
 	
 //	memset(arcTypes,0,20*sizeof(long));
 //	arcTypes[0] = 0x9;

@@ -382,6 +382,8 @@ BOOL CInstApp::InitInstance()
 					MF_CreateDirectory(szAppBinaryDest);
 				if (!rc) 
 					MF_CreateDirectory(szAppConfigDest);
+				if (!rc) 
+					MF_CreateDirectory(szAppConfigDest+"\\DEFAULTS");
 
 				switch (rc) 
 				{
@@ -434,6 +436,14 @@ BOOL CInstApp::InitInstance()
 					// config
 					if (!bErrors)
 						szError = "Could not copy configuration file.";
+					
+					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest+"\\DEFAULTS", "FILTERS.BIN") == FALSE)		bErrors = true;
+					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest+"\\DEFAULTS", "MAILCOPY.TPL") == FALSE)	bErrors = true;
+					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest+"\\DEFAULTS", "REPORT.TPL") == FALSE)		bErrors = true;
+					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest+"\\DEFAULTS", "RINSIDE.TPL") == FALSE)		bErrors = true;
+					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest+"\\DEFAULTS", "ROUTRCPT.TPL") == FALSE)	bErrors = true;
+					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest+"\\DEFAULTS", "ROUTSNDR.TPL") == FALSE)	bErrors = true;
+
 					if (!this->mf_IsUpgrade)
 					{
 						if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "FILTERS.BIN") == FALSE)		bErrors = true;

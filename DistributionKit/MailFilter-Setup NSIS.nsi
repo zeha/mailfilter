@@ -9,7 +9,7 @@
 ; *** UPDATE BUILD NUMBERS *HERE* ***
   !define PROD_VERSION_MAJOR 1
   !define PROD_VERSION_MINOR 6
-  !define PROD_VERSION_REVISION 0-rc3
+  !define PROD_VERSION_REVISION 0-rc4
 ;
 ;
 
