@@ -13,8 +13,10 @@
 #include "InstallDlg.h"
 #include "netwareapi.h"
 
+#include <ios>
 #include <iostream>
 #include <fstream>
+#include <string>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -495,32 +497,91 @@ BOOL CInstApp::InitInstance()
 			{
 				// 5: patch autoexec.ncf
 				WriteLog("5 - patch autoexec.ncf.");
-				CString szAutoexec = "\\\\" + this->mf_ServerName + "\\SYS\\AUTOEXEC.NCF";
-				CString szAutoexecBackup = szAutoexec + ".MFOLD";
-				WriteLog(" Using Autoexec.ncf from " + szAutoexec);
-				WriteLog(" Saving copy to " + szAutoexecBackup);
+				progressCtrl->SetPos(progressCtrl->GetPos()+5);
+				progressTextCtrl->SetWindowText("Updating Server Configuration");
+				{
+					CString szAutoexec = "\\\\" + this->mf_ServerName + "\\SYS\\AUTOEXEC.NCF";
+					CString szAutoexecBackup = szAutoexec + ".MFOLD";
+					WriteLog(" Using Autoexec.ncf from " + szAutoexec);
+					WriteLog(" Saving copy to " + szAutoexecBackup);
 
-				// make backup
-				CopyFile(szAutoexec,szAutoexecBackup, FALSE);
+					// make backup
+					CopyFile(szAutoexec,szAutoexecBackup, FALSE);
 
-				std::ofstream autoexecFile(szAutoexec,std::ios_base::app);
-				autoexecFile << std::endl;
-				autoexecFile << "# Added to load MailFilter" << std::endl;
+					std::ofstream autoexecFile(szAutoexec,std::ios_base::app);
+					autoexecFile << std::endl;
+					autoexecFile << "# Added to load MailFilter" << std::endl;
 
-				CString theLine = szServerAppBaseDest + "\\MFSTART.NCF";
-				WriteLog(" Adding command: " + theLine);
-				autoexecFile << theLine << std::endl;
+					CString theLine = szServerAppBaseDest + "\\MFSTART.NCF";
+					WriteLog(" Adding command: " + theLine);
+					autoexecFile << theLine << std::endl;
 
-				autoexecFile << std::endl;
-				autoexecFile.close();
-
+					autoexecFile << std::endl;
+					autoexecFile.close();
+				}
 			}
 
 			if (!bErrors)
 			{
 				// 6: patch gwia.cfg
 				WriteLog("6 - patch gwia.ncf.");
-				
+				progressCtrl->SetPos(progressCtrl->GetPos()+5);
+				progressTextCtrl->SetWindowText("Updating GroupWise Configuration");
+				if (this->mf_GwiaResetSmtpHome)
+				{
+					CString oldGwiaCfg = this->mf_GwiaCfgPath + ".MFOLD";
+					WriteLog("  -> Setting SmtpHome to " + this->mf_GwiaSmtpHome);
+					WriteLog("  -> Saving copy to " + oldGwiaCfg);
+					CopyFile(this->mf_GwiaCfgPath,oldGwiaCfg, FALSE);
+
+					WriteLog("  Reading old file...");
+
+					static const std::string::size_type npos = -1;
+					size_t i;
+					std::string smtpHomeLine = "/smtphome=" + this->mf_GwiaSmtpHome;
+
+					std::string line;
+					std::string value;
+					std::ifstream oldcfgfile(oldGwiaCfg);
+					std::ofstream newcfgfile(this->mf_GwiaCfgPath);
+					bool bPatchedSmtpHome = false;
+					while (oldcfgfile >> line)
+					{
+						if (line[0] == '/')
+						{
+							value = "";
+							i = line.find("=");
+							if (i == npos) 
+								i = line.find("-");
+							if (i != npos)
+								value = line.substr(++i);
+
+							if (value[0] == '"')
+								value = value.substr(1);
+							if (value[value.length()-1] == '"')
+								value = value.substr(0,value.length()-1);
+
+							// /PARAMETER
+							if (stricmp(line.substr(0,9).c_str(),"/smtphome") == 0)
+							{
+								line = smtpHomeLine;
+								bPatchedSmtpHome = true;
+								WriteLog("  > overriding old smtphome setting");
+							}
+						}
+						newcfgfile << line << std::endl;
+					}
+
+					if (!bPatchedSmtpHome)
+					{
+						WriteLog("  > adding new smtphome setting");
+						newcfgfile << smtpHomeLine << std::endl;
+					}
+
+					newcfgfile.close();
+					oldcfgfile.close();
+				} else
+					WriteLog("  -> NOT modifying gwia.cfg - user said NO!");
 			}
 
 			if (!bErrors)
