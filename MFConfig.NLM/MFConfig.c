@@ -2813,13 +2813,10 @@ void main(int argc, char *argv[])
 	if (memicmp(argv[0]+tmp,"mfinstal.nlm",12) == 0)
 	{
 		programName = "MFINSTAL";
-		action = 2;
+		action = 1;
 		NLM_noUserInterface = TRUE;
 	}
 
-	if (action != 0)
-		ConsolePrintf("%s Version %s\n",programName,programMesgTable[PROGRAM_VERSION]);
-	
 	NLM_Initialize();
 	
 	if (MF_ConfigRead() == FALSE)
@@ -2867,17 +2864,8 @@ void main(int argc, char *argv[])
 		NLM_MenuMain();
 		break;
 	case 1:
-		ConsolePrintf("%s: Upgrading Configuration File: %d -> %d\n",programName,MFC_ConfigBuild,MAILFILTER_CONFIGURATION_THISBUILD);
-		if (MF_ConfigWrite() == TRUE)
-			ConsolePrintf("%s: Upgrade Done.\n",programName);
-			else 
-			ConsolePrintf("%s: *ERROR*\n",programName);
-		break;
-	case 2:
-		ConsolePrintf("%s: Installing ... (CFG%d)\n",programName,MAILFILTER_CONFIGURATION_THISBUILD);
-		if (MF_ConfigWrite() == TRUE)
-			ConsolePrintf("%s: Installation Done.\n",programName);
-			else 
+		ConsolePrintf("MAILFILTER: Verifying configuration file.\n");
+		if (MF_ConfigWrite() != TRUE)
 			ConsolePrintf("%s: *ERROR*\n",programName);
 		break;
 	}
