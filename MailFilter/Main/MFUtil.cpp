@@ -163,12 +163,23 @@ int MF_ParseCommandLine( int argc, char **argv )
 						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::RESTORE;
 						bTArgOkay = true;
 					}
+#if defined(N_PLAT_NLM)
+#if !defined(__NOVELL_LIBC__)				
+					if (strcmp(argv[ix_optind],"nrm") == 0)
+#else
+					if (strcasecmp(argv[ix_optind],"nrm") == 0)
+#endif
+					{
+						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::NRM;
+						bTArgOkay = true;
+					}
+#endif
 					ix_optind++;
 				}
 				
 				if (!bTArgOkay)
 				{
-					consoleprintf("MAILFILTER: Invalid argument passed to -t.\n\tValid args are: \"server\" \"config\" \"restore\"\n");
+					consoleprintf("MAILFILTER: Invalid argument passed to -t.\n\tValid args are: \"server\" \"config\" \"restore\" \"nrm\"\n");
 					return false;
 				}
 				break;

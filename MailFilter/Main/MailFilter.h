@@ -581,6 +581,9 @@ bool MF_NutInit(void);
 bool MF_NutDeinit(void);
 
 int MailFilter_Main_RunAppConfig(bool bStandalone);
+#ifdef N_PLAT_NLM
+int MailFilter_Main_RunAppNRM();
+#endif
 
 // Thread Functions
 #ifndef WIN32

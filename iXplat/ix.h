@@ -146,12 +146,11 @@ IXApi(unsigned long)	ix_adler32(unsigned long adler, const unsigned char *buf, u
 
 #ifdef __cplusplus
 }
-#endif
 
 
-
-#ifdef __cplusplus
 	#include "iXList.h"
 	#include "iXDir.h"
 #endif
+
+
 #endif //!_IX_H_INCLUDED

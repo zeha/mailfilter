@@ -1,0 +1,41 @@
+//
+// (C) Copyright 2004 Christian Hofstaedtler
+//
+#include "nrm.h"
+//
+HttpSendDataSprintf
+int
+HINTERNET hrequest, const char *szData, ...
+hrequest, "%s", szData
+//
+HttpSendSuccessfulResponse
+int
+HINTERNET hrequest, void *pzContentType
+hrequest, pzContentType
+//
+HttpEndDataResponse
+int
+HINTERNET hRequest
+hRequest
+//
+RegisterServiceMethodEx
+BOOL
+const char *pzServiceName, const char *pServiceTag, int serviceTagLength, void *tableOfContentsStruc, UINT32 requestedRights, void *pReserved, UINT32 (*pServiceMethod)(HINTERNET,void *pExtraInfo,UINT32 szExtraInfo,UINT32 InformationBits), void *pRTag, UINT32 *pReturnCode
+pzServiceName, pServiceTag, serviceTagLength, tableOfContentsStruc, requestedRights, pReserved, pServiceMethod, pRTag, pReturnCode
+//
+DeRegisterServiceMethod
+BOOL
+const char *pzServiceName, const char *pServiceTag, int serviceTagLength, UINT32 (*pServiceMethodCheck)(HINTERNET,void *pExtraInfo,UINT32 szExtraInfo,UINT32 InformationBits), void *pRTag, UINT32 *pReturnCode
+pzServiceName, pServiceTag, serviceTagLength, pServiceMethodCheck, pRTag, pReturnCode
+//
+BuildAndSendHeader
+UINT
+HINTERNET handle, char *windowTitle, char *pageIdentifier, char Refresh, UINT32	refreshDelay, UINT flags, void (*AddHeaderText)(HINTERNET	handle), char *bodyTagText, char *helpURL
+handle,windowTitle,pageIdentifier,Refresh,refreshDelay,flags,AddHeaderText,bodyTagText,helpURL
+//
+BuildAndSendFooter
+UINT32
+HINTERNET hndl
+hndl
+//
+

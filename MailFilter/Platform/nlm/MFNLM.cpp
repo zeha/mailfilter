@@ -41,6 +41,8 @@
 #include "MFConfig.h++"
 
 
+extern void MailFilter_NRM_sigterm();
+
 // NUT: Local Prototypes
 static int MF_NutVerifyExit(void);
 //static bool MF_NutInit();
@@ -741,8 +743,16 @@ void NLM_SignalHandler(int sig)
 				// NLM SDK functions may be called here
 				MF_StatusText(MF_Msg(MSG_UNLOADWAIT));
 
-				// We need this to wake the UI thread up ...
-				NWSUngetKey ( K_ESCAPE , 0 , MF_NutInfo );
+				if (MF_NutInfo != NULL)
+				{
+					// We need this to wake the UI thread up ...
+					NWSUngetKey ( K_ESCAPE , 0 , MF_NutInfo );
+				}
+				
+				if (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::NRM)
+				{
+					MailFilter_NRM_sigterm();
+				}
 
 #ifndef __NOVELL_LIBC__
 				SetThreadGroupID(handlerThreadGroupID);
@@ -1247,6 +1257,7 @@ int main( int argc, char *argv[ ])
 {
 
 	++MFT_NLM_ThreadCount;
+	MF_NutInfo = NULL;
 
 #ifdef _MF_MEMTRACE
 	atexit(_mfd_tellallocccountonexit);
@@ -1265,7 +1276,7 @@ int main( int argc, char *argv[ ])
 
 	printf("%s\n",MF_Msg(MSG_BOOT_LOADING));
 	
-
+	
 #ifndef __NOVELL_LIBC__
 	// Save Thread Group
 	mainThread_ThreadGroupID = GetThreadGroupID();
@@ -1381,33 +1392,48 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 
 	int rc = 0;
 
-	if (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::SERVER)
+	switch (MF_GlobalConfiguration.ApplicationMode)
 	{
-#ifdef __NOVELL_LIBC__
+	case MailFilter_Configuration::SERVER:
+	
+		#ifdef __NOVELL_LIBC__
 		NXContextSetName(NXContextGet(),"MailFilterServer");
-#endif
+		#endif
 		rc = MailFilter_Main_RunAppServer();
-	}
-	else
-	if (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::CONFIG)
-	{
-#ifdef __NOVELL_LIBC__
+		break;
+		
+	case MailFilter_Configuration::CONFIG:
+	
+		#ifdef __NOVELL_LIBC__
 		NXContextSetName(NXContextGet(),"MailFilterConfig");
-#endif
+		#endif
 		--MFT_NLM_ThreadCount;
 		rc = MailFilter_Main_RunAppConfig(true);
-	}
-	else
-	if (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::RESTORE)
-	{
+
+		break;
+
+	case MailFilter_Configuration::RESTORE:
+
 		system("LOAD MFREST.NLM");
 		rc = 0;
-	}
-	else
-	{
+		
+		break;
+
+	case MailFilter_Configuration::NRM:
+	
+		#ifdef __NOVELL_LIBC__
+		NXContextSetName(NXContextGet(),"MailFilterNRM");
+		#endif
+		rc = MailFilter_Main_RunAppNRM();
+		
+		break;
+		
+	default:
+
 		ConsolePrintf("MAILFILTER: Could not run your selected application.\n\tMaybe it is not compiled-in.\n");
 	
-		rc = -1;		
+		rc = -1;
+		break;
 	}
 
 	extern char* MFT_Local_ServerName;
