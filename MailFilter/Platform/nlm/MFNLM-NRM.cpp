@@ -387,9 +387,9 @@ UINT32 MF_NLM_RM_HttpHandler_Restore(
 		{
 			// old stuff in here:
 
-			char *						scanPath = (char*)malloc(MAX_PATH);
-			char *						szList = (char*)malloc(MAX_PATH);
-			char *						szFileOut = (char*)malloc(MAX_PATH);
+			char *						scanPath = (char*)_mfd_malloc(MAX_PATH,"scanPath");
+			char *						szList = (char*)_mfd_malloc(MAX_PATH,"szList");
+			char *						szFileOut = (char*)_mfd_malloc(MAX_PATH,"szFileOut");
 			int							iDirection = 0;
 
 			sprintf(scanPath,"%s\\MFPROB\\DROP",MF_GlobalConfiguration.MFLTRoot.c_str());
@@ -444,9 +444,9 @@ UINT32 MF_NLM_RM_HttpHandler_Restore(
 
 			DL_HttpSendData(hndl,"<a href=\"javascript:history.back(-1);\">Back to e-Mail List</a><br>\n");
 
-			free(scanPath);
-			free(szList);
-			free(szFileOut);
+			_mfd_free(scanPath,"scanPath");
+			_mfd_free(szList,"szList");
+			_mfd_free(szFileOut,"szFileOut");
 
 			
 		} else {

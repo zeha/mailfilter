@@ -4,6 +4,8 @@
    Read zip.h for more info
 */
 
+#define _MFD_MODULE "unzip.c"
+#include "MFMalloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,10 +44,10 @@
 #endif
 
 #ifndef ALLOC
-# define ALLOC(size) (malloc(size))
+# define ALLOC(size) (_mfd_malloc(size,"zip"))
 #endif
 #ifndef TRYFREE
-# define TRYFREE(p) {if (p) free(p);}
+# define TRYFREE(p) {if (p) _mfd_free(p,"zip");}
 #endif
 
 /*

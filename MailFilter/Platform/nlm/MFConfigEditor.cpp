@@ -218,7 +218,7 @@ static void MFConfig_AddFilterItem(MailFilter_Configuration::Filter flt, int cur
 	 char				szTemp[80+1];
 
 	int *cI;
-	cI = (int*)malloc(sizeof(int));
+	cI = (int*)_mfd_malloc(sizeof(int),"AddFilterItem");
 	*cI = curItem;
 	
 	szTemp[0] = ' '; szTemp[1] = ' ';
@@ -810,6 +810,10 @@ static int MFConfig_EditFilters_Act(LONG keyPressed, LIST **elementSelected,
 	return(-1);	
 	}
 
+static void _mfc_free(void* foo)
+{
+	_mfd_free(foo,"mfconfigfree");
+}
 
 /****************************************************************************
 ** Edit filters.
@@ -827,7 +831,7 @@ static void MFConfig_EditFilters()
 	**	NWInitMenu().
 	*/
 	NWSPushList(MF_NutInfo);
-	NWSInitList(MF_NutInfo, free);
+	NWSInitList(MF_NutInfo, _mfc_free);
 
 	// init function keys ...
 	NWSEnableInterruptKey	(	K_F8,	MFConfig_Util_ImportListFromFile,	MF_NutInfo	);

@@ -154,7 +154,7 @@ int MFUtil_CheckCurrentVersion()
 			(buildNumber > MAILFILTERVER_BUILD)
 			)
 		{
-			char* szEmail = (char*)malloc(5000);
+			char* szEmail = (char*)_mfd_malloc(5000,"szEmail");
 			sprintf(szEmail,"Dear PostMaster!\r\n\r\n"
 						"A newer version of MailFilter is available from the MailFilter website,\r\n"
 						"http://www.mailfilter.cc/ .\r\n"
@@ -167,12 +167,12 @@ int MFUtil_CheckCurrentVersion()
 			MF_EMailPostmasterGeneric(
 						"New Version Available",szEmail,
 						"","");
-			free(szEmail);
+			_mfd_free(szEmail,"szEmail");
 		}
 			
 		if ( otherNews != 0)
 		{
-			char* szEmail = (char*)malloc(5000);
+			char* szEmail = (char*)_mfd_malloc(5000,"szEmail");
 			sprintf(szEmail,"Dear PostMaster!\r\n\r\n"
 						"Important News about MailFilter are available on the MailFilter website,\r\n"
 						"http://www.mailfilter.cc/ .\r\n"
@@ -185,7 +185,7 @@ int MFUtil_CheckCurrentVersion()
 			MF_EMailPostmasterGeneric(
 						"Important News Available",szEmail,
 						"","");
-			free(szEmail);
+			_mfd_free(szEmail,"szEmail");
 		}
 
 		return 1;

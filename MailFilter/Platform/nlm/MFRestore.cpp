@@ -375,6 +375,11 @@ int MFRestore_RstList_Act(LONG keyPressed, LIST **elementSelected,
 	}
 
 
+static void _mfr_free(void* foo)
+{
+	_mfd_free(foo,"mfrfree");
+}
+
 /****************************************************************************
 ** Restore List
 */
@@ -405,7 +410,7 @@ void NLM_Main(void)
 	
 	// Init Lists
 	NWSPushList(MF_NutInfo);
-	NWSInitList(MF_NutInfo, free);
+	NWSInitList(MF_NutInfo, _mfr_free);
 
 	// init function keys ...
 	MFRestore_UI_ShowKeys(MFUI_KEYS_EXIT|MFUI_KEYS_SELECT|MFUI_KEYS_SHOW);
@@ -430,7 +435,7 @@ void NLM_Main(void)
 		e = dir.GetCurrentEntryName();
 		lTime = dir.GetCurrentEntryModificationTime();
 
-		cI = (char*)malloc(strlen(e));
+		cI = (char*)_mfd_malloc(strlen(e),"addEntry");
 		strcpy(cI,(e));
 		
 		strcpy (szFile,e);
