@@ -217,7 +217,7 @@ bool _mf_nutinit2(rtag_t tagID)
 	long	ccode;
 	ccode=NWSInitializeNut(
 		/*	utility				*/	MSG_PROGRAM_NAME,
-		/*	version				*/	(long)-1,
+		/*	version				*/	(unsigned long)-1,
 		/*	headerType			*/	NO_HEADER,	//SMALL_HEADER,
 		/*	compatibilityType	*/	NUT_REVISION_LEVEL,
 #ifdef __NOVELL_LIBC__
@@ -539,7 +539,7 @@ void MF_StatusUI_Update(const char* newText)
 
 			sprintf(szTemp,MF_Msg(MSG_INFOPORTAL_LINE2),MFS_MF_MailsInputTotal,MFS_MF_MailsInputFailed);
 
-			if ( MF_GlobalConfiguration.RequireAVA && !MFT_bTriedAVInit )
+			if ( MF_GlobalConfiguration.RequireAVA && !MFT_bTriedAVInit && MFL_GetFlag(MAILFILTER_MC_M_VIRUSSCAN) )
 			{
 				szDynamic = "Waiting for AntiVirus NLM";
 			} else {

@@ -3237,16 +3237,18 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 		(
 			(
 				MF_GlobalConfiguration.RequireAVA &&
-				(MailFilter_AV_Check() == 0) &&
-				MFL_GetFlag(MAILFILTER_MC_M_VIRUSSCAN)
+				(MailFilter_AV_Check() == 0)
 			)
 			||
 			(
 				MF_GlobalConfiguration.RequireAVA != true
 			)
+			||
+			(
+				!MFL_GetFlag(MAILFILTER_MC_M_VIRUSSCAN)
+			)
 		)
 		{
-
 			//* Send Directory ... *
 			HandleGwiaDirectory(MFT_GWIA_SendDirIn,MFT_GWIA_SendDirOut,0,tlc);
 			if (MFT_NLM_Exiting > 0)	break;
@@ -3254,7 +3256,6 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 			//* Receive Directory ... *
 			HandleGwiaDirectory(MFT_GWIA_RecvDirIn,MFT_GWIA_RecvDirOut,1,tlc);
 			if (MFT_NLM_Exiting > 0)	break;
-			
 		}
 		
 		tlc++;
