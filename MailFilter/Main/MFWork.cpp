@@ -1214,10 +1214,24 @@ int MF_HandleMailFile(MailFilter_MailData* m)
 	// do the parse work
 	int q = MF_ParseMail(m,false);
 
-	MF_StatusLog("Applying rules.");
-	MFD_Out(MFD_SOURCE_MAIL,"Applying rules.\n");
-	MF_RuleExec(m);
+	if (m->bInvalidData)
+		MFD_Out(MFD_SOURCE_MAIL,"mail has invaliddata.\n");
+		
+	if (m->bInvalidData && (!MF_GlobalConfiguration.PassOnNonStandardAttachments))
+	{
+		MF_StatusText("  Mail contains broken data.");
+		m->iFilterNotify = MAILFILTER_NOTIFICATION_ADMIN_INCOMING|MAILFILTER_NOTIFICATION_ADMIN_OUTGOING;
+		m->bFilterMatched = true;
+		strcpy(m->szErrorMessage,"Invalid/Broken E-Mail data or attachments detected.");
+		
+	} else {
 
+		MF_StatusLog("Applying rules.");
+		MFD_Out(MFD_SOURCE_MAIL,"Applying rules.\n");
+		MF_RuleExec(m);
+		
+	}
+	
 	MF_StatusLog(" Mail Summary:");
 	MF_StatusLog(strprintf("  Sender.: %s",m->szMailFrom));
 	MF_StatusLog(strprintf("  Recpt..: %s",m->szMailRcpt));
@@ -1988,6 +2002,7 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 	int addVal = 2;
 	
 	bool bModifiedFromAddress = false;
+	bool bModifiedReturnPathAddress = false;
 	bool bWroteXSieve = false;
 	bool bWroteFooter = false;
 	bool bWroteZip	  = false;
@@ -2160,6 +2175,42 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 							MFD_Out(MFD_SOURCE_MAIL,"_NOT_ patched.\n");
 						}
 						free(szNewRecipient);
+					}
+				}
+				if ( memicmp(szScanBuffer,"return-path:",12) == 0 )
+				{
+					if ((m->iMailSource == 0) && (bModifiedReturnPathAddress == false) && (MF_GlobalConfiguration.Multi2One != ""))
+					{
+						szTemp[0]=0;
+						strncpy( szTemp , szScanBuffer+12, 2000 );
+						szTemp[2000]=0;
+						strlwr(szTemp);
+
+						for (curPos = 0; curPos <= strlen(szTemp);curPos++)
+						{
+							if (szTemp[curPos]=='@')
+								{	szTemp[curPos] = 0;
+									break;
+								}
+						}
+						
+						curCmpPos = (int)strlen(MF_GlobalConfiguration.Multi2One.c_str());
+						
+						szCmpBuffer[0]=szTemp[strlen(szTemp)-1];
+						szCmpBuffer[1]=szTemp[strlen(szTemp)-0];
+						szCmpBuffer[2]=0;
+						curChr = atoi(szCmpBuffer);
+						if (curChr != 0)
+						{
+							szCmpBuffer[0]=0;
+							
+							if (memicmp(MF_GlobalConfiguration.Multi2One.c_str(),szTemp+strlen(szTemp)-strlen(MF_GlobalConfiguration.Multi2One.c_str()),strlen(MF_GlobalConfiguration.Multi2One.c_str())-2)==0)
+							{
+								szScanBuffer[curPos-2+12] = MF_GlobalConfiguration.Multi2One[(unsigned int)(curCmpPos-2)];
+								szScanBuffer[curPos-1+12] = MF_GlobalConfiguration.Multi2One[(unsigned int)(curCmpPos-1)];
+							}
+						}
+						bModifiedReturnPathAddress = true;
 					}
 				}
 				break;
@@ -2357,7 +2408,7 @@ static int MF_PostScan_HandleFile( MailFilter_MailData* m )
 	 */
 
 	//
-	// write x-sieve and modify some other shit -- see above this func.
+	// write x-sieve and modify some other stuff -- see above this func.
 	MF_PostScan_Modify( m );
 
 	//
