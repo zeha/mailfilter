@@ -1,6 +1,6 @@
 @echo off
 
-E:\programme\NSISv2b4\makensis.exe "MailFilter-Setup NSIS.nsi"
+E:\programme\NSIS20\makensis.exe "MailFilter-Setup NSIS.nsi"
 
 
 

@@ -13,13 +13,13 @@
 #include <nks/thread.h>
 #include <screen.h> 
 #include <stdlib.h>
-#include <stdarg.h> 
+#include <stdarg.h>
+#include <library.h> 
 #include "MFZip.h"
 #include "MFUnZip.h"
 #include "mfbug2.h"
 
 #define PATH_CONFIGTXT "SYS:\\SYSTEM\\MFBUG.TXT"
-#define PATH_CONFIGTXT2 "SYS:\\SYSTEM\\MFBUG.CFG"
 #define PATH_BUGZIP "SYS:\\SYSTEM\\MFBUG.MFZ"
 
 #define PATH_MFBUG2NLM "SYS:\\SYSTEM\\MFBUG2.NLM"
@@ -34,7 +34,6 @@ int main (int argc, char* argv[])
 	pressenter();
 
 	unlink(PATH_CONFIGTXT);
-	unlink(PATH_CONFIGTXT2);
 	unlink(PATH_BUGZIP);
 	unlink(PATH_MFBUG2NLM);
 	
@@ -76,7 +75,7 @@ int main (int argc, char* argv[])
 		ActivateScreen(getnetwarelogger());
 		//system("LOAD MFBUG2.NLM /all /o=MFBUG.TXT /d /c /f /a9");
 		
-		while (rename(PATH_CONFIGTXT,PATH_CONFIGTXT2))
+		while (findnlmhandle("MFBUG2.NLM",NULL)) //rename(PATH_CONFIGTXT,PATH_CONFIGTXT2))
 		{
 			NXThreadYield();
 			if (difftime(time(NULL),starttime) > (5*60))
@@ -114,7 +113,10 @@ int main (int argc, char* argv[])
 
 		zip = new MFZip(PATH_BUGZIP,9,1);
 
-		zip->AddFile("CONFIG.TXT",PATH_CONFIGTXT2);
+		if (zip->AddFile("CONFIG.TXT",PATH_CONFIGTXT) != MFZip_OK)
+		{
+			printf("** Could not add MFBUG2.NLM output.\n");
+		}
 		
 
 		zip->AddFile("ETC\\HOSTS","SYS:\\ETC\\HOSTS");
@@ -151,7 +153,6 @@ int main (int argc, char* argv[])
 	}
 	
 	unlink(PATH_CONFIGTXT);
-	unlink(PATH_CONFIGTXT2);
 	unlink(PATH_MFBUG2NLM);
 	
 	printf(" MFBUG Complete!\n\n");
