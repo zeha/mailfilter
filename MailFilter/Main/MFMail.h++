@@ -16,7 +16,7 @@
  */
 
 //#include <string.h>
-#include <MailFilter.h>
+#include "MailFilter.h"
 #include <iXList.h>
 
 #ifndef _MFMAIL_HPP_

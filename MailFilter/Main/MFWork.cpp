@@ -940,7 +940,7 @@ int MF_FilterCheck( MailFilter_MailData* m, char *szScan , int matchfield )
 		}
 	}
 	if (rc)
-	{	/* set these things approaite */
+	{	/* set these things appropaite */
 		m->iFilterNotify = MF_GlobalConfiguration.filterList[m->iFilterHandle-1].notify;
 		m->iFilterAction = MF_GlobalConfiguration.filterList[m->iFilterHandle-1].action;
 	}
@@ -4406,7 +4406,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 #define _MF_DIRECTORY_OPENDIR(dirPath) chdir(dirPath); mailDir = opendir(dirPath);
 #endif
 
-	// Create SCAN %i subdirectories...
+	// check SCAN %i subdirectories for left-over files ...
 	for (iScanDir = 0; iScanDir < MF_GlobalConfiguration.MailscanDirNum; iScanDir++)
 	{
 		sprintf(scanDir,"%s"PS"MFSCAN"PS"%04i"PS,MF_GlobalConfiguration.MFLTRoot.c_str(),iScanDir);
@@ -4415,10 +4415,18 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 		while ( mailDir != NULL )
 		{
 			_MF_DIRECTORY_READDIR;
+			if (_MF_DIRECTORY_FILENAME[0] == '.')
+				continue;
 			
 			if ( stricmp(_MF_DIRECTORY_FILENAME,"lock.mfs") == 0 )
 			{
 				MFD_Out(MFD_SOURCE_VSCAN,"Found stale lockfile for %d\n",iScanDir);
+				
+				sprintf(fileIn,"%s"PS"MFSCAN"PS"%04i"PS"%s",MF_GlobalConfiguration.MFLTRoot.c_str(),iScanDir,"lock.mfs");
+				
+				MFD_Out(MFD_SOURCE_VSCAN,"Delete: %s\n",fileIn);
+				unlink(fileIn);
+				
 /*				sprintf(szTemp,"Found '%s' in MFSCAN. -> MFPROB/CRASH.",_MF_DIRECTORY_FILENAME);
 				MF_StatusText(szTemp);
 				
@@ -4428,7 +4436,37 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 				MFD_Out(" from %s\n",fileIn);
 				MFD_Out("   to %s\n",fileOut);
 				MFD_Out(" rename returned: %d\n",rename(fileIn,fileOut));
-*/			}
+*/
+			}
+			else
+			{
+				struct stat st;
+				char szTemp[1024];
+				timespec_t mintime;
+				mintime.tv_sec = time(NULL) - (2*(24*60*60));
+
+				stat(_MF_DIRECTORY_FILENAME,&st);
+				if (st.st_mtime < mintime.tv_sec)
+				{
+
+					sprintf(szTemp,"Found old file '%s' in a queue. Deleting.",_MF_DIRECTORY_FILENAME);
+					MF_StatusText(szTemp);
+				
+					sprintf(fileIn,"%s"PS"MFSCAN"PS"%04i"PS"%s",MF_GlobalConfiguration.MFLTRoot.c_str(),iScanDir,_MF_DIRECTORY_FILENAME);
+					MFD_Out(MFD_SOURCE_VSCAN,"Delete: %s\n",fileIn);
+					unlink(fileIn);
+				}
+				
+/*				sprintf(fileIn,"%s%s",MFT_MF_WorkDir,_MF_DIRECTORY_FILENAME);
+				sprintf(fileOut,"%sCRASH"PS"%s",MFT_MF_ProbDir,_MF_DIRECTORY_FILENAME);
+				MFD_Out("moving:\n");
+				MFD_Out(" from %s\n",fileIn);
+				MFD_Out("   to %s\n",fileOut);
+				MFD_Out(" rename returned: %d\n",rename(fileIn,fileOut));
+*/
+			}
+
+
 		}
 		if (mailDir != NULL)		closedir(mailDir);
 	}

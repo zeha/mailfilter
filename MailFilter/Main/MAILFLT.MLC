@@ -50,7 +50,7 @@ char *programMesgTable[] =
      "MailFilter/ax: *** UNABLE TO INITIALIZE LOGGING ***\n",
      "*** ERROR CYCLING LOG ***",
      "This is MailFilter/ax professional Version %s/%s.",
-     "Virus-Scanning: %3s                          UpTime: %4d Days %2d Hrs %2d Mins",
+     "Virus-Scanning: %3s                                  %4d Days %2d Hrs %2d Mins",
      "Scheduling....: %3s                                    In: %4d, Failed: %4d",
      "   (%2ds)                                              Out: %4d, Failed: %4d",
      "\nCheck the System Console for Error Messages!\nError Code: %d\n"

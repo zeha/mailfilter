@@ -21,10 +21,13 @@
 
 #include "ix.h"			// include ionus crossplatform library header
 
-#include <MFMail.h++>
-#include <MFVersion.h>
+#include "MFApp.h"
+
+#include "MFMail.h++"
+#include "MFVersion.h"
 #include "../Licensing/MFLic.h"
 
+/*
 //*EXPERIMENTAL*
 #undef MF_WITH_ZIP
 
@@ -45,6 +48,7 @@
 
 // Enable this to compile without debug messages, etc ...	(~ 5k)
 #undef _MF_CLEANBUILD
+*/
 
 // MailFilter Constants etc.
 //

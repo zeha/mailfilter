@@ -67,6 +67,8 @@
 #define SEEK_SET    0
 #endif
 
+//const char unz_copyright[] =
+//   " unzip 0.15 Copyright 1998 Gilles Vollant ";
 
 #define SIZEDATA_INDATABLOCK (4096-(4*4))
 

@@ -69,8 +69,8 @@
 #define SEEK_SET    0
 #endif
 
-const char unz_copyright[] =
-   " unzip 0.15 Copyright 1998 Gilles Vollant ";
+//const char unz_copyright[] =
+//   " unzip 0.15 Copyright 1998 Gilles Vollant ";
 
 /* unz_file_info_interntal contain internal info about a file in zipfile*/
 typedef struct unz_file_info_internal_s
@@ -357,8 +357,8 @@ extern unzFile ZEXPORT unzOpen (path)
 
 	int err=UNZ_OK;
 
-    if (unz_copyright[0]!=' ')
-        return NULL;
+//    if (unz_copyright[0]!=' ')
+//        return NULL;
 
     fin=fopen(path,"rb");
 	if (fin==NULL)
