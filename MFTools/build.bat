@@ -1,6 +1,5 @@
 @echo off
-echo Building: %2 in %1
-echo     Parameters: %3 %4 %5 %6 %7 %8 %9
+echo Building: %1\%2 %3 %4 %5 %6 %7 %8 %9
 setlocal
 cd %1
 REM start /wait
