@@ -1,6 +1,6 @@
 # MFConfig.DEF
 
-MODULE nwsnut.nlm clib.nlm libc.nlm 
+MODULE clib.nlm libc.nlm nwsnut.nlm 
 
 # Also if running with LibC only - NWSNut requires CLIB loaded ... :(
 
