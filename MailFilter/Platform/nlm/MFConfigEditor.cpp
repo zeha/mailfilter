@@ -534,7 +534,7 @@ static int MFConfig_EditFilterDialog_MenuActionMatchfield(int option, void *para
 #pragma unused(parameter)
 
 	if (option==MailFilter_Configuration::virus)
-		MFConfig_EditFilterDialog_fieldExpressionEdit->fieldData = (unsigned char*)"-";
+		MFConfig_EditFilterDialog_fieldExpressionEdit->fieldData = (unsigned char*)".";
 	
 	NWSSetFormRepaintFlag(TRUE,MF_NutInfo);
 	return option;

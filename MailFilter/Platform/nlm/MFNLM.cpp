@@ -1071,6 +1071,9 @@ MF_MAIN_RUNLOOP:
 			{
 				MFD_Out(MFD_SOURCE_CONFIG,"shutting down NRM thread\n");
 				MailFilter_NRM_sigterm();
+			} else {
+				if (mf_nlmisloadedprotected())
+					system("UNLOAD ADDRESS SPACE = OS MAILFLT.NLM");
 			}
 #endif
 
