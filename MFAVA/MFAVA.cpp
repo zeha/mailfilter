@@ -323,15 +323,15 @@ void EndOfMarshallingCode( void ) { }
 
 int RegisterMarshalledInterfaces()
 {
-	RxIdentifyCode(StartOfMarshallingCode, EndOfMarshallingCode, &sMarshallCodeHandle);
+	RxIdentifyCode((void*)StartOfMarshallingCode, (void*)EndOfMarshallingCode, &sMarshallCodeHandle);
 
-	if (RxRegisterSysCall(M_MFAVA_Init, "MFAVA@MailFilter_AVA_Init", 3))
+	if (RxRegisterSysCall((void*)M_MFAVA_Init, "MFAVA@MailFilter_AVA_Init", 3))
 		return EINVAL;
-	if (RxRegisterSysCall(M_MFAVA_DeInit, "MFAVA@MailFilter_AVA_DeInit", 1))
+	if (RxRegisterSysCall((void*)M_MFAVA_DeInit, "MFAVA@MailFilter_AVA_DeInit", 1))
 		return EINVAL;
-	if (RxRegisterSysCall(M_MFAVA_ScanFile, "MFAVA@MailFilter_AVA_ScanFile", 5))
+	if (RxRegisterSysCall((void*)M_MFAVA_ScanFile, "MFAVA@MailFilter_AVA_ScanFile", 5))
 		return EINVAL;
-	if (RxRegisterSysCall(M_MFAVA_Status, "MFAVA@MailFilter_AVA_Status", 2))
+	if (RxRegisterSysCall((void*)M_MFAVA_Status, "MFAVA@MailFilter_AVA_Status", 2))
 		return EINVAL;
 
 	return ESUCCESS;
@@ -365,6 +365,8 @@ int DllMain								// returns TRUE (things okay), FALSE (failure)
 	void				*lvpReserved	// library per-VM data, place to put error...
 )											// ...return or NLM handle
 {
+	int rc = 0;
+	
 	switch (fdwReason)
 	{
 		default:						// bogus message: don't process it!
@@ -434,12 +436,11 @@ int DllMain								// returns TRUE (things okay), FALSE (failure)
 
 			register_destructor((int) hinstDLL, DisposeAppData);
 			
-			int rc = 0;
-			
-			rc = nxExportInterfaceWrapped ( MFAVA_Init , 3, "MFAVA@MailFilter_AVA_Init", &gRef_MFAVA_Init );
-			rc = nxExportInterfaceWrapped ( MFAVA_DeInit , 1, "MFAVA@MailFilter_AVA_DeInit", &gRef_MFAVA_DeInit );
-			rc = nxExportInterfaceWrapped ( MFAVA_ScanFile , 5, "MFAVA@MailFilter_AVA_ScanFile", &gRef_MFAVA_ScanFile );
-			rc = nxExportInterfaceWrapped ( MFAVA_Status , 2, "MFAVA@MailFilter_AVA_Status", &gRef_MFAVA_Status );
+						
+			rc = nxExportInterfaceWrapped ( (void*)MFAVA_Init , 3, "MFAVA@MailFilter_AVA_Init", &gRef_MFAVA_Init );
+			rc = nxExportInterfaceWrapped ( (void*)MFAVA_DeInit , 1, "MFAVA@MailFilter_AVA_DeInit", &gRef_MFAVA_DeInit );
+			rc = nxExportInterfaceWrapped ( (void*)MFAVA_ScanFile , 5, "MFAVA@MailFilter_AVA_ScanFile", &gRef_MFAVA_ScanFile );
+			rc = nxExportInterfaceWrapped ( (void*)MFAVA_Status , 2, "MFAVA@MailFilter_AVA_Status", &gRef_MFAVA_Status );
 
 			MailFilter_AVA_Init_sym = (MailFilter_AVA_Init_t)ImportPublicObject(getnlmhandle(),"MFAVA@MailFilter_AVA_Init");
 			MailFilter_AVA_DeInit_sym = (MailFilter_AVA_DeInit_t)ImportPublicObject(getnlmhandle(),"MFAVA@MailFilter_AVA_DeInit");
@@ -455,6 +456,7 @@ int DllMain								// returns TRUE (things okay), FALSE (failure)
 			// done.
 
 			return TRUE;
+
 		case DLL_NLM_SHUTDOWN:
 			if (nlmisloadedprotected())
 				return TRUE;

@@ -478,7 +478,7 @@ int eTrust7_Init(MFAVA_HANDLE &hAVA)
 //		printf("MFAVADebug:  %c %c %c %c\n");
 	}
 	
-	rc = InoScanSetConfig_sym(app->eTrust_hInoScan, &cf, &cf2, callback, 0);
+	rc = InoScanSetConfig_sym(app->eTrust_hInoScan, &cf, &cf2, (void*)callback, 0);
 	if (app->Debug)
 		printf("MFAVADebug: InoScanSetConfig rc = 0x%X %i\n",rc,rc);
 	
