@@ -6,8 +6,8 @@
 
 #
 # MailFilter-libc needs LibC, NWSNUT, WS2_32 to be auto-loaded
-MODULE libc.nlm nwsnut.nlm 
-#threads.nlm
+MODULE libc.nlm threads.nlm nwsnut.nlm 
+#
 
 #
 # Message file ...

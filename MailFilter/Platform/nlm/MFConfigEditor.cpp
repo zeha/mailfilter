@@ -17,6 +17,7 @@
 #include "MFConfig-Filter.h++"
 #include "MFConfig-defines.h"
 #include <pcreposix45.h>
+#include "MFVersion.h"
 
 int MFC_CurrentList = 0;
 

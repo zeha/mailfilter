@@ -4,7 +4,7 @@
 char *programMesgTable[] =
 {
 	"MailFilter",
-	"********VERSION**PADDING********",
+	"STARTUP",
 	"Unload MailFilter?",
 	"MailFilter Resource Tag",
 	"MailFilter",

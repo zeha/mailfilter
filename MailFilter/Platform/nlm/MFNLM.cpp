@@ -237,7 +237,6 @@ bool MF_NutInit(void)
 	char szTemp[80+2];
 
 
-	strcpy(MF_Msg(MSG_PROGRAM_VERSION),MAILFILTERVERNUM);
 	#ifdef __NOVELL_LIBC__
 	tagID=AllocateResourceTag(
 		/*	NLMHandle			*/	MF_NLMHandle,
@@ -251,12 +250,16 @@ bool MF_NutInit(void)
 		/*	resourceType		*/	AllocSignature
 		);
 	#endif
-	if(tagID == NULL) {	return false;	}
+	if(tagID == NULL) 
+	{
+		MF_DisplayCriticalError("MAILFILTER: Error allocating Resource Tag for NUT!\n");
+		return false;	
+	}
 
 	ccode=NWSInitializeNut(
 		/*	utility				*/	MSG_PROGRAM_NAME,
-		/*	version				*/	MSG_PROGRAM_VERSION,
-		/*	headerType			*/	SMALL_HEADER,	//NORMAL_HEADER,
+		/*	version				*/	(long)-1,
+		/*	headerType			*/	NO_HEADER,	//SMALL_HEADER,
 		/*	compatibilityType	*/	NUT_REVISION_LEVEL,
 #ifdef __NOVELL_LIBC__		
 		/*	messageTable		*/	(char **)programMesgTable,
@@ -268,11 +271,15 @@ bool MF_NutInit(void)
 		/*	resourceTag			*/	tagID,
 		/*	handle				*/	&MF_NutInfo
 		);
-	if(ccode != NULL) {	return false;	}
+	if(ccode != 0) 
+	{
+		MF_DisplayCriticalError("MAILFILTER: Error initializing NWSNUT!\n");
+		return false;	
+	}
 
 
 	memset(szTemp,' ',81);
-	sprintf(szTemp,"  MailFilter Server %s", programMesgTable[MSG_PROGRAM_VERSION]);
+	sprintf(szTemp,"  MailFilter Server %s", MAILFILTERVERNUM);
 
 #ifdef MAILFILTER_VERSION_BETA
 	char* szBeta = "** BETA **";
@@ -643,13 +650,22 @@ void MFD_Out_func(int source, const char* fmt, ...) {
 	vsnprintf(buffer,4999,fmt,argList);
 	buffer[4999] = 0;
 
+
+
+#ifdef _TRACE
+
+	MF_DisplayCriticalError("%s",buffer);
 	
+#else
+
 	// MF_UseMainScreen() support
 	if (MFD_ScreenID)
 		OutputToScreenWithAttribute(MFD_ScreenID,attr,buffer);
 		else
 		OutputToScreenWithAttribute(MF_ScreenID,attr,buffer);
-	
+
+#endif
+
 #endif
 
 	va_end (argList);
@@ -800,6 +816,11 @@ static void LoadNRMThreadStartup(void *dummy)
 	MailFilter_Main_RunAppNRM();
 }
 
+static int MailFilterApp_Server_LoginToServer()
+{	
+	return true;
+}
+
 //
 //
 //  NLM Application Startup Function:
@@ -814,7 +835,16 @@ static int MailFilter_Main_RunAppServer()
 	printf(MF_Msg(MSG_BOOT_USERINTERFACE));
 
 	if (!MailFilterApp_Server_InitNut())
+	{
+		MF_DisplayCriticalError("MAILFILTER: Error communicating with NWSNUT. Terminating!\n");
 		goto MF_MAIN_TERMINATE;
+	}
+	
+	if (!MailFilterApp_Server_LoginToServer())
+	{
+		MF_DisplayCriticalError("MAILFILTER: Error logging into the Server. Terminating!\n");
+		goto MF_MAIN_TERMINATE;
+	}
 	
 MF_MAIN_RUNLOOP:
 	{
@@ -825,7 +855,10 @@ MF_MAIN_RUNLOOP:
 
 		// Init Status
 		if (!MF_StatusInit())
+		{
+			MF_DisplayCriticalError("MAILFILTER: Error initializing Logging. Terminating!\n");
 			goto MF_MAIN_TERMINATE;
+		}
 
 		// get OS info
 		{
@@ -1064,6 +1097,8 @@ MF_MAIN_RUNLOOP:
 	}
 
 MF_MAIN_TERMINATE:
+	MF_DisplayCriticalError("-->terminating!\n");
+
 	return 0;
 }
 
@@ -1091,7 +1126,6 @@ int main( int argc, char *argv[ ])
 
 
 	printf("%s: %s\n",MF_ProductName,MF_Msg(MSG_BOOT_LOADING));
-	
 	
 #ifndef __NOVELL_LIBC__
 	// Save Thread Group
@@ -1191,8 +1225,12 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		// Read Configuration from File
 		printf(MF_Msg(MSG_BOOT_CONFIGURATION));
 		MF_GlobalConfiguration.config_mode_strict = true;
-		if (!MF_GlobalConfiguration.ReadFromFile(""))	goto MF_MAIN_TERMINATE;
-
+		if (!MF_GlobalConfiguration.ReadFromFile(""))
+		{
+			MF_DisplayCriticalError("MAILFILTER: Could not read configuration. Terminating!\n");
+			goto MF_MAIN_TERMINATE;
+		}
+		
 		rc = MailFilter_Main_RunAppServer();
 		
 		break;
@@ -1206,7 +1244,12 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		// Read Configuration from File
 		printf(MF_Msg(MSG_BOOT_CONFIGURATION));
 		MF_GlobalConfiguration.config_mode_strict = false;
-		if (!MF_GlobalConfiguration.ReadFromFile(""))	goto MF_MAIN_TERMINATE;
+		if (!MF_GlobalConfiguration.ReadFromFile(""))
+		{
+			MF_DisplayCriticalError("MAILFILTER: Could not read configuration. Terminating!\n");
+			goto MF_MAIN_TERMINATE;
+		}
+		
 
 		--MFT_NLM_ThreadCount;
 		rc = MailFilter_Main_RunAppConfig(true);
@@ -1229,7 +1272,11 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		// Read Configuration from File
 		printf(MF_Msg(MSG_BOOT_CONFIGURATION));
 		MF_GlobalConfiguration.config_mode_strict = true;
-		if (!MF_GlobalConfiguration.ReadFromFile(""))	goto MF_MAIN_TERMINATE;
+		if (!MF_GlobalConfiguration.ReadFromFile(""))
+		{
+			MF_DisplayCriticalError("MAILFILTER: Could not read configuration. Terminating!\n");
+			goto MF_MAIN_TERMINATE;
+		}
 
 		rc = MailFilter_Main_RunAppNRM();
 		
