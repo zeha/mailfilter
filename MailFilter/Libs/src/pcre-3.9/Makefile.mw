@@ -1,0 +1,27 @@
+
+all: ../../../out/pcre-nw.lib ../../../out/pcreposix-nw.lib
+
+../../../out/pcre-nw.lib: chartables.o dftables.o pcre.o study.o
+	mwldnlm -type library -o ../../../out/pcre-nw.lib chartables.o dftables.o pcre.o study.o
+
+../../../out/pcreposix-nw.lib: pcreposix.o
+	mwldnlm -type library -o ../../../out/pcreposix-nw.lib pcreposix.o
+
+pcreposix.o: pcreposix.c
+	mwccnlm -c pcreposix.c
+
+chartables.o: chartables.c
+	mwccnlm -c chartables.c
+
+dftables.o: dftables.c
+	mwccnlm -c dftables.c
+
+pcre.o: pcre.c
+	mwccnlm -c pcre.c
+
+study.o: study.c
+	mwccnlm -c study.c
+
+clean:
+	rm *.o ../../../out/pcre-nw.lib
+
