@@ -970,35 +970,6 @@ MFD_Out(MFD_SOURCE_RULE,"\n");
 	return 1;
 }
 
-int MF_CountFilters(int action)
-{
-	unsigned int curItem;
-	int num = 0;
-	
-	for (curItem = 0; curItem < MF_GlobalConfiguration.filterList.size(); curItem++)
-	{
-		if (MF_GlobalConfiguration.filterList[curItem].expression == "")
-			break;
-
-		if (
-			
-			(MF_GlobalConfiguration.filterList[curItem].action == action)
-			&& 
-			(MF_GlobalConfiguration.filterList[curItem].enabled == true)
-			&&
-			( (MF_GlobalConfiguration.filterList[curItem].enabledIncoming == true) || (MF_GlobalConfiguration.filterList[curItem].enabledOutgoing == true) )
-			
-		) {
-
-			num++;
-		
-		}
-#ifdef N_PLAT_NLM
-		ThreadSwitch();
-#endif
-	}
-	return num;
-}
 
 void MF_SleepTimerIncrease(int howMuch)
 {
@@ -3697,14 +3668,14 @@ void MF_CheckProblemDirAgeSize()
 	char 			probDir[MAX_PATH];
 	char 			thisFile[MAX_PATH];
 	DIR				*mailDir;
-	long			cntTotalNumber = 0;
-	long			cntKilledNumber = 0;
+	unsigned long	cntTotalNumber = 0;
+	unsigned long	cntKilledNumber = 0;
 #ifdef __NOVELL_LIBC__
 	long long		cntTotalSize = 0;
 	long long		cntKilledSize = 0;
 #else
-	long			cntTotalSize = 0;
-	long			cntKilledSize = 0;
+	unsigned long	cntTotalSize = 0;
+	unsigned long	cntKilledSize = 0;
 #endif
 	char			messageText[8000];
 #ifdef WIN32
@@ -3719,7 +3690,12 @@ void MF_CheckProblemDirAgeSize()
 	if (MF_GlobalConfiguration.ProblemDirMaxAge)
 		killAge = (unsigned long)(time(NULL) - (MF_GlobalConfiguration.ProblemDirMaxAge*86400));
 	
+#if defined(N_PLAT_NLM) && !defined(__NOVELL_LIBC__)
 	sprintf(probDir,"%s*.*",MFT_MF_ProbDir);
+#else
+	strcpy(probDir,MFT_MF_ProbDir);
+#endif
+MFD_Out(MFD_SOURCE_GENERIC,"prb: %s\n",probDir);
 	mailDir = opendir(probDir);
 	while ( mailDir != NULL )
 	{
@@ -3766,8 +3742,19 @@ void MF_CheckProblemDirAgeSize()
 	}
 	if (mailDir != NULL) closedir(mailDir);
 
-	if (( ((cntTotalSize - cntKilledSize)/1024) > MF_GlobalConfiguration.ProblemDirMaxSize) && MF_GlobalConfiguration.ProblemDirMaxSize)
+	MFD_Out(MFD_SOURCE_GENERIC,"size compare says: %lld vs %d\n", ((cntTotalSize - cntKilledSize)/1024), MF_GlobalConfiguration.ProblemDirMaxSize);
+
+	if (( ((cntTotalSize - cntKilledSize)/1024) > 
+#ifdef __NOVELL_LIBC__
+		(long long)MF_GlobalConfiguration.ProblemDirMaxSize
+#else
+		MF_GlobalConfiguration.ProblemDirMaxSize
+#endif
+		) && (bool)(MF_GlobalConfiguration.ProblemDirMaxSize)
+	)
 	{
+		MFD_Out(MFD_SOURCE_GENERIC,"==> trying size reduction\n");
+	
 		mailDir = opendir(probDir);
 		while ( mailDir != NULL )
 		{
@@ -3807,15 +3794,29 @@ void MF_CheckProblemDirAgeSize()
 			
 		}
 		closedir(mailDir);
-	}
+	} else
+		MFD_Out(MFD_SOURCE_GENERIC,"==> not trying size reduction\n");
 	
+	MFD_Out(MFD_SOURCE_GENERIC,
+#ifdef __NOVELL_LIBC__ // 64bit
+			" > Total Files: %d, Size: %lld kBytes\n > Total Killed: %d, Size: %lld kBytes\n > New Totals: %d, Size: %lld kBytes\n",
+#else
+			" > Total Files: %d, Size: %d kBytes\n > Total Killed: %d, Size: %d kBytes\n > New Totals: %d, Size: %d kBytes\n",
+#endif
+			cntTotalNumber,cntTotalSize,cntKilledNumber,cntKilledSize,cntTotalNumber-cntKilledNumber,cntTotalSize - cntKilledSize);
+
 	if (MF_GlobalConfiguration.NotificationAdminMailsKilled && cntKilledNumber)
 	{
 		cntTotalSize = cntTotalSize / 1024;
 		cntKilledSize = cntKilledSize / 1024;
 
 		sprintf(messageText,
-			"The Problem Directory has been cleaned up.\r\n\r\nStatistics:\r\n > Total Files: %d, Size: %d kBytes\r\n > Total Killed: %d, Size: %d kBytes\r\n > New Totals: %d, Size: %d kBytes\r\n",
+			"The Problem Directory has been cleaned up.\r\n\r\nStatistics:\r\n"
+#ifdef __NOVELL_LIBC__ // 64bit
+			" > Total Files: %d, Size: %lld kBytes\r\n > Total Killed: %d, Size: %lld kBytes\r\n > New Totals: %d, Size: %lld kBytes\r\n",
+#else
+			" > Total Files: %d, Size: %d kBytes\r\n > Total Killed: %d, Size: %d kBytes\r\n > New Totals: %d, Size: %d kBytes\r\n",
+#endif
 			cntTotalNumber,cntTotalSize,cntKilledNumber,cntKilledSize,cntTotalNumber-cntKilledNumber,cntTotalSize - cntKilledSize);
 		MF_EMailPostmasterGeneric("Problem Directory Cleanup",messageText,"","");
 	}

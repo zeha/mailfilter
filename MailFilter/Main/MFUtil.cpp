@@ -48,6 +48,47 @@ char* GetRegValue( HKEY hRoot , char* lpszSubKey , char* lpszValue , char* lpszD
 #endif
 
 
+int MF_CountFilters(int action)
+{
+	unsigned int curItem;
+	int num = 0;
+	
+	for (curItem = 0; curItem < MF_GlobalConfiguration.filterList.size(); curItem++)
+	{
+		if (MF_GlobalConfiguration.filterList[curItem].expression == "")
+			break;
+
+		if (
+			(MF_GlobalConfiguration.filterList[curItem].action == action)
+			&& 
+			(MF_GlobalConfiguration.filterList[curItem].enabled == true)
+			&&
+			( (MF_GlobalConfiguration.filterList[curItem].enabledIncoming == true) || (MF_GlobalConfiguration.filterList[curItem].enabledOutgoing == true) )
+		) {
+
+			num++;
+		
+		}
+	}
+	return num;
+}
+
+int MF_CountAllFilters()
+{
+	unsigned int curItem;
+	int num = 0;
+	
+	for (curItem = 0; curItem < MF_GlobalConfiguration.filterList.size(); curItem++)
+	{
+		if (MF_GlobalConfiguration.filterList[curItem].expression == "")
+			break;
+
+		num++;
+	}
+	return num;
+}
+
+
 
 int MF_ParseCommandLine( int argc, char **argv )
 {

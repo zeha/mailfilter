@@ -410,9 +410,9 @@ int MF_Filter_InitLists()
 		return MF_Filter_InitListsV8();
 		else
 	if (MFC_ConfigBuild < 10)
-		return MF_Filter_InitListsV8();
+		return MF_Filter_InitListsV9();
 		else
-		return MF_Filter_InitListsV8();
+		return MF_Filter_InitListsV9();
 }
 
 // this one can read the V9 config file and put it in the current memory config
@@ -425,6 +425,7 @@ int MF_Filter_InitListsV9()
 	char szTemp[1002];
 
 	// version 9
+	// aka 1128+
 
 	cfgFile = fopen(MAILFILTER_CONFIGURATION_MAILFILTER,"rb");
 	fseek(cfgFile,4000,SEEK_SET);

@@ -238,10 +238,15 @@ void MF_NutHandlerKeyF9 (void *handle)		// Handler F6 = ShowDetails()
 
 	char buf[81];
 
+	MF_CheckProblemDirAgeSize();
+
 #ifdef _MF_MEMTRACE
 	sprintf(buf,"AllocCount: %d",MFD_AllocCounts);
 	MF_StatusUI_UpdateLog(buf);
 #endif
+
+	sprintf(buf,"I have %d rules in memory.",MF_CountAllFilters());
+	MF_StatusUI_UpdateLog(buf);
 
 	sprintf(buf,"StackAvail: %d, DebugLevel: %d",stackavail(),MFT_Debug);
 	MF_StatusUI_UpdateLog(buf);
@@ -1321,6 +1326,8 @@ MFD_Out(MFD_SOURCE_GENERIC,"MFNLM: MF Restart detected");
 				NXThreadYield();
 			
 			MFT_NLM_Exiting = 0;
+			
+			MF_StatusFree();
 			
 			// ok... here we go:
 			

@@ -5,12 +5,12 @@
 
 char *programMesgTable[] =
 {
-     "MailFilter/ax Configuration",
-     "1.5[1127]",
+     "MailFilter Configuration",
+     "1.5[1128]",
      "Exit without Saving?",
-     "MailFilter/ax Configuration",
+     "MailFilter Configuration",
      "MFConfig Tag",
-     "MailFilter/ax Configuration",
+     "MailFilter Configuration",
      "Save Changes?",
      "Edit Filter Rule",
      "MFConfig Trace",
@@ -18,8 +18,8 @@ char *programMesgTable[] =
      "Enter File to Export to:",
      "Edit Filters",
      "Configuration",
-     "The License file is either invalid, not for this version of MailFilter/ax or not for this server.",
-     "The Configuration is either invalid or non-existant. MFConfig can not continue without a valid Configuration. Please use the MailFilter/ax Installation Wizard to create a new one, or try to recover an older Configuration.",
+     "The License file is either invalid, not for this version of MailFilter or not for this server.",
+     "The Configuration is either invalid or non-existant. MFConfig can not continue without a valid Configuration. Please use the MailFilter Installation Wizard to create a new one, or try to recover an older Configuration.",
      "The File \"%s\" could not be found.",
      "The File \"%s\" already exists. MFConfig won't overwrite existing files.",
      "License Key",

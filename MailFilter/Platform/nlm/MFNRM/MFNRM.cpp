@@ -140,11 +140,11 @@ int MF_NLM_RM_Init()
 	BOOL bCode;
 	UINT32 rCode = 0;
 
-	if (!MF_ConfigRead())
+/*	if (!MF_ConfigRead())
 	{
 		return NLM_FALSE;
 	}
-
+*/
 	/*------------------------------------------------------------------------
 	**	Register with Httpstk on the Server
 	*/
@@ -226,7 +226,7 @@ void MF_NLM_RM_DeInit()
 		/* I- lpFailureRsnCode	*/	&rCode
 		);
 	
-	MF_ConfigFree();
+//	MF_ConfigFree();
 	
 	MF_NRM_InitComplete = 0;	/* not init'ed */
 }
@@ -240,8 +240,8 @@ void NLM_SignalHandler(int sig)
 		{
 		case SIGTERM:
 			
-			handlerThreadGroupID = GetThreadGroupID();
-			SetThreadGroupID(NLM_mainThreadGroupID);
+//			handlerThreadGroupID = GetThreadGroupID();
+//			SetThreadGroupID(NLM_mainThreadGroupID);
 			
 			NLM_exiting = NLM_TRUE;
 
@@ -250,7 +250,7 @@ void NLM_SignalHandler(int sig)
 			
 			MF_NLM_RM_DeInit();
 
-			SetThreadGroupID(handlerThreadGroupID);
+//			SetThreadGroupID(handlerThreadGroupID);
 /*			while (NLM_threadCnt > 0)
 				ThreadSwitchWithDelay();
 */				
@@ -294,8 +294,10 @@ void main (int argc, char *argv[])
 	// Pretend that we've already exited.
 	--NLM_threadCnt;
 
-	SetThreadGroupID(0);
-	ExitThread(TSR_THREAD,0);
+	//while (!NLM_exiting)
+	//	ThreadSwitchWithDelay();
+	
+	ExitThread(TSR_THREAD, 0);
 
 	return;	
 }
