@@ -21,16 +21,6 @@
 	*/
 //	char	MF_ProductName[]	= "MailFilter/ax 1.5 Restore [NLM]";
 
-	#define MFUTIL_KEYS_NONE			0x0000
-	#define MFUTIL_KEYS_IMPORT			0x0001
-	#define MFUTIL_KEYS_EXPORT			0x0002
-	#define MFUTIL_KEYS_NEW				0x0004
-	#define MFUTIL_KEYS_DELETE			0x0008
-	#define MFUTIL_KEYS_SELECT			0x0010
-	#define MFUTIL_KEYS_EXIT			0x0020
-	#define MFUTIL_KEYS_SAVE			0x0040
-	#define MFUTIL_KEYS_CANCEL			0x0080
-	#define MFUTIL_KEYS_SHOW			0x0100
 	static void MFRestore_UI_ShowKeys(int keys);
 
 
@@ -437,7 +427,7 @@ int MFRestore_ShowDetails(const char* fileName, int enableRestoreField)
 //		return -2;
   //  }
 
-	MFRestore_UI_ShowKeys(MFUTIL_KEYS_SAVE | MFUTIL_KEYS_SELECT);
+	MFRestore_UI_ShowKeys(MFUI_KEYS_SAVE | MFUI_KEYS_SELECT);
 
 	NWSEndWait(MF_NutInfo);
 
@@ -555,7 +545,7 @@ int MFRestore_ShowDetails(const char* fileName, int enableRestoreField)
 
 	MailFilter_MailDestroy(m);
 
-	MFRestore_UI_ShowKeys(MFUTIL_KEYS_EXIT|MFUTIL_KEYS_SELECT|MFUTIL_KEYS_SHOW);
+	MFRestore_UI_ShowKeys(MFUI_KEYS_EXIT|MFUI_KEYS_SELECT|MFUI_KEYS_SHOW);
 
 	if (rc)
 	{
@@ -631,7 +621,7 @@ int MFRestore_ShowFile(const char* fileName)
 	if(MFT_NLM_Exiting)
 		return -2;
 
-	MFRestore_UI_ShowKeys(MFUTIL_KEYS_SAVE | MFUTIL_KEYS_SELECT);
+	MFRestore_UI_ShowKeys(MFUI_KEYS_SAVE | MFUI_KEYS_SELECT);
 
 	NWSPushList	(MF_NutInfo);
 
@@ -639,7 +629,7 @@ int MFRestore_ShowFile(const char* fileName)
 	
 	NWSPopList	(MF_NutInfo);
 
-	MFRestore_UI_ShowKeys(MFUTIL_KEYS_EXIT|MFUTIL_KEYS_SELECT|MFUTIL_KEYS_SHOW);
+	MFRestore_UI_ShowKeys(MFUI_KEYS_EXIT|MFUI_KEYS_SELECT|MFUI_KEYS_SHOW);
 
 	return (-1);
 }
@@ -657,7 +647,7 @@ int MFRestore_RstList_Act(LONG keyPressed, LIST **elementSelected,
 	if (keyPressed == M_ESCAPE)
 		return 0;
 		
-	MFRestore_UI_ShowKeys(MFUTIL_KEYS_EXIT|MFUTIL_KEYS_SELECT|MFUTIL_KEYS_SHOW);
+	MFRestore_UI_ShowKeys(MFUI_KEYS_EXIT|MFUI_KEYS_SELECT|MFUI_KEYS_SHOW);
 
 	itemLineNumber=itemLineNumber;			/* Rid compiler warning */
 	actionParameter=actionParameter;		/* Rid compiler warning */
@@ -718,7 +708,7 @@ void NLM_Main(void)
 	NWSInitList(MF_NutInfo, free);
 
 	// init function keys ...
-	MFRestore_UI_ShowKeys(MFUTIL_KEYS_EXIT|MFUTIL_KEYS_SELECT|MFUTIL_KEYS_SHOW);
+	MFRestore_UI_ShowKeys(MFUI_KEYS_EXIT|MFUI_KEYS_SELECT|MFUI_KEYS_SHOW);
 	
 	/*------------------------------------------------------------------------
 	** Look for dropped mails and put them in the list.
@@ -793,10 +783,9 @@ void NLM_Main(void)
 static void MFRestore_UI_ShowKeys(int keys)
 {
 	char szTemp[80+2];
-	int curItem;
+
 	memset(szTemp,' ',80);
 	szTemp[81]=0;
-
 
 	strcpy(szTemp+1,"GWIA: ");
 	strncpy(szTemp+7,MF_GlobalConfiguration.GWIARoot.c_str(),60);
@@ -805,24 +794,8 @@ static void MFRestore_UI_ShowKeys(int keys)
 	strcpy(szTemp+1,"MFLT: ");
 	strncpy(szTemp+7,MF_GlobalConfiguration.MFLTRoot.c_str(),60);
 	NWSShowLineAttribute ( 23 , 0 , (_MF_NUTCHAR)szTemp , VREVERSE , 80 , (ScreenStruct*)MF_NutInfo->screenID );
-
-	memset(szTemp,' ',80);
-	szTemp[81]=0;
-	NWSShowLineAttribute ( 24 , 0 , (_MF_NUTCHAR)szTemp , VREVERSE , 80 , (ScreenStruct*)MF_NutInfo->screenID );
 	
-	curItem=1;
-	if (chkFlag(keys,MFUTIL_KEYS_IMPORT)) 	{	strncpy(szTemp+curItem, "<F8> Import ",12);		curItem=curItem+14;	}
-	if (chkFlag(keys,MFUTIL_KEYS_EXPORT)) 	{	strncpy(szTemp+curItem, "<F9> Export ",12);		curItem=curItem+14; }
-	if (chkFlag(keys,MFUTIL_KEYS_NEW)) 		{	strncpy(szTemp+curItem, "<INS> New   ",12);		curItem=curItem+14;	}
-	if (chkFlag(keys,MFUTIL_KEYS_DELETE)) 	{	strncpy(szTemp+curItem, "<DEL> Delete",12); 	curItem=curItem+14;	}
-	if (chkFlag(keys,MFUTIL_KEYS_SELECT)) 	{	strncpy(szTemp+curItem, "<RET> Select",12);		curItem=curItem+14; }
-	if (chkFlag(keys,MFUTIL_KEYS_SHOW)) 	{	strncpy(szTemp+curItem, "<TAB> Detail",12);		curItem=curItem+14; }
-	if (chkFlag(keys,MFUTIL_KEYS_EXIT)) 	{	strncpy(szTemp+curItem, "<ESC> Exit  ",12);		curItem=curItem+14; }
-	if (chkFlag(keys,MFUTIL_KEYS_SAVE)) 	{	strncpy(szTemp+curItem, "<ESC> Save  ",12);		curItem=curItem+14; }
-	if (chkFlag(keys,MFUTIL_KEYS_CANCEL)) 	{	strncpy(szTemp+curItem, "<ESC> Cancel",12);		curItem=curItem+14; }
-
-	NWSShowLineAttribute ( 24 , (unsigned long)((80-curItem)/2) , (_MF_NUTCHAR)szTemp , VREVERSE , (unsigned long)curItem , (ScreenStruct*)MF_NutInfo->screenID );
-
+	MF_UI_ShowKeys(keys);
 }
 
 /****************************************************************************

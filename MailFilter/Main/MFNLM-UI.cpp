@@ -177,5 +177,33 @@ bool MF_UI_PromptUsernamePassword(std::string prompt, std::string username, std:
 	return (bool)formSaved;
 }
 
+bool MF_UI_ShowKeys(int keys)
+{
+	char szTemp[80+2];
+	int curItem;
+
+	memset(szTemp,' ',80);
+	szTemp[81]=0;
+	NWSShowLineAttribute ( 24 , 0 , (_MF_NUTCHAR)szTemp , VREVERSE , 80 , (ScreenStruct*)MF_NutInfo->screenID );
+	
+	curItem=1;
+	if (chkFlag(keys,MFUI_KEYS_SORT)) 		{	strncpy(szTemp+curItem, "<78> Sort",9);			curItem=curItem+12;	}
+	if (chkFlag(keys,MFUI_KEYS_IMPORT)) 	{	strncpy(szTemp+curItem, "<F8> Import",11);		curItem=curItem+14;	}
+	if (chkFlag(keys,MFUI_KEYS_EXPORT)) 	{	strncpy(szTemp+curItem, "<F9> Export",11);		curItem=curItem+14; }
+	if (chkFlag(keys,MFUI_KEYS_NEW)) 		{	strncpy(szTemp+curItem, "<INS> New",9);			curItem=curItem+12;	}
+	if (chkFlag(keys,MFUI_KEYS_DELETE)) 	{	strncpy(szTemp+curItem, "<DEL> Delete",12); 	curItem=curItem+14;	}
+	if (chkFlag(keys,MFUI_KEYS_SELECT)) 	{	strncpy(szTemp+curItem, "<RET> Select",12);		curItem=curItem+14; }
+	if (chkFlag(keys,MFUI_KEYS_SHOW)) 		{	strncpy(szTemp+curItem, "<TAB> Detail",12);		curItem=curItem+14; }
+	if (chkFlag(keys,MFUI_KEYS_EXIT)) 		{	strncpy(szTemp+curItem, "<ESC> Exit",10);		curItem=curItem+13; }
+	if (chkFlag(keys,MFUI_KEYS_SAVE)) 		{	strncpy(szTemp+curItem, "<ESC> Save",10);		curItem=curItem+13; }
+	if (chkFlag(keys,MFUI_KEYS_CANCEL)) 	{	strncpy(szTemp+curItem, "<ESC> Cancel",12);		curItem=curItem+14; }
+
+	NWSShowLineAttribute ( 24 , (unsigned long)((80-curItem)/2) , (_MF_NUTCHAR)szTemp , VREVERSE , (unsigned long)curItem , (ScreenStruct*)MF_NutInfo->screenID );
+
+	return true;
+}
+
+
+
 /* eof */
 

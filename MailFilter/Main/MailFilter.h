@@ -408,6 +408,18 @@ typedef LONG rtag_t;
 #endif
 #endif
 
+#define MFUI_KEYS_NONE			0x0000
+#define MFUI_KEYS_IMPORT		0x0001
+#define MFUI_KEYS_EXPORT		0x0002
+#define MFUI_KEYS_NEW			0x0004
+#define MFUI_KEYS_DELETE		0x0008
+#define MFUI_KEYS_SELECT		0x0010
+#define MFUI_KEYS_EXIT			0x0020
+#define MFUI_KEYS_SAVE			0x0040
+#define MFUI_KEYS_CANCEL		0x0080
+#define MFUI_KEYS_SHOW			0x0100
+#define MFUI_KEYS_SORT			0x0200
+
 #define MFD_SOURCE_GENERIC		0x0001
 #define MFD_SOURCE_WORKER		0x0002
 #define MFD_SOURCE_CONFIG		0x0004
@@ -555,6 +567,8 @@ int MF_CountAllFilters();
 void MF_CheckProblemDirAgeSize();
 bool MF_NutInit(void);
 bool MF_NutDeinit(void);
+
+bool MF_UI_ShowKeys(int keys);
 
 
 bool MailFilterApp_Server_SelectServerConnection();

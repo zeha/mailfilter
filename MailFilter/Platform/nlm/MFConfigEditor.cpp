@@ -21,47 +21,12 @@
 
 int MFC_CurrentList = 0;
 
-#define MFCONFIG_KEYS_NONE			0x0000
-#define MFCONFIG_KEYS_IMPORT		0x0001
-#define MFCONFIG_KEYS_EXPORT		0x0002
-#define MFCONFIG_KEYS_NEW			0x0004
-#define MFCONFIG_KEYS_DELETE		0x0008
-#define MFCONFIG_KEYS_SELECT		0x0010
-#define MFCONFIG_KEYS_EXIT			0x0020
-#define MFCONFIG_KEYS_SAVE			0x0040
-#define MFCONFIG_KEYS_CANCEL		0x0080
-#define MFCONFIG_KEYS_SORT			0x0100
-
 #ifndef NUT_SEVERITY_FATAL
 #define NUT_SEVERITY_FATAL 2
 #endif
 
 
 static void MFConfig_Util_Sort(void* nutHandle);
-
-
-static void MFConfig_UI_ShowKeys(int keys)
-{
-	char szTemp[80+2];
-	int curItem;
-	memset(szTemp,' ',80);
-	szTemp[81]=0;
-	NWSShowLineAttribute ( 24 , 0 , (_MF_NUTCHAR)szTemp , VREVERSE , 80 , (struct ScreenStruct*)MF_NutInfo->screenID );
-	
-	curItem=1;
-	if (chkFlag(keys,MFCONFIG_KEYS_SORT)) 		{	strncpy(szTemp+curItem, "<F7> Sort",9);			curItem=curItem+12;	}
-	if (chkFlag(keys,MFCONFIG_KEYS_IMPORT)) 	{	strncpy(szTemp+curItem, "<F8> Import",11);		curItem=curItem+14;	}
-	if (chkFlag(keys,MFCONFIG_KEYS_EXPORT)) 	{	strncpy(szTemp+curItem, "<F9> Export",11);		curItem=curItem+14; }
-	if (chkFlag(keys,MFCONFIG_KEYS_NEW)) 		{	strncpy(szTemp+curItem, "<INS> New",9);			curItem=curItem+12;	}
-	if (chkFlag(keys,MFCONFIG_KEYS_DELETE)) 	{	strncpy(szTemp+curItem, "<DEL> Delete",12); 	curItem=curItem+14;	}
-	if (chkFlag(keys,MFCONFIG_KEYS_SELECT)) 	{	strncpy(szTemp+curItem, "<RET> Select",12);		curItem=curItem+14; }
-	if (chkFlag(keys,MFCONFIG_KEYS_EXIT)) 		{	strncpy(szTemp+curItem, "<ESC> Exit",10);		curItem=curItem+13; }
-	if (chkFlag(keys,MFCONFIG_KEYS_SAVE)) 		{	strncpy(szTemp+curItem, "<ESC> Save",10);		curItem=curItem+13; }
-	if (chkFlag(keys,MFCONFIG_KEYS_CANCEL)) 	{	strncpy(szTemp+curItem, "<ESC> Cancel",12);		curItem=curItem+14; }
-
-	NWSShowLineAttribute ( 24 , (unsigned long)((80-curItem)/2) , (_MF_NUTCHAR)szTemp , VREVERSE , (unsigned long)curItem , (struct ScreenStruct*)MF_NutInfo->screenID );
-
-}
 
 
 static void MF_RegError(int errcode, const regex_t *preg)
@@ -1289,7 +1254,7 @@ static int NLM_MenuMainAct(int index, void *parm)
 	parm=parm;	 /* Rid compiler warning. */
 
 	NWSDisableInterruptKey	(	K_F8,	MF_NutInfo	);
-	MFConfig_UI_ShowKeys(MFCONFIG_KEYS_NONE);
+	MF_UI_ShowKeys(MFUI_KEYS_NONE);
 	
 	if (MFT_NLM_Exiting)
 		return 0;
@@ -1306,22 +1271,22 @@ static int NLM_MenuMainAct(int index, void *parm)
 			break;
 
 		case MSG_MENU_MAIN_EDIT_CONFIGURATION:
-			MFConfig_UI_ShowKeys(MFCONFIG_KEYS_SELECT|MFCONFIG_KEYS_SAVE);
+			MF_UI_ShowKeys(MFUI_KEYS_SELECT|MFUI_KEYS_SAVE);
 			MFConfig_EditConfig();
 			break;
 
 		case MSG_MENU_MAIN_EDIT_FILTERS:
-			MFConfig_UI_ShowKeys(MFCONFIG_KEYS_IMPORT|MFCONFIG_KEYS_EXPORT|MFCONFIG_KEYS_NEW|MFCONFIG_KEYS_DELETE|MFCONFIG_KEYS_SELECT|MFCONFIG_KEYS_SORT);
+			MF_UI_ShowKeys(MFUI_KEYS_IMPORT|MFUI_KEYS_EXPORT|MFUI_KEYS_NEW|MFUI_KEYS_DELETE|MFUI_KEYS_SELECT|MFUI_KEYS_SORT);
 			MFConfig_EditFilters();
 			break;
 
 		case MSG_MENU_MAIN_LICENSEKEY:
-			MFConfig_UI_ShowKeys(MFCONFIG_KEYS_CANCEL);
+			MF_UI_ShowKeys(MFUI_KEYS_CANCEL);
 			MFConfig_EditLicense();
 			break;
 
 		case MSG_MENU_MAIN_SAVE_AND_EXIT:
-			MFConfig_UI_ShowKeys(MFCONFIG_KEYS_CANCEL);
+			MF_UI_ShowKeys(MFUI_KEYS_CANCEL);
 			if (NLM_VerifySaveExit())
 			{
 				MF_GlobalConfiguration.WriteToFile("");
@@ -1330,7 +1295,7 @@ static int NLM_MenuMainAct(int index, void *parm)
 			break;
 			
 		case MSG_MENU_MAIN_SAVE_AND_RESTART:
-			MFConfig_UI_ShowKeys(MFCONFIG_KEYS_CANCEL);
+			MF_UI_ShowKeys(MFUI_KEYS_CANCEL);
 			MF_GlobalConfiguration.WriteToFile("");
 			return(0);
 			break;	// never reached
@@ -1344,7 +1309,7 @@ static int NLM_MenuMainAct(int index, void *parm)
 
 
 	NWSEnableInterruptKey	(	K_F8,	MFConfig_ImportLicenseKey,	MF_NutInfo	);
-	MFConfig_UI_ShowKeys(MFCONFIG_KEYS_IMPORT);
+	MF_UI_ShowKeys(MFUI_KEYS_IMPORT);
 
 	return(-1);
 	}
@@ -1383,7 +1348,7 @@ static void NLM_MenuMain(bool bStandalone)
 		defaultOption = NWSAppendToMenu(MSG_MENU_MAIN_SAVE_AND_RESTART, MSG_MENU_MAIN_SAVE_AND_RESTART, MF_NutInfo);
 
 	NWSEnableInterruptKey	(	K_F8,	MFConfig_ImportLicenseKey,	MF_NutInfo	);
-	MFConfig_UI_ShowKeys(MFCONFIG_KEYS_IMPORT|MFCONFIG_KEYS_EXIT);
+	MF_UI_ShowKeys(MFUI_KEYS_IMPORT|MFUI_KEYS_EXIT);
 
 	/*------------------------------------------------------------------------
 	**	Display the menu and allow user interaction.
