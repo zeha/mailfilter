@@ -165,7 +165,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,0
+ FILEVERSION 1,5,0,0
  PRODUCTVERSION 1,5,8,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -184,9 +184,9 @@ BEGIN
             VALUE "CompanyName", "Hofstädtler IE GmbH -- www.mailfilter.cc"
             VALUE "Copyright (C) 2004", "Copyright © 2000-2004 Christian Hofstädtler. All Rights Reserved."
             VALUE "FileDescription", "MailFilter Server Installation Wizard"
-            VALUE "FileVersion", "1.00"
-            VALUE "InternalName", "MFInstWizard.exe"
-            VALUE "OriginalFilename", "MFInstWizard.exe"
+            VALUE "FileVersion", "1.50"
+            VALUE "InternalName", "MFInstallWizard.exe"
+            VALUE "OriginalFilename", "MFInstallWizard.exe"
             VALUE "ProductName", "MailFilter professional for NetWare"
             VALUE "ProductVersion", "1.5.8"
         END

@@ -68,13 +68,14 @@
 #define ID_LIST_OPEN                    32771
 #define ID_LIST_SAVE                    32772
 #define ID_HELP_ABOUT                   32774
+#define ID_HELP_TEXTFILEDOCUMENTATION   32776
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        161
-#define _APS_NEXT_COMMAND_VALUE         32775
+#define _APS_NEXT_COMMAND_VALUE         32777
 #define _APS_NEXT_CONTROL_VALUE         1040
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

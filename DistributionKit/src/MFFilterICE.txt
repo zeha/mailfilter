@@ -1,17 +1,22 @@
-MailFilter professional: Technical Information Document
--------------------------------------------------------
+MailFilter Technical Information Document
 
-"MFFilter2CSV.exe and the CSV file format"
+  ---------------------------------------------
+  MFFilterICE.exe, FilterEdit.exe: File formats
+  ---------------------------------------------
 
-MFFilter2CSV.exe is a utility to convert between CSV and the binary MailFilter Rule package files.
-To create a CSV from a rule package file use: MFFilter2CSV.exe -csv filters.bin filters.csv
-To create a rule package file from your CSV: MFFilter2CSV.exe -bin filters.csv filters.bin
+MFFilterICE.exe is a utility to convert between TAB format and the binary MailFilter Rule package files.
+To create a TAB file from a rule package file use: MFFilterICE.exe -bin filters.bin -tab filters.tab
+To create a rule package file from your TAB: MFFilterICE.exe -tab filters.tab -bin filters.bin
 
-The Win32 configurator can read and write both CSV files and MailFilter Rule Packages.
+FilterEdit.exe can do exactly the same, but is a graphical application.
 
 
-The rule package is exported in this CSV format by MFFilter2CSV:
+The rule package is exported in this TAB format by MFFilterICE:
+   Matchfield<TAB>Notify<TAB>Type<TAB>Action<TAB>Enabled<TAB>Incoming<TAB>Outgoing<TAB>Description<TAB>Expression
+
+The rule package is exported in this CSV format by MFFilterICE:
    Matchfield,Notify,Type,Action,Enabled,Incoming,Outgoing,Description,Expression
+
 
 The first four fields are hex values, in particular:
    Matchfield:
@@ -29,7 +34,7 @@ The first four fields are hex values, in particular:
 	MAILFILTER_MATCHFIELD_EMAIL_TOANDCC		0x0011
 	MAILFILTER_MATCHFIELD_EMAIL_BOTHANDCC		0x0012
 
-   Notification Type:
+   Notification Type (can be OR'ed together):
 	NOTIFICATION_ADMIN_INCOMING			0x0001
 	NOTIFICATION_ADMIN_OUTGOING			0x0002
 	NOTIFICATION_SENDER_INCOMING			0x0004
@@ -56,6 +61,6 @@ Incoming and Outgoing represent if the rule should be enabled for Incoming/Outgo
 Description is a string which can be up to 60 characters long, describing the rule in short words.
 Expression is a string which contains the expression for this rule. It can be up to 200 characters long.
 
--------------------- Note current for MailFilter 1.5.8 ---
--------------------- Last Updated: Jul 13th 2004, ch -----
+-------------------- Current for MailFilter 1.5.8 -----
+-------------------- Last Updated: Jul, 24th 2004 -----
 

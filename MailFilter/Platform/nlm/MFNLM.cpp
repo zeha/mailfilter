@@ -640,6 +640,12 @@ void MF_StatusUI_Update(const char* newText)
 
 
 #ifndef _MF_CLEANBUILD
+void MFD_UseMainScreen()
+{
+	if (MFD_ScreenID)	CloseScreen ( MFD_ScreenID );
+	MFD_ScreenID = NULL;
+}
+
 void MFD_Out_func(int attr, const char* format, ...) {
 
 	va_list	argList;
@@ -672,18 +678,23 @@ void MFD_Out_func(int attr, const char* format, ...) {
 
 #ifndef __NOVELL_LIBC__
 
-	int oldScreen;    
-	oldScreen=SetCurrentScreen(MFD_ScreenID);   
+	int oldScreen = 0;
+	if (MFD_ScreenID)	oldScreen=SetCurrentScreen(MFD_ScreenID);   
 	
 	vprintf(format, argList);
-	SetCurrentScreen(oldScreen);
+	if (oldScreen)		SetCurrentScreen(oldScreen);
 
 #else
 
 	char buffer[5000];
 	vsnprintf(buffer,4999,format,argList);
+	buffer[4999] = 0;
 	
-	OutputToScreenWithAttribute(MFD_ScreenID,(unsigned char)attr,buffer);
+	// MF_UseMainScreen() support
+	if (MFD_ScreenID)
+		OutputToScreenWithAttribute(MFD_ScreenID,(unsigned char)attr,buffer);
+		else
+		OutputToScreenWithAttribute(MF_ScreenID,(unsigned char)attr,buffer);
 	
 #endif
 
@@ -1498,8 +1509,15 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		break;
 		
 	case MailFilter_Configuration::INSTALL:
-	
-		// buh!
+		MFD_UseMainScreen();
+		printf("  MailFilter_Configuration::INSTALL kick off!\n");
+		
+		MF_GlobalConfiguration.CreateFromInstallFile(MF_GlobalConfiguration.config_directory + "\\INSTALL.CFG");
+		printf("    Saving new configuration to file...\n");
+		MF_GlobalConfiguration.WriteToFile("");
+		printf("  MailFilter_Configuration::INSTALL complete!\n");
+		if (MFT_Debug)
+			pressenter();
 		
 		break;
 		

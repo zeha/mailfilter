@@ -14,11 +14,14 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <ostream>
 
 #define _MFD_MODULE			"MFCONFIG.C++"
 #include "MailFilter.h"
 #include "MFConfig.h++"
 #include "MFConfig-Filter.h++"
+
+#define MAILFILTER_CONFIGURATION_PATHFILE "sys:\\etc\\mfpath.cfg"
 
 char MFC_ConfigFile[MAX_PATH] = "";
 char* MFT_Local_ServerName = NULL;
@@ -141,7 +144,7 @@ std::string MF_MakeValidPath(std::string thePath)
 int Configuration::setDefaults(std::string directory, std::string domainname)
 {
 	this->config_build = MAILFILTER_CONFIGURATION_THISBUILD;
-	if ( (this->config_directory == "") && (directory != "") ) { this->config_directory = directory; }
+	if (directory != "") { this->config_directory = directory; }
 	if (this->config_directory != "")
 	{
 		this->config_file = this->config_directory + "\\CONFIG.BIN";
@@ -171,6 +174,7 @@ int Configuration::setDefaults(std::string directory, std::string domainname)
 	this->EnableAttachmentDecoder = true;
 	this->EnablePFAFunctionality = false;
 	this->EnableNRMThread = false;
+	this->EnableNRMRestore = true;
 	
 	this->MessageFooter = "";
 	this->Multi2One = "";
@@ -190,9 +194,18 @@ Configuration::~Configuration()
 {
 }
 
-bool Configuration::ReadFilterList()
+bool Configuration::ReadFilterListFromConfig()
 {
+	return this->ReadFilterList("",4001);
+}
 
+bool Configuration::ReadFilterListFromRulePackage(std::string filterFile)
+{
+	return this->ReadFilterList(filterFile,(long)54);
+}
+
+bool Configuration::ReadFilterList(std::string filterFile, long startAt)
+{
 	if (this->config_build > 7)
 	{
 
@@ -211,8 +224,8 @@ bool Configuration::ReadFilterList()
 	#endif
 
 
-		fFile = fopen(this->config_file.c_str(),"rb");
-		fseek(fFile,4001,SEEK_SET);
+		fFile = fopen( filterFile == "" ? this->config_file.c_str() : filterFile.c_str(),"rb");
+		fseek(fFile,startAt,SEEK_SET);
 
 		while (!feof(fFile))
 		{
@@ -227,37 +240,40 @@ bool Configuration::ReadFilterList()
 			flt.enabledIncoming = (bool)(fgetc(fFile));
 			flt.enabledOutgoing = (bool)(fgetc(fFile));
 			
-			if (this->config_build < 9)
+			if (filterFile == "")
 			{
-				switch (flt.matchfield)
+				if (this->config_build < 9)
 				{
-				case MAILFILTER_OLD_MATCHFIELD_SUBJECT:
-					flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_SUBJECT;
-					break;
-				case MAILFILTER_OLD_MATCHFIELD_SIZE:
-					flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_SIZE;
-					break;
-				case MAILFILTER_OLD_MATCHFIELD_EMAIL_FROM:
-					flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_EMAIL_FROM;
-					break;
-				case MAILFILTER_OLD_MATCHFIELD_EMAIL_TO:
-					flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_EMAIL_TO;
-					break;
+					switch (flt.matchfield)
+					{
+					case MAILFILTER_OLD_MATCHFIELD_SUBJECT:
+						flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_SUBJECT;
+						break;
+					case MAILFILTER_OLD_MATCHFIELD_SIZE:
+						flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_SIZE;
+						break;
+					case MAILFILTER_OLD_MATCHFIELD_EMAIL_FROM:
+						flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_EMAIL_FROM;
+						break;
+					case MAILFILTER_OLD_MATCHFIELD_EMAIL_TO:
+						flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_EMAIL_TO;
+						break;
+					}
+				}
+				if (this->config_build < 10)
+				{
+					switch (flt.matchfield)
+					{
+					case MAILFILTER_MATCHFIELD_EMAIL_TO:
+						flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_EMAIL_TOANDCC;
+						break;
+					case MAILFILTER_MATCHFIELD_EMAIL:
+						flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_EMAIL_BOTHANDCC;
+						break;
+					}
 				}
 			}
-			if (this->config_build < 10)
-			{
-				switch (flt.matchfield)
-				{
-				case MAILFILTER_MATCHFIELD_EMAIL_TO:
-					flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_EMAIL_TOANDCC;
-					break;
-				case MAILFILTER_MATCHFIELD_EMAIL:
-					flt.matchfield = (MailFilter_Configuration::FilterField)MAILFILTER_MATCHFIELD_EMAIL_BOTHANDCC;
-					break;
-				}
-			}
-
+			
 			rc = (long)fread(szTemp,sizeof(char),1000,fFile);
 			fseek(fFile,((int)(strlen(szTemp)))-rc+1,SEEK_CUR);
 			
@@ -287,7 +303,6 @@ bool Configuration::ReadFilterList()
 		// sorry.
 		return false;
 	}
-
 }
 
 /*
@@ -504,6 +519,110 @@ int MF_Filter_InitListsV6()
 
 }
 */
+
+bool Configuration::CreateFromInstallFile(std::string installFile)
+{
+	std::string line;
+	unsigned int pos;
+	std::string param;
+	std::string value;
+	
+	std::string myLicenseKey;
+	std::string myHomeGwia;
+	std::string myHomeMailFilter;
+	std::string myDomain;
+	std::string myHostname;
+	unsigned int myGwiaVersion;
+	std::string myConfDir;
+	std::string filterFilePath;
+
+	std::ifstream install(installFile.c_str());
+	
+	printf("   Installation data file: %s\n",installFile.c_str());
+
+	if (!install.good())
+		fprintf(stderr,std::string("   MailFilter Installation: Could not open "+installFile+"!\n").c_str());
+	
+	while (install >> line)
+	{
+		if (line[0] == '/')
+		{
+			pos = line.find("=");
+			if (pos != -1)
+			{
+				param = line.substr(1,pos-1);
+				value = line.substr(pos+1);
+				printf("     config: '%s'='%s'\n",param.c_str(),value.c_str());
+				
+				if (param == "licensekey")
+					myLicenseKey = value;
+
+				if (param == "home-gwia")
+					myHomeGwia = value;
+				if (param == "home-mailfilter")
+					myHomeMailFilter = value;
+
+				if (param == "domain")
+					myDomain = value;
+				if (param == "hostname")
+					myHostname = value;
+
+				if (param == "gwia-version")
+					myGwiaVersion = (unsigned int)atoi(value.c_str());
+
+				if (param == "config-directory")
+					myConfDir = value;
+
+				if (param == "config-importfilterfile")
+					filterFilePath = value;
+
+			}
+		}
+	}
+	printf("   Done reading install data file!\n");
+	install.close();
+
+	this->filterList.clear();
+	
+	this->setDefaults(myConfDir,myDomain);
+	if (myHostname != "")
+		this->DomainHostname = myHostname;
+
+	if (myHomeGwia != "")
+		this->GWIARoot = myHomeGwia;
+	if (myHomeMailFilter != "")
+		this->MFLTRoot = myHomeMailFilter;
+
+	if (myLicenseKey != "")
+		this->LicenseKey = myLicenseKey;
+		
+	if (myGwiaVersion != 0)
+	{
+		if (!((myGwiaVersion == 550) || (myGwiaVersion == 600)))
+			myGwiaVersion = 600;
+		this->GWIAVersion = myGwiaVersion;
+	}
+	if (filterFilePath != "")
+	{
+		printf("   Importing rule package %s\n",filterFilePath.c_str());
+		if (!this->ReadFilterListFromRulePackage(filterFilePath))
+			printf("      ... FAILED.\n");
+	}
+	
+	printf("   Writing "MAILFILTER_CONFIGURATION_PATHFILE"... \n");
+	std::ofstream mailfilterPathFile(MAILFILTER_CONFIGURATION_PATHFILE);
+	if (mailfilterPathFile.good())
+	{
+		mailfilterPathFile << this->config_directory;
+		mailfilterPathFile.close();
+	} else {
+		printf("      ... FAILED.\n");
+		fprintf(stderr,"MailFilter Installation: Could not write "MAILFILTER_CONFIGURATION_PATHFILE"!\n");
+	}
+		
+	return true;
+}
+
 bool Configuration::ReadFromFile(std::string alternateFilename)
 {
 	int rc = 0;
@@ -709,7 +828,7 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 	this->filterList.clear();
 
 	// Initialize FilterList Cache
-	if ( this->ReadFilterList() == false ) {	rc = 299;	goto MF_ConfigRead_ERR;	}
+	if ( this->ReadFilterListFromConfig() == false ) {	rc = 299;	goto MF_ConfigRead_ERR;	}
 
 // Error Handling goes here ...
 MF_ConfigRead_ERR:

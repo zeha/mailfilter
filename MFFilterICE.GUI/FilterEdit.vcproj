@@ -2,8 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="FilterICE"
+	Name="FilterEdit"
 	ProjectGUID="{5CA2C089-E01D-40C8-ABA1-8C3E0C57E43A}"
+	RootNamespace="FilterICE"
 	Keyword="MFCProj">
 	<Platforms>
 		<Platform
@@ -74,6 +75,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="1"
+				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="2"
 				FavorSizeOrSpeed="2"
 				OmitFramePointers="TRUE"
@@ -83,23 +85,22 @@
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="TRUE"
-				EnableFunctionLevelLinking="TRUE"
+				EnableFunctionLevelLinking="FALSE"
 				TreatWChar_tAsBuiltInType="TRUE"
-				RuntimeTypeInfo="TRUE"
+				RuntimeTypeInfo="FALSE"
 				UsePrecompiledHeader="3"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="$(ProjectDir)/../MailFilter/out/$(ProjectName).exe"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="FALSE"
 				SubSystem="2"
-				SwapRunFromCD="TRUE"
-				SwapRunFromNet="TRUE"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				OptimizeForWindows98="1"

@@ -94,7 +94,12 @@ public:
 	bool ReadFromFile(std::string alternateFilename);
 	bool WriteToFile(std::string alternateFilename);
 
-	bool ReadFilterList();
+	// don't use ReadFilterList -- use ReadFilterListFromConfig or ReadFilterListFromRulePackage
+	bool ReadFilterList(std::string filterFile, long startAt);
+	bool ReadFilterListFromConfig();
+	bool ReadFilterListFromRulePackage(std::string filterFile);
+
+	bool CreateFromInstallFile(std::string installFile);
 	
 	Configuration();
 	~Configuration();

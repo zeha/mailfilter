@@ -9,6 +9,7 @@
 #include "WizardImport.h"
 
 #include "filterice.hxx"
+#include ".\filterlistdlg.h"
 
 
 // CAboutDlg dialog used for App About
@@ -107,6 +108,7 @@ BEGIN_MESSAGE_MAP(CFilterlistDlg, CDialog)
 	ON_COMMAND(ID_LIST_CLOSE, OnListClose)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_CONFIGLIST, OnLvnItemchangedConfiglist)
 	ON_COMMAND(ID_HELP_ABOUT, OnHelpAbout)
+	ON_COMMAND(ID_HELP_TEXTFILEDOCUMENTATION, OnHelpTextfiledocumentation)
 END_MESSAGE_MAP()
 
 // CFilterlistDlg message handlers
@@ -348,4 +350,9 @@ void CFilterlistDlg::OnHelpAbout()
 {
 	CAboutDlg dlgAbout;
 	dlgAbout.DoModal();
+}
+
+void CFilterlistDlg::OnHelpTextfiledocumentation()
+{
+	ShellExecute(this->m_hWnd, "open", "MFFilterIce.txt", "", "", SW_SHOW);
 }

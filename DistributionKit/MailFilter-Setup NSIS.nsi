@@ -44,7 +44,7 @@
   !define MUI_LICENSEPAGE_RADIOBUTTONS
   !define MUI_COMPONENTSPAGE_NODESC
   !define MUI_FINISHPAGE_NOAUTOCLOSE
-;  !define MUI_FINISHPAGE_RUN "$INSTDIR\MFInstWizard.exe"
+;  !define MUI_FINISHPAGE_RUN "$INSTDIR\MFInstallWizard.exe"
 ;  !define MUI_FINISHPAGE_RUN_NOTCHECKED
   !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\relnotes.html"
 
@@ -106,7 +106,7 @@ Section $(NAME_Section_Base) Section_Base
   File ".\src\relnotes.html"
   File ".\src\cluster.html"
 
-  File "..\MailFilter\out\FilterICE.exe"
+  File "..\MailFilter\out\FilterEdit.exe"
   File "..\MailFilter\out\MFFilterICE.exe"
   File ".\src\MFFilterICE.txt"
 
@@ -150,7 +150,7 @@ Section $(NAME_Section_Base) Section_Base
   CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Release Notes.lnk" '"$INSTDIR\relnotes.html"'
   CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Cluster Installation Notes.lnk" '"$INSTDIR\cluster.html"'
   CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Tools.lnk" %windir%\explorer.exe "$INSTDIR\" %windir%\explorer.exe 1
-  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Filter Editor.lnk" '"$INSTDIR\FilterICE.exe"'
+  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Filter Editor.lnk" '"$INSTDIR\FilterEdit.exe"'
 
 
 
@@ -178,12 +178,12 @@ Section $(NAME_Section_Installer) Section_Installer
   SectionIn 1
   SetOutPath "$INSTDIR"
 
-  File "..\MailFilter\out\MFInstWizard.exe"
+  File "..\MailFilter\out\MFInstallWizard.exe"
 ;  File "..\MailFilter\out\MFUpgrWizard.exe"
 
   SetOutPath "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}"
   SetOutPath "$INSTDIR"
-  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\ Installation Wizard.lnk" '"$INSTDIR\MFInstWizard.exe"'
+  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\ Installation Wizard.lnk" '"$INSTDIR\MFInstallWizard.exe"'
 SectionEnd
 
 

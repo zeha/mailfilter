@@ -31,4 +31,5 @@ public:
 	afx_msg void OnListClose();
 	afx_msg void OnLvnItemchangedConfiglist(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnHelpAbout();
+	afx_msg void OnHelpTextfiledocumentation();
 };

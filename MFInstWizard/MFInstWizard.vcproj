@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="MFInstWizard"
+	Name="MFInstallWizard"
 	ProjectGUID="{CE85FB83-FF07-418C-8521-1BFFB279569F}"
 	Keyword="MFCProj">
 	<Platforms>
@@ -90,6 +90,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="$(ProjectDir)/../MailFilter/out/$(ProjectName).exe"
 				Version="4.0"
 				LinkIncremental="1"
 				GenerateDebugInformation="FALSE"
