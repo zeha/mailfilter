@@ -5,7 +5,6 @@
 #include "E:\Novell\NDK\nwsdk\include\nwmisc.h"
 #include "E:\Novell\NDK\nwsdk\include\nwcalls.h"
 #include "E:\Novell\NDK\nwsdk\include\nwclxcon.h"
-#include ".\netwareapi.h"
   
 NetwareApi::NetwareApi(void)
 : m_ClientConnection(-1)
