@@ -3258,6 +3258,16 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 			if (MFT_NLM_Exiting > 0)	break;
 		}
 		
+		if
+		(
+			MFT_bTriedAVInit && 
+			MF_GlobalConfiguration.RequireAVA &&
+			(MailFilter_AV_Check() != 0)
+		)
+		{
+			MailFilter_AV_Init();
+		}
+		
 		tlc++;
 		if (MFT_NLM_Exiting > 0)	break;
 

@@ -99,9 +99,13 @@ int MailFilter_AV_Init()
 	int scanRc = 0;
 	int libthreshold = 0;
 	
-	system("LOAD MFAVA.NLM");
-	ThreadSwitch();
-	delay(1000);
+	if (MailFilter_AVA_ImportSymbols())
+	{
+		// symbols not there; so then, load ava ...
+		system("LOAD MFAVA.NLM");
+		ThreadSwitch();
+		delay(1000);
+	}
 	
 	if (MailFilter_AVA_ImportSymbols())
 	{
