@@ -4,7 +4,7 @@
  *
  */
 
-#define MAILFILTER_VERSION_BETA
+#undef MAILFILTER_VERSION_BETA
 //#define MAILFILTER_VERSION_YESITCRASHES
 
 // don't touch below:
