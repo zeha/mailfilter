@@ -1405,6 +1405,14 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 	if (!MF_ParseCommandLine(argc,argv))
 		goto MF_MAIN_TERMINATE;
 
+	if (MFT_Debug)
+	{
+		// set up stderr redirection
+		fclose(stderr);	
+		stderr = fopen("sys:\\mferr.log","w");
+		// done.
+	}
+
 	ThreadSwitch();
 
 	// Get NLM and Screen Handles

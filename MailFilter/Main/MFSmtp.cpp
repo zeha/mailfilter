@@ -15,6 +15,7 @@
 
 #define _MFD_MODULE			"MFSMTP.CPP"
 #include "MailFilter.h"
+#include "MFMail.h++"
 //#include <list>
 //using namespace std ;
 
@@ -28,8 +29,6 @@ struct MF_SMTP_T
 {
 	HANDLE			ThreadHandle;
 	SOCKET			Socket;
-//	char			curCmd[4000];
-//	char			curCmd2[4000];
 	unsigned long	lastCmdTime;
 	int				lastCmdSuccess;
 	int				haveCmdMail;	/* either 0 or 1 */
@@ -43,7 +42,7 @@ static _MF_SMTP_Threads MF_SMTP_Threads;
 */
 #define SMTP_MSG_OK					"250 Ok"
 #define SMTP_MSG_SYNTAXERROR		"500 Syntax Error"
-#define SMTP_MSG_INITCONN			"220 MailFilter/ax SMTP. Ready."
+#define SMTP_MSG_INITCONN			"220 SMTP Ready."
 #define SMTP_MSG_TERMCONN			"221 Closing transmission channel."
 
 static MF_SMTP_T MFT_SMTP_IncomingThread[10];

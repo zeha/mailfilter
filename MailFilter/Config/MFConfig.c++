@@ -21,6 +21,8 @@
 #include "MFConfig-Filter.h++"
 #include "MFConfig-defines.h"
 
+#include "sqlite3.h"
+
 #define MAILFILTER_CONFIGURATION_PATHFILE "sys:\\etc\\mfpath.cfg"
 
 char MFC_ConfigFile[MAX_PATH] = "";
@@ -707,6 +709,14 @@ static bool mkBoolFromStr(std::string checkStr)
 	return false;
 }
 
+static int _sqcb_saveDBVersion(void* savePtr, int argc, char** argv, char**azColName)
+{
+/*	if(argc<1)
+		return 0; */
+	savePtr = (void*)atol(argv[0]);
+	return 0;
+}
+
 bool Configuration::ReadFromFile(std::string alternateFilename)
 {
 	int rc = 0;
@@ -1048,6 +1058,39 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 		}
 		
 		return false;
+	}
+	
+	std::string dbFile = this->config_directory + "\\DATABASE.BIN";
+	sqlite3* sqldb;
+	rc = sqlite3_open(dbFile.c_str(), &sqldb);
+	if (rc)
+	{
+		MF_DisplayCriticalError("mailfilter: unable to open database file. %d\n",rc);
+	}
+	long DBVersion = 0;
+	char* szErr = NULL;
+	rc = sqlite3_exec(sqldb,"SELECT DBVersion FROM CONFIG LIMIT 1",_sqcb_saveDBVersion,(void*)DBVersion,&szErr);
+	if ( rc != SQLITE_OK )
+	{
+		MF_DisplayCriticalError("mailfilter: database: %s\n",szErr);
+		sqlite3_free(szErr);
+	}
+	MF_DisplayCriticalError("mailfilter: database version: %d\n",DBVersion);
+	rc = sqlite3_close(sqldb);
+	if (rc)
+	{
+		MF_DisplayCriticalError("mailfilter: unable to close database file. %d\n",rc);
+	}
+
+	rc = sqlite3_open(dbFile.c_str(), &sqldb);
+	if (rc)
+	{
+		MF_DisplayCriticalError("mailfilter: unable to open database file. %d\n",rc);
+	}
+	rc = sqlite3_close(sqldb);
+	if (rc)
+	{
+		MF_DisplayCriticalError("mailfilter: unable to close database file. %d\n",rc);
 	}
 
 	// done! success!

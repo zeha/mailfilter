@@ -540,6 +540,9 @@ void MF_SMTP_Startup(void *dummy);
 #else
 DWORD WINAPI MF_Work_Startup(void *dummy);
 DWORD WINAPI MF_SMTP_Startup(void *dummy);
+#define ENOCONTEXT 5
+#define ENOTSUP 6
+#define EINUSE 7
 #endif // WIN32
 
 #define ERROR_SUCCESS	0

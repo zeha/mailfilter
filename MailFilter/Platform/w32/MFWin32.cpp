@@ -13,6 +13,9 @@
 
 #define _MFD_MODULE			"MFWin32.CPP"
 
+// Using _MAIN_ to get variables defined here.
+#define _MAILFILTER_MAIN_
+
 // Include MF.h
 #include "..\..\Main\MailFilter.h"
 
@@ -35,8 +38,8 @@ int main( int argc, char **argv )
 	MFT_NLM_ThreadCount++;
 
 	// Print url etc. to console
-	ConsolePrintf("\nThis is MailFilter/ax professional for Win32.\n  Copyright 2001-2003 Christian Hofstaedtler.\n  All Rights Reserved.\n");
-	ConsolePrintf(MF_Msg(CONMSG_MAIN_MODULEINFO));
+	printf("\nThis is MailFilter professional for Win32.\n  Copyright 2001-2004 Christian Hofstaedtler.\n  All Rights Reserved.\n");
+	printf(MF_Msg(CONMSG_MAIN_MODULEINFO));
 
 extern int MF_ParseCommandLine( int argc, char **argv );
 
@@ -45,8 +48,8 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		goto MF_WIN32_MAIN_TERMINATE;
 	
 	// Read Configuration from File
-	MF_GlobalConfiguration.config_mode_strict = true;
-	if (!MF_GlobalConfiguration.ReadFromFile(""))
+	MF_GlobalConfiguration->config_mode_strict = true;
+	if (!MF_GlobalConfiguration->ReadFromFile(""))
 		goto MF_WIN32_MAIN_TERMINATE;
 
 	// Init Status
@@ -60,7 +63,7 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 	sleep(1);
 	if( MF_Thread_Work == NULL )
 	{
-		ConsolePrintf(MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
+		printf(MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
 		MF_Thread_Work = 0;
 		goto MF_WIN32_MAIN_TERMINATE;
 	} else {
@@ -105,7 +108,7 @@ MF_WIN32_MAIN_TERMINATE:
 //		itoa(rc,xy,10);
 //		MessageBox(NULL,xy,"Error Number:",MB_OK);
 //		MessageBox(NULL,"Error during Execution.\nMailFilter is terminating.","MailFilter",MB_ICONSTOP);
-		ConsolePrintf("***FATAL ERROR***  -- Error Code: %d\n",rc);
+		printf("***FATAL ERROR***  -- Error Code: %d\n",rc);
 	}
 	return 0;
 }
