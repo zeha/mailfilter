@@ -253,9 +253,7 @@ static NETINET_DEFINE_CONTEXT
 
 
 /* Define Compatiblity things ...	*/
-// Console Printf ... 
-int __cdecl ConsolePrintf(const char* format, ... );
-#define consoleprintf	ConsolePrintf
+
 // open -> _open etc.
 #define open			_open
 #define delay(nTime)	Sleep(nTime)
@@ -535,7 +533,7 @@ static inline char *_mfd_strdup( const char * str , const char* szFuncName )
 // Message Support Macro
 #define MF_Msg(id)						programMesgTable[id]
 #define MF_NMsg(id)						(_MF_NUTCHAR)programMesgTable[id]
-#define MF_DisplayCriticalError(id)		consoleprintf(MF_Msg(id))
+#define MF_DisplayCriticalError(id)		fprintf(stderr,MF_Msg(id))
 #define MF_StatusNothing(void)			MF_StatusText("")
 
 // MFL Prototypes
@@ -594,6 +592,10 @@ DWORD WINAPI MF_SMTP_Startup(void *dummy);
 #endif // WIN32
 
 #define ERROR_SUCCESS	0
+
+#undef consoleprintf
+#undef ConsolePrintf
+
 
 /*
  *

@@ -49,7 +49,7 @@ int DLSetupNRM()
 	return 1;
 	
 handle_dynaload_err:
-	ConsolePrintf("MAILFILTER: ERROR: Could not get required symbol handles.\n\tPlease load PORTAL.NLM and HTTPSTK.NLM\n");
+	fprintf(stderr,"MAILFILTER: ERROR: Could not get required symbol handles.\n\tPlease load PORTAL.NLM and HTTPSTK.NLM\n");
 	DLDeSetupNRM();
 	return 0;
 }

@@ -235,12 +235,6 @@ public:
 				}
 			}
 			
-			consoleprintf("f %s %s %d %s %s\n",
-				(f1.action == MailFilter_Configuration::pass) ? "1" : "0",
-				(f2.action == MailFilter_Configuration::pass) ? "1" : "0",
-				rc, f1.expression.c_str(), f2.expression.c_str()
-				);
-			
 			return rc;
 		}
 };
@@ -419,7 +413,7 @@ static int MF_ConfigReadXXX()
 		
 		} else {
 		
-			ConsolePrintf("*** ERROR IMPORTING DEFAULT FILTER LIST ***\n");
+			fprintf(stderr,"*** ERROR IMPORTING DEFAULT FILTER LIST ***\n");
 		}
 
 		rc = 0;
@@ -469,7 +463,7 @@ MF_ConfigRead_ERR:
 		{	
 			if (NLM_noUserInterface)
 			{
-				ConsolePrintf("MFCONFIG: Either the Configuration File is not existant, corrupt or too old.\nMFCONFIG: Aborting Upgrade.\n");
+				fprintf(stderr,"MFCONFIG: Either the Configuration File is not existant, corrupt or too old.\nMFCONFIG: Aborting Upgrade.\n");
 			} else {
 			//**** CONFIG FILE RECOVERY *
 			NWSDisplayErrorText ( ERROR_CONFIGURATION_INVALID , NUT_SEVERITY_FATAL , MF_NutInfo , "" );
@@ -521,7 +515,7 @@ MF_ConfigRead_ERR:
 
 		if (rc)
 		{
-			ConsolePrintf("MFCONFIG: Error Code %d\n",rc);
+			fprintf(stderr,"MFCONFIG: Error Code %d\n",rc);
 			return FALSE;
 		}
 	}

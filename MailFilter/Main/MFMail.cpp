@@ -95,7 +95,7 @@ MailFilter_MailData* MailFilter_MailRead(char* szInFile) {
 	MailFilter_MailData* m = MailFilter_MailInit(NULL,0);
 	if (m == NULL)
 	{
-		consoleprintf("MAILFILTER: EEEK! MailInit returned NULL! TRACECHECK 4001\n");
+		fprintf(stderr,"MAILFILTER: EEEK! MailInit returned NULL! TRACECHECK 4001\n");
 		fclose(fp);
 		return NULL;
 	}
@@ -227,7 +227,7 @@ MailFilter_MailData* MailFilter_MailInit(char* szFileName, int iMailSource)
 		(mail->szReceivedFrom == NULL)
 		)
 		{
-			consoleprintf("MAILFILTER: EEEEEK!\n\tMEMORY ALLOCATION ERROR!\n\tI WILL ABEND IN A FEW SECONDS...\n\tGOOD ADVICE: SAVE AND LOG OUT NOW.\n");
+			fprintf(stderr,"MAILFILTER: EEEEEK!\n\tMEMORY ALLOCATION ERROR!\n\tI WILL ABEND IN A FEW SECONDS...\n\tGOOD ADVICE: SAVE AND LOG OUT NOW.\n");
 			return NULL;
 		}
 		

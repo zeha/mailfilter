@@ -128,7 +128,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 #endif
 			case '?':
 			case 'h':
-				consoleprintf ("MAILFILTER: Usage:\n\t%s [-dv] [-t app] [ConfigurationPath]\n\t-d debug\n\t-v verbose\n\t-t args are: \"server\" \"config\" \"restore\" \"nrm\"\n",argv[0]);
+				fprintf(stderr,"MAILFILTER: Usage:\n\t%s [-dv] [-t app] [ConfigurationPath]\n\t-d debug\n\t-v verbose\n\t-t args are: \"server\" \"config\" \"restore\" \"nrm\"\n",argv[0]);
 				return false;
 				break;
 			case 't':
@@ -187,7 +187,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 				
 				if (!bTArgOkay)
 				{
-					consoleprintf("MAILFILTER: Invalid argument passed to -t.\n");
+					fprintf(stderr,"MAILFILTER: Invalid argument passed to -t.\n");
 					return false;
 				}
 				break;
@@ -198,13 +198,13 @@ int MF_ParseCommandLine( int argc, char **argv )
 
 	if (ix_optind < argc)
 	{
-		consoleprintf ("MAILFILTER: Using %s as Configuration Directory.\n",argv[ix_optind]);
+		fprintf(stderr,"MAILFILTER: Using %s as Configuration Directory.\n",argv[ix_optind]);
 		MF_GlobalConfiguration.config_directory = argv[ix_optind];
 		
 #ifdef IXPLAT_WIN32
 	} else {
 		char* xdir = GetRegValue(HKEY_LOCAL_MACHINE,"SOFTWARE\\Hofstaedtler IE GmbH\\MailFilter","InstallDir","C:\\Progra~1\\MailFilter");
-		consoleprintf ("MAILFILTER: Using %s as Configuration Directory.\n",xdir);
+		fprintf(stderr,"MAILFILTER: Using %s as Configuration Directory.\n",xdir);
 		MF_GlobalConfiguration.config_directory = xdir;
 	}
 #endif
@@ -225,11 +225,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 
 void MF_OutOfMemoryHandler()
 {
-#ifdef N_PLAT_NLM			// NETWARE
-	ConsolePrintf("MAILFLT:	OUT OF MEMORY!\n	MailFilter is out of memory. Operation cancelled.\n");
-#else						// ALL OTHERS ....
-	printf("MAILFLT:	OUT OF MEMORY!\n	MailFilter is out of memory. Operation cancelled.\n");
-#endif
+	fprintf(stderr,"MAILFLT:	OUT OF MEMORY!\n	MailFilter is out of memory. Operation cancelled.\n");
 }
 
 //
@@ -359,7 +355,7 @@ void MF_GetServerName(char* serverName, unsigned long bufSize)	//, char* sourceP
 
 	if (serverName[0] == '\0')
 	{
-		consoleprintf("MAILFILTER: ERROR: Could not detect servername.\n");
+		fprintf(stderr,"MAILFILTER: ERROR: Could not detect servername.\n");
 	}
 
 #endif

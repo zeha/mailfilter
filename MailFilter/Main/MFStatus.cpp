@@ -42,7 +42,6 @@ bool MF_StatusInit()
 	
 	if (MF_Log_FileHandle == NULL)
 	{
-		//ConsolePrintf("MAILFILTER: *** UNABLE TO INITIALIZE LOGGING ***\n");
 		MF_DisplayCriticalError(LOGGING_ERROR_INIT);
 		return false;
 	}
@@ -83,7 +82,7 @@ void MF_StatusFree()
 
 	if (MF_Log_FileHandle != NULL)
 	{
-//		ConsolePrintf(programMesgTable[CONMSG_LOGGING_DISABLED]);
+//		fprintf(stderr,programMesgTable[CONMSG_LOGGING_DISABLED]);
 		fclose( MF_Log_FileHandle );
 		MF_Log_FileHandle = NULL;
 	}

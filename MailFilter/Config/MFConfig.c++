@@ -387,7 +387,7 @@ int MF_Filter_InitListsV6()
 
 	if (filterList == NULL)
 	{
-		ConsolePrintf("MAILFILTER: Error while opening configuration file.\n");
+		fprintf(stderr,"MAILFILTER: Error while opening configuration file.\n");
 		return FALSE;
 	}
 
@@ -664,7 +664,7 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 	} catch (std::exception e)
 	{
 //	 	NetwareAlert(
-		consoleprintf("MAILFILTER: Uncaught Exception in the configuration reader.\n\n");
+		fprintf(stderr,"MAILFILTER: Uncaught Exception in the configuration reader.\n\n");
 	}
 */
 
@@ -678,7 +678,7 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 
 	std::string pConfigFile = (alternateFilename == "" ? this->config_file : alternateFilename);
 
-	consoleprintf("MAILFILTER: Configuration: %s\n",this->config_directory.c_str());
+	fprintf(stderr,"MAILFILTER: Configuration: %s\n",this->config_directory.c_str());
 	MFD_Out(MFD_SOURCE_CONFIG,"MFC: Starting with %s.\n",pConfigFile.c_str());
 
 	// compatiblity for MF Licensing Stages
@@ -755,7 +755,7 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 */
 	this->LogDirectory = this->MFLTRoot + IX_DIRECTORY_SEPARATOR_STR + "MFLOG" + IX_DIRECTORY_SEPARATOR_STR; //,this->LogDirectory);
 	
-//	consoleprintf("Logging to: %s\n",this->LogDirectory.c_str());
+//	fprintf(stderr,"Logging to: %s\n",this->LogDirectory.c_str());
 
 	this->DomainName = MF_ConfigReadString(pConfigFile, 3);
 
@@ -935,7 +935,7 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 	} catch (std::exception e)
 	{
 //	 	NetwareAlert(
-		consoleprintf("MAILFILTER: Uncaught Exception in the configuration reader.\n\n");
+		fprintf(stderr,"MAILFILTER: Uncaught Exception in the configuration reader.\n\n");
 	}
 */
 
@@ -951,7 +951,7 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 	std::string pConfigFile = (alternateFilename == "" ? this->config_file : alternateFilename);
 	std::string pConfigFileBackup = pConfigFile + ".BAK";
 
-	consoleprintf("MFC: Saving to %s.\n",pConfigFile.c_str());
+	fprintf(stderr,"MFC: Saving to %s.\n",pConfigFile.c_str());
 	MFD_Out(MFD_SOURCE_CONFIG,"MFC: Saving to %s.\n",pConfigFile.c_str());
 
 	rename(pConfigFile.c_str(),pConfigFileBackup.c_str());

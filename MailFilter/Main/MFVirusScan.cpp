@@ -332,9 +332,9 @@ MFD_Out(MFD_SOURCE_VSCAN,"** Starting...\n");
 		{
 */		
 		int iWrote = 0;
-//consoleprintf("write: %d chars, curPos=%d\n", strlen(szScanBuffer),curPos);
+//fprintf(stderr,"write: %d chars, curPos=%d\n", strlen(szScanBuffer),curPos);
 			iWrote = MimeEncoderWrite (mimeCoder, szScanBuffer, curPos);
-//consoleprintf("-> %d\n",iWrote);
+//fprintf(stderr,"-> %d\n",iWrote);
 			
 			if (iWrote == 1)
 				bCodeDone = true;

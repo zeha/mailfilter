@@ -668,7 +668,7 @@ int MF_RuleExec_RE(const char* expression, char* scan)
 int MF_RuleExec( MailFilter_MailData* m )
 {
 #ifdef _TRACE
-consoleprintf("***RuleExec called***\n");
+fprintf(stderr,("***RuleExec called***\n");
 #endif
 
 	int curItem = 0;
@@ -884,7 +884,7 @@ consoleprintf("***RuleExec called***\n");
 			if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_COPY)
 			{
 #ifdef _TRACE
-consoleprintf("**-- copy matches\n");
+fprintf(stderr,("**-- copy matches\n");
 #endif
 				m->bCopy = true;
 				iResult = 0;
@@ -1348,13 +1348,13 @@ static int MF_ExamineFile(MailFilter_MailData* m)
 					}
 				}
 			}
-//ConsolePrintf(" XNLX");
+//fprintf(stderr,(" XNLX");
 			while ((curChr != '\n') && (curChr != -1))
 			{
 				if (curPos >= 2000) break;
 				curChr = fgetc(mailFile);
 
-//	ConsolePrintf(" %c[%d/%d] ",curChr,curChr,curPos);
+//	fprintf(stderr,(" %c[%d/%d] ",curChr,curChr,curPos);
 				curPos++;
 
 				if ((curChr == '\n') || (curChr == -1))
@@ -1413,7 +1413,7 @@ if ( feof(mailFile) )
 				break;	// end
 			}
 
-//ConsolePrintf(" XNLS:%d ",bNextLineStartSpace);
+//fprintf(stderr,(" XNLS:%d ",bNextLineStartSpace);
 			
 			if (bNextLineStartSpace)
 				curPos--;
@@ -4130,7 +4130,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 			{
 				if (lc == 0)
 				{
-					ConsolePrintf("\nMailFilter: Unexpected Error (Code: WTLLNE)\n");
+					fprintf(stderr,"\nMailFilter: Unexpected Error (Code: WTLLNE)\n");
 					shallTerminate=255;
 					break;
 				} else {
@@ -4148,8 +4148,8 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 						
 						if (rCode)
 						{
-							ConsolePrintf("\nMailFilter: Unexpected Error (Code: CEIFF)\n");
-//							ConsolePrintf("  Error Code was: %d\n",errcode);
+							fprintf(stderr,"\nMailFilter: Unexpected Error (Code: CEIFF)\n");
+//							fprintf(stderr,"  Error Code was: %d\n",errcode);
 							shallTerminate=255;
 							break;
 						}
@@ -4168,7 +4168,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 						etime = (time_t)atol(ev);
 						if ( (ctime-etime) > 2592000 )
 						{
-							ConsolePrintf("\nMailFilter: *** Evaluation Period Expired! ***\n");
+							fprintf(stderr,"\nMailFilter: *** Evaluation Period Expired! ***\n");
 							shallTerminate=255;
 							break;
 						}
@@ -4257,7 +4257,7 @@ MFD_Out(MFD_SOURCE_WORKER,"Schedule: Found %s for Sched.\n",_MF_DIRECTORY_FILENA
 		// Check for Invalid License.
 		if ((tlc > 500) && (lc == -1))
 		{
-			ConsolePrintf("\nMailFilter: Unexpected Error (Code: TLWOLC)\n");
+			fprintf(stderr,"\nMailFilter: Unexpected Error (Code: TLWOLC)\n");
 			shallTerminate=255;
 			break;
 		}
@@ -4276,7 +4276,7 @@ MFD_Out(MFD_SOURCE_WORKER,"Schedule: Found %s for Sched.\n",_MF_DIRECTORY_FILENA
 			if (lc != MFL_Certified)
 			{
 				// Break the Cycle.
-				ConsolePrintf("\nMailFilter: Unexpected Error (Code: WTLDLC)\n");
+				fprintf(stderr,"\nMailFilter: Unexpected Error (Code: WTLDLC)\n");
 				shallTerminate=255;
 				break;
 			}

@@ -146,12 +146,12 @@ void MF_ExitProc(void)
 		// DS Logout
 		ccode = NWDSLogout ( MFT_NLM_DS_Context );
 		if(ccode)
-			ConsolePrintf("MailFilter: NWDSLogout returned %X\n", ccode);
+			fprintf(stderr,"MailFilter: NWDSLogout returned %X\n", ccode);
 
 		// DSLIB Free Context 
 		ccode = NWDSFreeContext( MFT_NLM_DS_Context );
 		if(ccode)
-			ConsolePrintf("MailFilter: NWDSFreeContext returned %X\n", ccode);
+			fprintf(stderr,"MailFilter: NWDSFreeContext returned %X\n", ccode);
 
 	}
 
@@ -213,7 +213,7 @@ void MF_NutHandlerKeyF7 (void *handle)		// Handler F7 = Exit!()
 	if (MF_NutVerifyExit())
 	{
 		MF_StatusText("Shutting Down On Keyboard Request ...");
-		ConsolePrintf("MAILFILTER: Shutting Down On Keyboard Request ...\n");
+		fprintf(stderr,"MAILFILTER: Shutting Down On Keyboard Request ...\n");
 
 		// Disable Func. Keys so user can't exit a 2nd time
 		NWSDisableAllInterruptKeys((NUTInfo*)handle);
@@ -815,7 +815,7 @@ static bool MF_NLM_InitDS()
 /*	ccode = NWCallsInit(NULL, NULL);
 	if(ccode)
 	{
-		ConsolePrintf("MailFilter: NWCallsInit returned %X\n", ccode);
+		fprintf(stderr,"MailFilter: NWCallsInit returned %X\n", ccode);
 	 	return false;
 	}
 */
@@ -823,7 +823,7 @@ static bool MF_NLM_InitDS()
 	dsccode = NWCLXInit(NULL, NULL);
 	if(dsccode)
 	{
-		ConsolePrintf("MailFilter: NWCLXInit returned %X\n", dsccode);
+		fprintf(stderr,"MailFilter: NWCLXInit returned %X\n", dsccode);
 	 	return false;
 	}
 
@@ -832,7 +832,7 @@ static bool MF_NLM_InitDS()
 	dsccode = NWInitUnicodeTables( lConvInfo.country_id, lConvInfo.code_page );
 	if(dsccode)
 	{
-		ConsolePrintf("MailFilter: NWInitUnicodeTables error %X \n", dsccode);
+		fprintf(stderr,"MailFilter: NWInitUnicodeTables error %X \n", dsccode);
 		return false;
 	}
 
@@ -840,7 +840,7 @@ static bool MF_NLM_InitDS()
 	dsccode = NWNetInit(NULL,NULL);
 	if(dsccode)
 	{
-		ConsolePrintf("MailFilter: NWNetInit returned %X\n",dsccode);
+		fprintf(stderr,"MailFilter: NWNetInit returned %X\n",dsccode);
 	 	return false;
 	}
 
@@ -865,7 +865,7 @@ static bool MF_NLM_InitDS()
 					break;
 				default:
 					MF_StatusText("Login: Generic Error. Please check Console.");
-					ConsolePrintf("MailFilter: Login Error: NWDSLogin failed (%d)!\n",ccode);
+					fprintf(stderr,"MailFilter: Login Error: NWDSLogin failed (%d)!\n",ccode);
 			}
 			return false;
 		}
@@ -873,7 +873,7 @@ static bool MF_NLM_InitDS()
 		SetCurrentFileServerID(0);
 //		SetCurrentConnection(-1);
 		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		ConsolePrintf("CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
+		fprintf(stderr,"CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
 //		NWGetConnectionNumber( (NWCONN_HANDLE)MFT_NLM_Connection_HandleCLIB, &connnum );
 
 /*		// Create authenticated Connection.
@@ -882,14 +882,14 @@ static bool MF_NLM_InitDS()
 		if (dsccode != 0)
 		{
 			MF_StatusText("Login: Authentication to server failed.");
-			ConsolePrintf("MailFilter: Login Error: NWDSAuthenticate returned %d!\n",ccode);
+			fprintf(stderr,"MailFilter: Login Error: NWDSAuthenticate returned %d!\n",ccode);
 		}
 
 *//*		LONG oldTask = SetCurrentTask(-1);
 		LONG myTask = GetCurrentTask();
 *//*		SetCurrentConnection(-1);
 		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		ConsolePrintf("CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
+		fprintf(stderr,"CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
 *//*
 
 		// Login as the Server object ...
@@ -902,7 +902,7 @@ static bool MF_NLM_InitDS()
 			0x0004,
 			"");
 		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		ConsolePrintf("CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
+		fprintf(stderr,"CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
 
 		if(dsccode){
 			switch (dsccode) {
@@ -916,7 +916,7 @@ static bool MF_NLM_InitDS()
 					break;
 				default:
 					MF_StatusText("Login: Generic Error. Please check Console.");
-					ConsolePrintf("MailFilter: Login Error: NWDSLogin failed (%d)!\n",dsccode);
+					fprintf(stderr,"MailFilter: Login Error: NWDSLogin failed (%d)!\n",dsccode);
 			}
 			ReturnBlockOfTasks(myTask,1);
 			Logout();
@@ -924,7 +924,7 @@ static bool MF_NLM_InitDS()
 		}
 
 		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		ConsolePrintf("CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
+		fprintf(stderr,"CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
 		SetCurrentTask(oldTask);
 */
 		SetCurrentConnection(0);
@@ -935,14 +935,14 @@ static bool MF_NLM_InitDS()
 		*/
 /*		dsccode = NWDSCreateContextHandle (&MFT_NLM_DS_Context);
 		if(dsccode) {
-			 ConsolePrintf("MailFilter: Error creating context. %d.\n",dsccode);
+			 fprintf(stderr,"MailFilter: Error creating context. %d.\n",dsccode);
 			 MFT_NLM_DS_Context = NULL;
 			 return false;
 		}
 
 		dsccode = NWDSSetContext(MFT_NLM_DS_Context, DCK_NAME_CONTEXT, (void*)"[Root]");
 		if(dsccode){
-			 ConsolePrintf("MailFilter: Error: NWDSSetContext() returned: %d\n",dsccode);
+			 fprintf(stderr,"MailFilter: Error: NWDSSetContext() returned: %d\n",dsccode);
 			 return false;
 		}
 
@@ -953,7 +953,7 @@ static bool MF_NLM_InitDS()
 		char* szServerName = (char*)_mfd_malloc(MAX_PATH,"MFNLM: szServerName");
 		MF_GetServerName ( szServerName );
 
-		ConsolePrintf( "MailFilter: Opening Connection to %s ...\n", szServerName );
+		fprintf(stderr, "MailFilter: Opening Connection to %s ...\n", szServerName );
 		
 		dsccode = NWCCOpenConnByName(
 	             /* Handle to resolve name */  (nuint)0, 
@@ -968,7 +968,7 @@ static bool MF_NLM_InitDS()
 		if (dsccode)
 		{
 			MF_StatusText("Error connecting to target server!");
-			ConsolePrintf("MailFilter: NWCCOpenConnByName returned %d.\n",dsccode);
+			fprintf(stderr,"MailFilter: NWCCOpenConnByName returned %d.\n",dsccode);
 			MFT_NLM_Connection_Handle = NULL;
 			return false;
 		}
@@ -977,13 +977,13 @@ static bool MF_NLM_InitDS()
 		NWCCSetCurrentConnection ( MFT_NLM_Connection_Handle );
 		
 		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		ConsolePrintf("Connection: %d\n",MFT_NLM_Connection_HandleCLIB);
+		fprintf(stderr,"Connection: %d\n",MFT_NLM_Connection_HandleCLIB);
 
 
 
 		NWCCSetCurrentConnection ( MFT_NLM_Connection_Handle );
 		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		ConsolePrintf("CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
+		fprintf(stderr,"CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
 
 
 
@@ -1008,7 +1008,7 @@ static bool MF_NLM_InitDS()
 					break;
 				default:
 					MF_StatusText("Login: Generic Error. Please check Console.");
-					ConsolePrintf("MailFilter: Login Error: NWDSLogin failed (%d)!\n",ccode);
+					fprintf(stderr,"MailFilter: Login Error: NWDSLogin failed (%d)!\n",ccode);
 			}
 			return false;
 		}
@@ -1019,7 +1019,7 @@ static bool MF_NLM_InitDS()
 		if (dsccode != 0)
 		{
 			MF_StatusText("Login: Authentication to server failed.");
-			ConsolePrintf("MailFilter: Login Error: NWDSAuthenticate returned %d!\n",ccode);
+			fprintf(stderr,"MailFilter: Login Error: NWDSAuthenticate returned %d!\n",ccode);
 		}
 */
 
@@ -1037,10 +1037,10 @@ static bool MF_NLM_InitDS()
 					MF_StatusText("Login Failed.");
 					break;
 				case 150:
-					ConsolePrintf("MailFilter: Out of memory!\n");
+					fprintf(stderr,"MailFilter: Out of memory!\n");
 					break;
 				default:
-					ConsolePrintf("MailFilter: Login Failed with error %d.\n",ccode);
+					fprintf(stderr,"MailFilter: Login Failed with error %d.\n",ccode);
 					break;
 			}
 			return false;
@@ -1048,7 +1048,7 @@ static bool MF_NLM_InitDS()
 		
 		NWCCSetCurrentConnection ( MFT_NLM_Connection_Handle );
 		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		ConsolePrintf("CLIB Connection (probably remote): %d\n",MFT_NLM_Connection_HandleCLIB);
+		fprintf(stderr,"CLIB Connection (probably remote): %d\n",MFT_NLM_Connection_HandleCLIB);
 	*/}
 #endif
 	return true;
@@ -1057,7 +1057,7 @@ static bool MF_NLM_InitDS()
 #ifdef _MF_MEMTRACE
 static void _mfd_tellallocccountonexit()
 {
-	ConsolePrintf("MAILFILTER: AllocCount: %d\n",MFD_AllocCounts);
+	fprintf(stderr,"MAILFILTER: AllocCount: %d\n",MFD_AllocCounts);
 }
 #endif //_MF_MEMTRACE
 
@@ -1149,7 +1149,7 @@ MF_MAIN_RUNLOOP:
 		if( MF_Thread_Work == EFAILURE )
 	#endif
 		{
-			ConsolePrintf(MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
+			fprintf(stderr,MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
 			MF_Thread_Work = 0;
 			goto MF_MAIN_TERMINATE;
 		}
@@ -1175,7 +1175,7 @@ MF_MAIN_RUNLOOP:
 				if( MF_Thread_NRM == EFAILURE )
 				#endif
 				{
-					//ConsolePrintf(MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
+					//fprintf(stderr,MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
 					MF_StatusText("ERROR: NRM Thread Startup Error. NRM NOT loaded.");
 					MF_Thread_NRM = 0;
 		//			goto MF_MAIN_TERMINATE;
@@ -1198,7 +1198,7 @@ MF_MAIN_RUNLOOP:
 			MF_Thread_SMTP = BeginThread(MF_SMTP_Startup,NULL,65536,NULL);			// Set 64k Stack for new thread
 			if( MF_Thread_SMTP == EFAILURE )
 			{
-				ConsolePrintf(MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
+				fprintf(stderr,MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
 				MF_Thread_SMTP = 0;
 				goto MF_MAIN_TERMINATE;
 			}
@@ -1284,8 +1284,8 @@ MF_MAIN_RUNLOOP:
 			// Read Configuration from File
 			if (!MF_GlobalConfiguration.ReadFromFile(""))
 			{
-				consoleprintf("MAILFILTER: Restart failed\n");
-				consoleprintf("\tConfiguration Module reported an unrecoverable error.\n");
+				fprintf(stderr,"MAILFILTER: Restart failed\n");
+				fprintf(stderr,"\tConfiguration Module reported an unrecoverable error.\n");
 				goto MF_MAIN_TERMINATE;
 			}
 			
@@ -1298,16 +1298,16 @@ MF_MAIN_RUNLOOP:
 				// Read Configuration from File
 				if (!MF_GlobalConfiguration.ReadFromFile(""))
 				{
-					consoleprintf("MAILFILTER: Restart failed\n");
-					consoleprintf("\tConfiguration Module reported an unrecoverable error.\n");
+					fprintf(stderr,"MAILFILTER: Restart failed\n");
+					fprintf(stderr,"\tConfiguration Module reported an unrecoverable error.\n");
 					goto MF_MAIN_TERMINATE;
 				}
 			}
 							
 			if (!MailFilterApp_Server_InitNut())
 			{
-				consoleprintf("MAILFILTER: Restart failed\n");
-				consoleprintf("\tUI Module reported an unrecoverable error.\n");
+				fprintf(stderr,"MAILFILTER: Restart failed\n");
+				fprintf(stderr,"\tUI Module reported an unrecoverable error.\n");
 				goto MF_MAIN_TERMINATE;
 			}
 
@@ -1343,11 +1343,11 @@ int main( int argc, char *argv[ ])
 #ifdef MF_WITH_I18N
 	if (LoadLanguageMessageTable(&programMesgTable, &MFT_I18N_MessageCount, &MFT_I18N_LanguageID))
 	{
-		ConsolePrintf("MAILFILTER: CRITICAL ERROR:\n\tCan't load Message Tables.\n");
+		fprintf(stderr,"MAILFILTER: CRITICAL ERROR:\n\tCan't load Message Tables.\n");
 		exit(0); 
 	}
 #ifndef _MF_CLEANBUILD
-	ConsolePrintf("MAILFILTER: Language ID: %l, Messages Loaded: %l\n",MFT_I18N_LanguageID,MFT_I18N_MessageCount);
+	fprintf(stderr,"MAILFILTER: Language ID: %l, Messages Loaded: %l\n",MFT_I18N_LanguageID,MFT_I18N_MessageCount);
 #endif
 #endif
 
@@ -1361,7 +1361,7 @@ int main( int argc, char *argv[ ])
 	// Rename UI Thread
 	RenameThread( GetThreadID() , MF_Msg(THREADNAME_MAIN) );
 	
-	consoleprintf("MAILFILTER: Info: This is the Legacy version of MailFilter!\n\tUse only on NetWare 5.0, NetWare 5.1 prior SP6 or NetWare 6.0 prior SP3.\n");
+	fprintf(stderr,"MAILFILTER: Info: This is the Legacy version of MailFilter!\n\tUse only on NetWare 5.0, NetWare 5.1 prior SP6 or NetWare 6.0 prior SP3.\n");
 #else
 	{
 		struct utsname u;
@@ -1373,7 +1373,7 @@ int main( int argc, char *argv[ ])
 			(u.servicepack < 2)
 			)
 			{
-				consoleprintf("MAILFILTER: Detected NetWare 6.0 prior to SP3.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
+				fprintf(stderr,"MAILFILTER: Detected NetWare 6.0 prior to SP3.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
 				return 0;
 			}
 		if ( 
@@ -1382,7 +1382,7 @@ int main( int argc, char *argv[ ])
 			(u.servicepack < 6)
 			)
 			{
-				consoleprintf("MAILFILTER: Detected NetWare 5.1 prior to SP6.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
+				fprintf(stderr,"MAILFILTER: Detected NetWare 5.1 prior to SP6.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
 				return 0;
 			}
 		if ( 
@@ -1390,7 +1390,7 @@ int main( int argc, char *argv[ ])
 			(u.netware_minor == 0)
 			)
 			{
-				consoleprintf("MAILFILTER: Detected NetWare 5.0.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
+				fprintf(stderr,"MAILFILTER: Detected NetWare 5.0.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
 				return 0;
 			}
 		
@@ -1424,7 +1424,7 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		MFD_ScreenTag = AllocateResourceTag( MF_NLMHandle, "MailFilter Debug Screen", ScreenSignature);
 		if (OpenScreen ( "MailFilter Debug", MFD_ScreenTag, &MFD_ScreenID))
 		{
-			consoleprintf("MAILFILTER: Unable to create debug screen!\n");
+			fprintf(stderr,"MAILFILTER: Unable to create debug screen!\n");
 			goto MF_MAIN_TERMINATE;
 		}
 #else
@@ -1437,7 +1437,7 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 	eventHandleShutDown = RegisterForEvent(EVENT_DOWN_SERVER,	eventShutDownReport,	eventShutDownWarn);
 	if(eventHandleShutDown == -1)
 	{
-		ConsolePrintf(MF_Msg(CONMSG_MAIN_ERRREGSHUTDOWNHANDLER));
+		fprintf(stderr,MF_Msg(CONMSG_MAIN_ERRREGSHUTDOWNHANDLER));
 		goto MF_MAIN_TERMINATE;
 	}
 	SetAutoScreenDestructionMode(true);
@@ -1525,7 +1525,7 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		
 	default:
 
-		ConsolePrintf("MAILFILTER: Could not run your selected application.\n\tMaybe it is not compiled-in.\n");
+		fprintf(stderr,"MAILFILTER: Could not run your selected application.\n\tMaybe it is not compiled-in.\n");
 	
 		rc = -1;
 		break;
