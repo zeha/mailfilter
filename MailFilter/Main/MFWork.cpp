@@ -1023,7 +1023,7 @@ MFD_Out(MFD_SOURCE_RULE,"\n");
 // * fileIn:			INPUT filename
 // * workingFile:		OUTPUT filename
 // * beVerbose:			1 = print messages to log/window, 0 = act silent
-int MF_MoveFileToFile(const char *fileIn, const char *workingFile, int beVerbose)
+int MF_MoveFileToFile(const char *fileIn, const char *workingFile, bool beVerbose)
 {
 	int rc;
 #if defined(N_PLAT_NLM) && (!defined(__NOVELL_LIBC__))
@@ -1088,7 +1088,6 @@ int MF_MoveFileToFile(const char *fileIn, const char *workingFile, int beVerbose
 		
 		if (rc == 0) rc=unlink(fileIn);
 			else	 rc=unlink(workingFile);
-		
 	}
 
 #endif
@@ -1120,7 +1119,7 @@ int MF_MoveFileToFile(const char *fileIn, const char *workingFile, int beVerbose
 // destDir:		Destination Directory
 // beVerbose:	See MoveFileToFile
 //
-int MF_MoveFileToDir(const char *fileIn, const char *destDir, int beVerbose)
+int MF_MoveFileToDir(const char *fileIn, const char *destDir, bool beVerbose)
 {
 	int rc;
 
@@ -1159,7 +1158,71 @@ int MF_MoveFileToDir(const char *fileIn, const char *destDir, int beVerbose)
 	_mfd_free(workingFile,"MoveFile2Dir");
 	return rc;
 }
-	   
+
+static int MF_CopyFileToDir(const char *fileIn, const char *destDir)
+{
+	int rc = -1;
+	FILE* fIn;
+	FILE* fOut;
+
+	char* workingFile;
+	workingFile = (char*)_mfd_malloc(MAX_PATH,"CopyFile2Dir");
+
+#ifndef __NOVELL_LIBC__
+	char* pFilename;
+	char* pExtension;
+
+	pExtension = (char*)_mfd_malloc(MAX_PATH,"CopyFile2Dir");
+	pFilename = (char*)_mfd_malloc(MAX_PATH,"CopyFile2Dir");
+
+	if (workingFile == NULL)		{ MF_OutOfMemoryHandler();	return 239; }
+	if (pExtension == NULL)			{ MF_OutOfMemoryHandler();	return 239; }
+	if (pFilename == NULL)			{ MF_OutOfMemoryHandler();	return 239; }
+
+	_splitpath(fileIn,NULL,NULL,pFilename,pExtension);
+	sprintf(workingFile,"%s%s%s",destDir,pFilename,pExtension);
+
+#else
+    char server[48+1], volume[256+1], directory[512+1],
+    filename[256+1], extension[256+1];
+    int elements, flags;
+      
+    deconstruct(fileIn, server, volume, directory, filename, extension, &elements, &flags);
+	sprintf(workingFile,"%s%s",destDir,filename);
+#endif
+
+	// now! copy!
+	fIn = fopen(fileIn,"r");
+	if (fIn == NULL)
+	{
+		rc = EINUSE;
+	} else {
+		fOut = fopen(workingFile,"w");
+		if (fOut == NULL)
+		{
+			rc = EINUSE;
+		} else {
+			// go.
+			char buf[250];
+			size_t l = 0;
+			while((l = fread(buf,sizeof(char),250,fIn)) > 0)
+			{
+				fwrite(buf,sizeof(char),l,fOut);
+			}
+			fclose(fOut);
+		}
+		fclose(fIn);
+	}
+
+#ifndef __NOVELL_LIBC__
+	_mfd_free(pFilename,"MoveFile2Dir");
+	_mfd_free(pExtension,"MoveFile2Dir");
+#endif
+
+	_mfd_free(workingFile,"CopyFile2Dir");
+	return rc;
+}
+
 static int MFVS_PassMailToVirusScan(MailFilter_MailData* m)//const char* fileName, const char* fileIn, const char* fileOut, char* szScanDir)
 {
 	char szScanFile[MAX_PATH];
@@ -3310,7 +3373,24 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 				sprintf(fileIn,  "%s%s", MFT_GWIA_ResultDirIn,  e);
 
 				if (access(fileIn,W_OK) == 0)
+				{
+					/* code for icc-* and vm* servers to copy status mail in a seperate directory for debugging */
+					if (
+						(
+						(MF_GlobalConfiguration->ServerName[0] == 'V') && 
+						(MF_GlobalConfiguration->ServerName[1] == 'M') ) 
+						||
+						(
+						(MF_GlobalConfiguration->ServerName[0] == 'I') && 
+						(MF_GlobalConfiguration->ServerName[1] == 'C') && 
+						(MF_GlobalConfiguration->ServerName[2] == 'C') ) 
+					   )
+					{
+						MF_CopyFileToDir(fileIn,"SYS:\\TMP\\");
+					}
+					/* end debug code */
 					MF_MoveFileToDir(fileIn,MFT_GWIA_ResultDirOut,false);
+				}
 
 				ThreadSwitch();
 			}

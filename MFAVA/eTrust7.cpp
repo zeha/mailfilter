@@ -1,6 +1,5 @@
 #include <string>
 #include <fstream>
-#include <ostream>
 
 #include <screen.h>
 #include <stdio.h>

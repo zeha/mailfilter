@@ -340,6 +340,11 @@ int UnRegisterMarshalledInterfaces()
 	return ESUCCESS;
 }
 
+extern "C" {
+	int __init_malloc();
+	int __deinit_malloc();
+}
+
 // **
 // ** Library Init
 // **
@@ -370,6 +375,11 @@ int DllMain								// returns TRUE (things okay), FALSE (failure)
 			return TRUE;
 
 		case DLL_NLM_STARTUP:		// this is our start-up initialization
+		
+			// DO THIS AS SOON AS POSSIBLE.
+			__init_malloc();
+			//
+		
 			gLibId        = (int) hinstDLL;
 			gModuleHandle = lvpReserved;
 			gLibScreen    = getconsolehandle();
@@ -462,6 +472,7 @@ int DllMain								// returns TRUE (things okay), FALSE (failure)
 			
 			UnRegisterMarshalledInterfaces();
 				
+			__deinit_malloc();
 			return TRUE;
 
 	}
