@@ -6,11 +6,11 @@
 	Sources:		parts out of zip.h from zlib/contrib/minizip
 */
 
-#define _MFD_MODULE "MFBlacklist.cpp"
+#define _MFD_MODULE "MFZip.cpp"
 #include "MailFilter.h"
 #include "MFZip.h"
 
-MFZip::MFZip(char* zipFilename, int compressLevel, unsigned int flags)
+MFZip::MFZip(const char* zipFilename, int compressLevel, unsigned int flags)
 {
 	this->compressionLevel = compressLevel;
 	
@@ -39,7 +39,7 @@ MFZip::~MFZip()
 	}
 }
 
-int MFZip::AddFile(char* innerFilename, char* localFilename)
+int MFZip::AddFile(const char* innerFilename, const char* localFilename)
 {
 	int err;
 	MFZip_Fileinfo zi;

@@ -13,10 +13,10 @@
 #define MFZip_WRITEBUFFERSIZE (16384)
 typedef void* zipF;
 
-#define MFZip_OK                                  (0)
-#define MFZip_ERRNO               (Z_ERRNO)
-#define MFZip_PARAMERROR                  (-102)
-#define MFZip_INTERNALERROR               (-104)
+#define MFZip_OK                        (0)
+#define MFZip_ERRNO                     (-1) // Z_ERRNO
+#define MFZip_PARAMERROR                (-102)
+#define MFZip_INTERNALERROR             (-104)
 #define MFZip_NOZIPFILE					(-200)
 #define MFZip_ERR_INNERFILEOPEN			(-210)
 #define MFZip_ERR_INNERFILEREAD			(-211)
@@ -74,9 +74,9 @@ class MFZip
 {
 public:
 	/* flags: currently only >0 results in unlink() first */
-	MFZip(char* zipFilename, int compressLevel, unsigned int flags);
+	MFZip(const char* zipFilename, int compressLevel, unsigned int flags);
 	/* innerfilename: how the file gets called, local: filename on local system */
-	int AddFile(char* innerFilename, char* localFilename);
+	int AddFile(const char* innerFilename, const char* localFilename);
 	/* don't forget to call the destructor; it closes the zip file */
 	virtual ~MFZip();
 

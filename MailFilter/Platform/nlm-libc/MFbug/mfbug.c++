@@ -15,25 +15,52 @@
 #include <stdlib.h>
 #include <stdarg.h> 
 #include "MFZip.h"
+#include "MFUnZip.h"
+#include "mfbug2.h"
 
 #define PATH_CONFIGTXT "SYS:\\SYSTEM\\MFBUG.TXT"
 #define PATH_CONFIGTXT2 "SYS:\\SYSTEM\\MFBUG.CFG"
 #define PATH_BUGZIP "SYS:\\SYSTEM\\MFBUG.MFZ"
 
-#define PATH_MFBUG2 "SYS:\\SYSTEM\\MFBUG2.NLM"
+#define PATH_MFBUG2NLM "SYS:\\SYSTEM\\MFBUG2.NLM"
 
 int main (int argc, char* argv[])
 {
-#pragma unused(argc, argv)
+#pragma unused(argc)
 
 	printf("\n");
 	printf(" MailFilter/ax 1.5 bug reporting tool\n\n");
-	printf(" This process will collect information for bug reports...\n");
+	printf(" This process will collect information for bug reports.\n");
+	pressenter();
 
 	unlink(PATH_CONFIGTXT);
 	unlink(PATH_CONFIGTXT2);
 	unlink(PATH_BUGZIP);
-	unlink(PATH_MFBUG2);
+	unlink(PATH_MFBUG2NLM);
+	
+	{
+		if (mfbug2nlm_zip_data[0] == 0)
+		{
+			printf("** Embedded data is corrupt.\n**You may want to redownload mfbug.nlm.\n");
+			return 3;
+		}
+	}
+	
+	{
+		// unpack mfbug2.nlm from internal file
+		MFUnZip *unzip;
+
+		unzip = new MFUnZip(argv[0]);
+		
+		if (unzip->ExtractFile("mfbug2.nlm",PATH_MFBUG2NLM) != MFUnZip_OK)
+		{
+			printf("** Could not unpack required files.\n**You may want to redownload mfbug.nlm.\n");
+			delete(unzip);
+			return 2;
+		}
+		
+		delete(unzip);
+	}
 	
 	{
 		// config.txt stuff
@@ -43,7 +70,11 @@ int main (int argc, char* argv[])
 	
 		printf(" Loading MFBUG2.NLM ...\n");
 		printf("         Please wait for this to complete.\n");
-		system("LOAD MFBUG2.NLM /all /o=MFBUG.TXT /d /c /f /a9");
+		
+		LoadModule(getscreenhandle(),PATH_MFBUG2NLM" /all /o=MFBUG.TXT /d /c /f /a9",LO_LOAD_SILENT);
+		// let the user see the logger, output from config.nlm
+		ActivateScreen(getnetwarelogger());
+		//system("LOAD MFBUG2.NLM /all /o=MFBUG.TXT /d /c /f /a9");
 		
 		while (rename(PATH_CONFIGTXT,PATH_CONFIGTXT2))
 		{
@@ -53,6 +84,9 @@ int main (int argc, char* argv[])
 				// we are waiting more than 5 minutes now...
 				
 				int key;
+				
+				// user interaction on our screen...
+				ActivateScreen(getscreenhandle());
 				
 				printf("** mfbug2.nlm did not complete.\n** Do you want to wait another 5 minutes? (y/n)\n");
 				key = getchar();
@@ -65,8 +99,11 @@ int main (int argc, char* argv[])
 					pressanykey();
 					return 1;
 				}
+				ActivateScreen(getnetwarelogger());
 			}
 		}
+		// switch back to our screen
+		ActivateScreen(getscreenhandle());
 	}	
 
 	{	
@@ -115,6 +152,7 @@ int main (int argc, char* argv[])
 	
 	unlink(PATH_CONFIGTXT);
 	unlink(PATH_CONFIGTXT2);
+	unlink(PATH_MFBUG2NLM);
 	
 	printf(" MFBUG Complete!\n\n");
 	printf(" Output written to: "PATH_BUGZIP".\n");
