@@ -854,9 +854,7 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 MF_ConfigRead_ERR:
 	if ( rc > 0 )
 	{
-#ifdef N_PLAT_NLM
-		printf(MF_Msg(MSG_CONFIG_ERRORINFO),rc);
-#endif
+		MF_DisplayCriticalError(MF_Msg(MSG_CONFIG_ERRORINFO),rc);
 
 		if (rc < 100)
 		{
