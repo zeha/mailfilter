@@ -87,6 +87,12 @@ public:
 	
 	std::string	MessageFooterText;
 	
+	std::string SMTPProxyBackendHost;
+	std::string SMTPProxyLocalHost;
+	unsigned int SMTPProxyBackendPort;
+	unsigned int SMTPProxyLocalPort;
+	std::string SMTPProxyResponse220;
+	
 	//std::vector<MailFilter_Configuration::Filter> filterList;
 	MAILFILTER_CONFIGURATION_FILTERLISTTYPE filterList;
 
@@ -101,8 +107,8 @@ public:
 	bool WriteToFile(std::string alternateFilename);
 
 	// don't use ReadFilterList -- use ReadFilterListFromConfig or ReadFilterListFromRulePackage
-	inline bool ReadFilterListFromConfig();
-	inline bool ReadFilterListFromRulePackage(std::string filterFile);
+	bool ReadFilterListFromConfig();
+	bool ReadFilterListFromRulePackage(std::string filterFile);
 	bool WriteFilterList(std::string filterList);
 
 	bool CreateFromInstallFile(std::string installFile);

@@ -21,7 +21,9 @@
 #include "MFConfig-Filter.h++"
 #include "MFConfig-defines.h"
 
+#ifdef __MFEXPERIMENTAL__
 #include "sqlite3.h"
+#endif
 
 #define MAILFILTER_CONFIGURATION_PATHFILE "sys:\\etc\\mfpath.cfg"
 
@@ -199,7 +201,7 @@ Configuration::~Configuration()
 {
 }
 
-inline bool Configuration::ReadFilterListFromConfig()
+bool Configuration::ReadFilterListFromConfig()
 {
 	long startAt;
 	std::string myFilterFile;
@@ -219,7 +221,7 @@ inline bool Configuration::ReadFilterListFromConfig()
 	return this->ReadFilterList(myFilterFile,startAt);
 }
 
-inline bool Configuration::ReadFilterListFromRulePackage(std::string filterFile)
+bool Configuration::ReadFilterListFromRulePackage(std::string filterFile)
 {
 	return this->ReadFilterList(filterFile,(long)52);
 }
@@ -840,6 +842,15 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 
 							if (param == "schedule-time")
 								this->BWLScheduleTime = value;
+								
+							if (param == "smtpproxy-backend-host")
+								this->SMTPProxyBackendHost = value;
+								
+							if (param == "smtpproxy-local-host")
+								this->SMTPProxyBackendHost = value;
+
+							if (param == "smtpproxy-response-220")
+								this->SMTPProxyResponse220 = value;
 
 							// Numbers
 							if (param == "version-config")
@@ -860,6 +871,12 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 							if (param == "problemdir-maxsize")
 								this->ProblemDirMaxSize = (unsigned int)atoi(value.c_str());
 
+							if (param == "smtpproxy-backend-host")
+								this->SMTPProxyBackendPort = (unsigned int)atoi(value.c_str());
+
+							if (param == "smtpproxy-local-host")
+								this->SMTPProxyLocalPort = (unsigned int)atoi(value.c_str());
+								
 							// enums. damn concept.
 							if (param == "defaultnotify-internalsender")
 								this->DefaultNotification_InternalSender = (MailFilter_Configuration::Notification)atoi(value.c_str());
@@ -1007,7 +1024,6 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 
 		}
 		
-		if (this->MailscanDirNum < 10) this->MailscanDirNum = 10;
 
 		if (!rc)
 		{
@@ -1028,6 +1044,13 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 			// Initialize FilterList Cache
 			if ( this->ReadFilterListFromConfig() == false ) {	rc = 299;	}
 		}
+	}
+	
+	{
+		// configuration fixups
+		
+		if (this->MailscanDirNum < 10)
+			this->MailscanDirNum = 10;
 	}
 
 	// Error Handling goes here ...
@@ -1059,6 +1082,7 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 		
 		return false;
 	}
+#ifdef __MFEXPERIMENTAL__
 	
 	std::string dbFile = this->config_directory + "\\DATABASE.BIN";
 	sqlite3* sqldb;
@@ -1092,7 +1116,8 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 	{
 		MF_DisplayCriticalError("mailfilter: unable to close database file. %d\n",rc);
 	}
-
+#endif
+	
 	// done! success!
 	return true;
 }

@@ -33,3 +33,4 @@ extern int LibTNEF_ReadNextAttribute(struct LibTNEF_ClientData* data /* in/out *
 #endif
 
 /* eof */
+
