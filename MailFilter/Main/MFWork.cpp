@@ -1514,7 +1514,9 @@ int MF_ParseTemplate(const char* szTemplateName, FILE* fMailFile, MailFilter_Mai
 
 	if (fTemplate == NULL)
 	{
-		MF_StatusText("Error reading postmaster report template!");
+		char szTemp[500];
+		sprintf(szTemp,"ERROR: Cannot open Template: %s", szTemplateName);
+		MF_StatusText(szTemp);
 
 		fprintf(fMailFile,"Subject: MailFilter Problem Report\r\n\r\n");
 

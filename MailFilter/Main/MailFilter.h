@@ -570,9 +570,13 @@ bool MF_NutDeinit(void);
 
 bool MF_UI_ShowKeys(int keys);
 
+bool MF_LoginUser(void);
 
-bool MailFilterApp_Server_SelectServerConnection();
-bool MailFilterApp_Server_SelectUserConnection();
+bool MailFilterApp_Server_SelectServerConnection(void);
+bool MailFilterApp_Server_SelectUserConnection(void);
+
+bool MailFilterApp_Server_LoginToServer(void);
+bool MailFilterApp_Server_LogoutFromServer(void);
 
 
 extern "C" {

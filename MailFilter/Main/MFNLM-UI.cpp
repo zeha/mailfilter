@@ -100,6 +100,7 @@ static int _MF_UI_PromptUsernamePassword_Cancel(FIELD* fp, int selectKey, int *c
 
 bool MF_UI_PromptUsernamePassword(std::string prompt, std::string username, std::string password)
 {
+#ifdef __NOVELL_LIBC__
 	unsigned long	line;
 	int		formSaved;
 	char	newUser[MAX_PATH];
@@ -175,6 +176,9 @@ bool MF_UI_PromptUsernamePassword(std::string prompt, std::string username, std:
 	NWSPopList(MF_NutInfo);
 
 	return (bool)formSaved;
+#else
+	return false;
+#endif
 }
 
 bool MF_UI_ShowKeys(int keys)

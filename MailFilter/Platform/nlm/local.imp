@@ -1,4 +1,5 @@
 ReturnFileServerName,
 OpenScreen,
 OutputToScreenWithAttribute,
-CloseScreen
+CloseScreen,
+OpenCustomScreen

@@ -80,14 +80,6 @@ extern void MFWorker_SetupPaths();
 //
 
 
-#ifdef __NOVELL_LIBC__
-void _NonAppStop ( void )
-{
-	MF_StatusFree();
-	MF_ExitProc();
-}
-#endif
-
 extern "C" { 
 	extern int NWIsNLMLoadedProtected(void);
 }
@@ -216,9 +208,6 @@ void MF_NutHandlerKeyF9 (void *handle)		// SHOW CONFIG
 	MF_UI_ShowConfiguration();
 }
 
-
-	extern bool MF_UI_PromptUsernamePassword(std::string prompt, std::string username, std::string password);
-
 void MF_NutHandlerKeyF2 (void *handle)		// debug stuff
 {
 	handle = handle;			// Keep compiler quiet.
@@ -233,13 +222,7 @@ void MF_NutHandlerKeyF2 (void *handle)		// debug stuff
 	sprintf(buf,"StackAvail: %d, DebugLevel: %d",stackavail(),MFT_Debug);
 	MF_StatusUI_UpdateLog(buf);
 
-	std::string u;
-	std::string p;
-
-	MF_UI_PromptUsernamePassword("",u,p);
-	MF_StatusUI_UpdateLog(u.c_str());
-	MF_StatusUI_UpdateLog(p.c_str());
-
+	MF_LoginUser();
 }
 
 void MFL_VerInfo()
@@ -574,29 +557,6 @@ void MF_StatusUI_Update(const char* newText)
 	return;
 }
 
-extern "C" {
-
-	void MF_DisplayCriticalError(const char* format, ...)
-	{
-		//MF_DisplayCriticalError(
-		va_list	argList;
-		va_start(argList, format);
-
-	#ifndef __NOVELL_LIBC__
-
-		vfprintf(stderr,format,argList);
-
-	#else
-
-		OutputToScreenWithPointer( 0, format, argList );
-		
-	#endif
-
-		va_end (argList);
-	}
-
-}
-
 #ifndef _MF_CLEANBUILD
 void MFD_UseMainScreen()
 {
@@ -840,97 +800,6 @@ static void LoadNRMThreadStartup(void *dummy)
 	MailFilter_Main_RunAppNRM();
 }
 
-static NXPathCtx_t	MFT_PathCtxt_ServerConnection = 0;
-static NXPathCtx_t	MFT_PathCtxt_UserConnection = 0;
-static int			MFT_ServerIdentity = 0;
-static bool			MFT_IdentitiesOkay = false;
-
-static bool MailFilterApp_Server_LoginToServer()
-{	
-	int            err; 
-
-	if (MFT_IdentitiesOkay)
-		return true;
-
-	MFT_IdentitiesOkay = false;
-
-	if (
-		 (MF_GlobalConfiguration.LoginUserName == "") &&
-		 (MF_GlobalConfiguration.LoginUserPassword == "")
-		)
-		return true;		// we shouldnt log in?
-
-	MF_DisplayCriticalError("logging in with: %s %s\n",
-				MF_GlobalConfiguration.LoginUserName.c_str(), MF_GlobalConfiguration.LoginUserPassword.c_str());
-
-	err = create_identity ("", MF_GlobalConfiguration.LoginUserName.c_str(), MF_GlobalConfiguration.LoginUserPassword.c_str(),
-								NULL, XPORT_WILD|USERNAME_ASCII, &MFT_ServerIdentity);
-	if (err)
-	{
-		MF_DisplayCriticalError(" * Details: create_identity failed with rc=%d, errno: %d\n",err,errno);
-		return false;
-	}
-	
-	if (!is_valid_identity(MFT_ServerIdentity, &err))
-	{
-		MF_DisplayCriticalError(" * No Valid Identity! rc: %d\n",err);
-		return false;
-	} else {
-		MF_DisplayCriticalError(" * valid_id.\n");
-	}
-
-	err = NXCreatePathContext(0, "SYS:\\SYSTEM", NX_PNF_DEFAULT, NULL, &MFT_PathCtxt_ServerConnection);
-	if (err)	return false;
-
-	err = NXCreatePathContext(0, "SYS:\\SYSTEM", NX_PNF_DEFAULT, (void *) MFT_ServerIdentity, &MFT_PathCtxt_UserConnection);
-	if (err)	return false;
-
-	MFT_IdentitiesOkay = true;
-
-	return true;
-}
-
-bool MailFilterApp_Server_SelectServerConnection()
-{
-	if (!MFT_IdentitiesOkay)
-		return true;
-
-	int err = setcwd(MFT_PathCtxt_ServerConnection);
-	if (err)	return false;
-	
-	return true;
-}
-
-bool MailFilterApp_Server_SelectUserConnection()
-{
-	if (!MFT_IdentitiesOkay)
-		return true;
-
-	int err = setcwd(MFT_PathCtxt_UserConnection);
-	if (err)	return false;
-	
-	return true;
-}
-
-static bool MailFilterApp_Server_LogoutFromServer()
-{
-	if (!MFT_IdentitiesOkay)
-		return true;
-
-	MFT_IdentitiesOkay = false;
-
-	NXFreePathContext(MFT_PathCtxt_ServerConnection);
-	MFT_PathCtxt_ServerConnection = 0;
-	
-	NXFreePathContext(MFT_PathCtxt_UserConnection);
-	MFT_PathCtxt_UserConnection = 0;
-	
-	delete_identity(MFT_ServerIdentity);
-	MFT_ServerIdentity = 0;
-	return true;
-}
-
-
 //
 //
 //  NLM Application Startup Function:
@@ -983,7 +852,6 @@ MF_MAIN_RUNLOOP:
 			struct utsname un;
 			
 			MF_StatusLog("MailFilter CLIB Version "MAILFILTERVERNUM);
-			MF_StatusText("MailFilter for NetWare 5.0, 5.1 - 5.1 SP5, 6.0 - 6.0 SP2");
 
 			uname(&un);
 			
@@ -991,6 +859,9 @@ MF_MAIN_RUNLOOP:
 
 			MF_StatusText(szStatusMsg);
 			
+			MF_StatusText("MFLT50: Limited Functionality MailFilter.");
+			MF_StatusText("Please upgrade to a modern NetWare OS to get full functionality!");
+
 		#else
 			MF_StatusLog("MailFilter LIBC Version "MAILFILTERVERNUM);
 
@@ -1243,12 +1114,13 @@ int main( int argc, char *argv[ ])
 
 	++MFT_NLM_ThreadCount;
 	MF_NutInfo = NULL;
-	MFD_ScreenTag = NULL;
 	MF_ScreenID = NULL;
 
 #ifdef _MF_MEMTRACE
 	atexit(_mfd_tellallocccountonexit);
 #endif //_MF_MEMTRACE
+
+	MF_DisplayCriticalError("MailFilter: Loading...\n");
 
 	MF_ProductName = "MailFilter professional "MAILFILTERVERNUM" ["MAILFILTERPLATFORM"]";
 
@@ -1306,6 +1178,7 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 
 	// Get NLM and Screen Handles
 #ifdef __NOVELL_LIBC__
+	MFD_ScreenTag = NULL;
 	MF_NLMHandle = getnlmhandle();
 	MF_ScreenID = getscreenhandle();
 	setscreenmode(SCR_AUTOCLOSE_ON_EXIT|0x00000002);
@@ -1319,17 +1192,12 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 	// debug screen
 	if (MFT_Verbose)
 	{
-          
-#ifdef __NOVELL_LIBC__
-		MFD_ScreenTag = AllocateResourceTag( (void*)MF_NLMHandle, "MailFilter Debug Screen", ScreenSignature);
-		if (OpenScreen ( "MailFilter Debug", MFD_ScreenTag, &MFD_ScreenID ))
+		extern bool MF_NLM_OpenDebugScreen();
+		if (!MF_NLM_OpenDebugScreen())
 		{
 			MF_DisplayCriticalError("MAILFILTER: Unable to create debug screen!\n");
 			goto MF_MAIN_TERMINATE;
 		}
-#else
-		MFD_ScreenID = CreateScreen ( "MailFilter Debug", DONT_AUTO_ACTIVATE | DONT_CHECK_CTRL_CHARS | AUTO_DESTROY_SCREEN );
-#endif
 	}
 
 	// Register Exit Proc ...
