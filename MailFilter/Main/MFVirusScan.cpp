@@ -6,6 +6,7 @@
  
 #define _MFD_MODULE "MFVirusScan.cpp"
 #include "MailFilter.h"
+#include "MFMail.h++"
 #include "MFVirusScan.h"
 
 #include "../Included/mime/modmimee.h"

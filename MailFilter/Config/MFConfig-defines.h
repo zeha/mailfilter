@@ -1,6 +1,8 @@
 #ifndef __MAILFILTER_CONFIGURATION_DEFINES_HEADER
 #define __MAILFILTER_CONFIGURATION_DEFINES_HEADER
 
+// --- These are *MAILFILTER* constants! They have to be the same in ALL MailFilter programs. ---
+
 #undef _MAX_PATH
 #undef _MAX_SERVER
 #undef _MAX_VOLUME
@@ -76,12 +78,7 @@
 /*------------------------------------------------------------------------
 **	MailFilter Specific things
 */
-// --- These are *MAILFILTER* constants! They have to be the same in ALL MailFilter programs. ---
-/*#undef MAX_BUF
-#define MAX_BUF 4096
-#undef MAX_PATH
-#define MAX_PATH _MAX_SERVER+_MAX_VOLUME+_MAX_PATH+10
-  */
+
 #define MAILFILTER_CONFIGURATION_SIGNATURE			"MAILFILTER_R001_010"		//*** MODIFY THESE
 #define MAILFILTER_CONFIGURATION_THISBUILD			10				//    TWO BUILD NUMBERS ***
 

@@ -101,7 +101,6 @@ int MF_ParseCommandLine( int argc, char **argv )
 
 	while (1)
 	{
-//		int this_option_optind = ix_optind ? ix_optind : 1;
 
 		c = ix_getopt(argc, argv, "dh?vxt");
 		if (c == -1)
@@ -129,7 +128,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 #endif
 			case '?':
 			case 'h':
-				consoleprintf ("MAILFILTER: Usage:\n\t%s [-dv] ConfigurationDir\n\t-d debug\n\t-v verbose\n",argv[0]);
+				consoleprintf ("MAILFILTER: Usage:\n\t%s [-dv] [-t app] [ConfigurationPath]\n\t-d debug\n\t-v verbose\n\t-t args are: \"server\" \"config\" \"restore\" \"nrm\"\n",argv[0]);
 				return false;
 				break;
 			case 't':
@@ -163,6 +162,15 @@ int MF_ParseCommandLine( int argc, char **argv )
 						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::RESTORE;
 						bTArgOkay = true;
 					}
+#if !defined(__NOVELL_LIBC__)				
+					if (strcmp(argv[ix_optind],"install") == 0)
+#else
+					if (strcasecmp(argv[ix_optind],"install") == 0)
+#endif
+					{
+						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::INSTALL;
+						bTArgOkay = true;
+					}
 #if defined(N_PLAT_NLM)
 #if !defined(__NOVELL_LIBC__)				
 					if (strcmp(argv[ix_optind],"nrm") == 0)
@@ -179,7 +187,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 				
 				if (!bTArgOkay)
 				{
-					consoleprintf("MAILFILTER: Invalid argument passed to -t.\n\tValid args are: \"server\" \"config\" \"restore\" \"nrm\"\n");
+					consoleprintf("MAILFILTER: Invalid argument passed to -t.\n");
 					return false;
 				}
 				break;

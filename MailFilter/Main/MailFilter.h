@@ -23,7 +23,6 @@
 
 #include "MFApp.h"
 
-#include "MFMail.h++"
 #include "MFVersion.h"
 #include "../Licensing/MFLic.h"
 
@@ -567,8 +566,6 @@ bool MF_StatusCycleLog(void);
 int MF_CheckPathSameServer(char* thePath1 , char* thePath2);
 int MF_CheckPathSameVolume(char* thePath1 , char* thePath2);
 void MFL_VerInfo();
-int MF_MailProblemReport(MailFilter_MailData* mMailInfo);
-int MF_Notification_Send2(const char messageType, const char* bounceRcpt, MailFilter_MailData* mMailInfo);
 void MF_OutOfMemoryHandler(void);
 int MF_EMailPostmasterGeneric(const char* Subject, const char* Text, const char* szAttachFileName, const char* szAttachDisplayName);
 void MF_UI_ShowConfiguration(void);

@@ -16,8 +16,10 @@
 
 #define _MFD_MODULE			"MFWORK.CPP"
 #include "MailFilter.h"
+#include "MFMail.h++"
 #include "MFRelayHost.h++"
 #include "MFZip.h"
+
 static int MF_GoOn();
 
 static int MF_Notification_Send(MailFilter_MailData* m);

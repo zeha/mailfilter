@@ -26,7 +26,6 @@ namespace MailFilter_Configuration
 
 #include "MFConfig-defines.h"
 
-
 //#define MAILFILTER_CONFIGURATION_SIGNATURE			"MAILFILTER_R001_009"		//*** MODIFY THESE
 //#define MAILFILTER_CONFIGURATION_THISBUILD			9							//    TWO BUILD NUMBERS ***
 //#define MAILFILTER_CONFIGURATION_LENGTH				329
@@ -35,7 +34,8 @@ namespace MailFilter_Configuration
 		SERVER, 
 		CONFIG, 
 		RESTORE, 
-		NRM 
+		NRM,
+		INSTALL
 		};
 
 class Configuration

@@ -67,6 +67,9 @@ int MailFilter_MailDestroy(MailFilter_MailData* mail);
 int MailFilter_MailWrite(char* szOutFile, MailFilter_MailData* m);
 MailFilter_MailData* MailFilter_MailRead(char* szInFile);
 
+extern int MF_MailProblemReport(MailFilter_MailData* mMailInfo);
+extern int MF_Notification_Send2(const char messageType, const char* bounceRcpt, MailFilter_MailData* mMailInfo);
+
 #endif
 
 #endif
