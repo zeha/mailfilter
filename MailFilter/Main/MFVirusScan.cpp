@@ -146,10 +146,11 @@ long MFVS_CheckWinmailDat(const char* szAttFile, std::string szTNEFFilename, Mai
 			return 0;
 		}
 		type = 0;
-
+		
+		MFD_Out(MFD_SOURCE_MAIL,"Reading TNEF. ");
 		type = LibTNEF_ReadNextAttribute(&data);
 		while (type > 0)
-		{
+		{	
 			switch (type)
 			{
 				case LIBTNEF_TYPE_ATTACHMENTNAME:
@@ -199,8 +200,10 @@ long MFVS_CheckWinmailDat(const char* szAttFile, std::string szTNEFFilename, Mai
 				default:
 					break;
 			}
+			MFD_Out(MFD_SOURCE_MAIL,".");
 			type = LibTNEF_ReadNextAttribute(&data);
 		}
+		MFD_Out(MFD_SOURCE_MAIL," Done.\n");
 		LibTNEF_Free(&data);
 		
 		return iAttachments;

@@ -71,6 +71,7 @@
 #endif /* OS/MACH TYPE */
 
 #define BIT_32
+#undef NEAR_FAR_PTR
 
 /***************************************************************************/
 /* 16/32 Bit and Byte Order hacks */

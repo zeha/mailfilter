@@ -219,7 +219,7 @@ int default_handler(uint32 attribute, uint8 *tsp, uint32 size)
 }
 */
 //__declspec(export) 
-LIB_EXPORT int LibTNEF_Decode(char* szFilename, struct LibTNEF_ClientData* data /* out */)
+LIB_EXPORT int LibTNEF_Decode(const char* szFilename, struct LibTNEF_ClientData* data /* out */)
 {
   FILE *fp;
   struct stat sb;

@@ -43,6 +43,9 @@
 	#include <client.h>
 #endif
 
+extern int MailFilter_Main_RunAppConfig(bool bStandalone);
+extern int MailFilter_Main_RunAppRestore(bool bStandalone);
+extern int MailFilter_Main_RunAppNRM(bool bStandalone);
 
 
 extern char MFL_LicenseKey[MAX_PATH];
@@ -534,6 +537,11 @@ void MF_StatusUI_Update(const char* newText)
 			szDynamic += "AV ";
 			bHaveFeatures = true;
 		}
+		if (MF_GlobalConfiguration.NRMInitialized == true)
+		{
+			szDynamic += "NRM ";
+			bHaveFeatures = true;
+		}
 		
 		if (!bHaveFeatures)
 			szDynamic += "None";
@@ -781,7 +789,7 @@ static void LoadNRMThreadStartup(void *dummy)
 #pragma unused(dummy)
 
 	MF_GlobalConfiguration.NRMInitialized = true;
-	MailFilter_Main_RunAppNRM();
+	MailFilter_Main_RunAppNRM(false);
 }
 
 //
@@ -1280,7 +1288,7 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 			goto MF_MAIN_TERMINATE;
 		}
 
-		rc = MailFilter_Main_RunAppNRM();
+		rc = MailFilter_Main_RunAppNRM(true);
 
 		#else
 		rc = -1;

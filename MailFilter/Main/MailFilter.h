@@ -600,12 +600,6 @@ __inline bool WinSockShutdown()
 #endif /* HAVE_WINSOCK */
 
 
-int MailFilter_Main_RunAppConfig(bool bStandalone);
-int MailFilter_Main_RunAppRestore(bool bStandalone);
-#ifdef N_PLAT_NLM
-int MailFilter_Main_RunAppNRM();
-#endif
-
 // Thread Functions
 #ifndef WIN32
 void MF_Work_Startup(void *dummy);

@@ -33,7 +33,7 @@ extern "C" {
 #define MAPI_DIM 1
 #endif
 
-#define offsetof(s,m) (unsigned long)&(((s *)0)->m)
+//#define offsetof(s,m) (unsigned long)&(((s *)0)->m)
 
 /* ------------------------------------ */
 /* TNEF Problem and TNEF Problem Arrays */

@@ -554,13 +554,16 @@ void MailFilter_NRM_sigterm()
 	return;
 }
 
-int MailFilter_Main_RunAppNRM()
+int MailFilter_Main_RunAppNRM(bool bStandalone)
 {
-	printf ("MailFilter NRM: Initializing...\n");
+	if (bStandalone)
+		printf ("MailFilter NRM: Initializing...\n");
 
 	// Rename thread
 	NXContextSetName(NXContextGet(),"MailFilterNRM");
-	RenameScreen(getscreenhandle(),"MailFilter NRM");
+
+	if (bStandalone)
+		RenameScreen(getscreenhandle(),"MailFilter NRM");
 
 	if (!DLSetupNRM())
 	{
@@ -584,7 +587,8 @@ int MailFilter_Main_RunAppNRM()
 	else 
 	{
 	
-		printf("MailFilter NRM Running.\n");
+		if (bStandalone)
+			printf("MailFilter NRM Running.\n");
 	
 		mutex_t mtx;
 		mutex_init(&mtx, USYNC_THREAD, NULL);
@@ -592,7 +596,8 @@ int MailFilter_Main_RunAppNRM()
 		cond_wait(&condMainThread,&mtx);
 	}
    	
-	printf("Shutdown...\n");
+	if (bStandalone)
+		printf("Shutdown...\n");
 	
 	MF_NLM_RM_DeInit();
 	DLDeSetupNRM();
