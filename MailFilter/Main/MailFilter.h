@@ -584,6 +584,7 @@ void MF_UI_ShowConfiguration(void);
 int MFAPI_FilterCheck( char *szScan , int mailSource , int matchfield );
 bool MFBW_CheckCurrentScheduleState();
 int MF_CountFilters(int action);
+void MF_CheckProblemDirAgeSize();
 
 
 

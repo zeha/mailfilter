@@ -3711,6 +3711,8 @@ void MF_CheckProblemDirAgeSize()
 	struct dirent	*dirEntry;
 #endif
 
+	MF_StatusText("Checking MFPROB size...");
+
 	if ((MF_GlobalConfiguration.ProblemDirMaxSize == 0) && (MF_GlobalConfiguration.ProblemDirMaxAge == 0))
 		return;
 	

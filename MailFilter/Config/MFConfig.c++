@@ -437,6 +437,8 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 		if (chdir(this->LogDirectory.c_str()))				mkdir(this->LogDirectory.c_str(),S_IRWXU);
 	}
 
+	this->filterList.clear();
+
 	// Initialize FilterList Cache
 	if ( this->ReadFilterList() == false ) {	rc = 299;	goto MF_ConfigRead_ERR;	}
 
