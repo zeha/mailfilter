@@ -138,8 +138,16 @@
 	static MailFilter_Filter MFC_Filters[MailFilter_MaxFilters];
 	static MailFilter_Filter id[MailFilter_MaxFilters];		// this is for sorting ONLY!
 
-int __init_environment( void *reserved )	{	return 0;	}
-int __deinit_environment( void *reserved )	{	return 0;	}
+int __init_environment( void *reserved )	
+{
+#pragma unused(reserved)
+return 0;	
+}
+int __deinit_environment( void *reserved )	
+{
+#pragma unused(reserved)
+	return 0;	
+}
 
 void MF_RegError(int errcode, const regex_t *preg)
 {
@@ -1596,6 +1604,8 @@ static	FIELD		*MFConfig_EditFilterDialog_fieldDescription;
 int MFConfig_EditFilterDialog_MenuAction(int option, void *parameter)   {      parameter = parameter;	return option;   }
 int MFConfig_EditFilterDialog_MenuActionAction(int option, void *parameter)   
 {
+#pragma unused(parameter)
+
 	if(option==MAILFILTER_MATCHACTION_COPY)
 		MFConfig_EditFilterDialog_fieldDescription->fieldData = (unsigned char*)MF_NMsg(EDIT_FILTERS_DESTINATION);
 		else

@@ -47,11 +47,13 @@
 
 
 //	#define _WITH_LIBC
-	#ifdef _WITH_LIBC
+	#ifdef __NOVELL_LIBC__
+	#define _WITH_LIBC
 	#include <nks/thread.h>
 	#include <netware.h>
 	#include <screen.h>
 	#include <stat.h>
+	#include <string.h>
 
 	#define ConsolePrintf consoleprintf
 	#define ThreadSwitch NXThreadYield
@@ -631,9 +633,6 @@ int MFRestore_RestoreFile(const char* szInFile, const char* szOutFile)
 		fwrite(szScanBuffer,sizeof(char),strlen(szScanBuffer),outputFile);
 	}
 	
-#ifndef WIN32
-	flushall();
-#endif
 	fclose(inputFile);
 	fclose(outputFile);
 	free(szScanBuffer);

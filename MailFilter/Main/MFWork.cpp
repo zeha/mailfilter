@@ -4442,11 +4442,11 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 			{
 				struct stat st;
 				char szTemp[1024];
-				timespec_t mintime;
-				mintime.tv_sec = time(NULL) - (2*(24*60*60));
+				time_t mintime;
+				mintime = time(NULL) - (2*(24*60*60));
 
 				stat(_MF_DIRECTORY_FILENAME,&st);
-				if (st.st_mtime < mintime.tv_sec)
+				if (st.st_mtime < mintime)
 				{
 
 					sprintf(szTemp,"Found old file '%s' in a queue. Deleting.",_MF_DIRECTORY_FILENAME);
