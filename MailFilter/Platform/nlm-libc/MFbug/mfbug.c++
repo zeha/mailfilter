@@ -4,32 +4,35 @@
  *
  */
 
+#define __NOVELL_LIBC__
+#define N_PLAT_NLM
+
 #include <stdio.h>
 #include <fcntl.h>
 #include <stat.h>
 #include <unistd.h>
 #include <string.h>
-#include <time.h>
 #include <nks/thread.h>
 #include <screen.h> 
 #include <stdlib.h>
 #include <stdarg.h>
-#include <library.h> 
+#include <library.h>
+#include "ix.h"
 #include "MFZip.h"
 #include "MFUnZip.h"
 #include "mfbug2.h"
 
 #define PATH_CONFIGTXT "SYS:\\SYSTEM\\MFBUG.TXT"
 #define PATH_BUGZIP "SYS:\\SYSTEM\\MFBUG.MFZ"
-
 #define PATH_MFBUG2NLM "SYS:\\SYSTEM\\MFBUG2.NLM"
+#define CONFIG_OPTIONS "/all /o=MFBUG.TXT"
 
 int main (int argc, char* argv[])
 {
 #pragma unused(argc)
 
 	printf("\n");
-	printf(" MailFilter/ax 1.5 bug reporting tool\n\n");
+	printf(" MailFilter 1.6 bug reporting tool\n\n");
 	printf(" This process will collect information for bug reports.\n");
 	pressenter();
 
@@ -40,7 +43,8 @@ int main (int argc, char* argv[])
 	{
 		if (mfbug2nlm_zip_data[0] == 0)
 		{
-			printf("** Embedded data is corrupt.\n**You may want to redownload mfbug.nlm.\n");
+			printf("** Embedded data is corrupt.\n** You may want to redownload mfbug.nlm.\n");
+			pressenter();
 			return 3;
 		}
 	}
@@ -48,13 +52,16 @@ int main (int argc, char* argv[])
 	{
 		// unpack mfbug2.nlm from internal file
 		MFUnZip *unzip;
+		int rc = 0;
 
 		unzip = new MFUnZip(argv[0]);
-		
-		if (unzip->ExtractFile("mfbug2.nlm",PATH_MFBUG2NLM) != MFUnZip_OK)
+		rc = unzip->ExtractFile("mfbug2.nlm",PATH_MFBUG2NLM);
+
+		if (rc < 0)
 		{
-			printf("** Could not unpack required files.\n**You may want to redownload mfbug.nlm.\n");
+			printf("** Could not unpack required files from %s.\n** You may want to redownload mfbug.nlm.\n** Error: %d\n",argv[0],rc);
 			delete(unzip);
+			pressenter();
 			return 2;
 		}
 		
@@ -67,13 +74,14 @@ int main (int argc, char* argv[])
 		time_t starttime = time(NULL);
 		
 	
-		printf(" Loading MFBUG2.NLM ...\n");
-		printf("         Please wait for this to complete.\n");
+		printf(" Collecting data. Please wait for this to complete.\n");
 		
-		LoadModule(getscreenhandle(),PATH_MFBUG2NLM" /all /o=MFBUG.TXT /d /c /f /a9",LO_LOAD_SILENT);
+		LoadModule(getscreenhandle(),PATH_MFBUG2NLM" "CONFIG_OPTIONS,LO_LOAD_SILENT);
+//		system("");
+//		system(PATH_MFBUG2NLM" "CONFIG_OPTIONS);
+		
 		// let the user see the logger, output from config.nlm
 		ActivateScreen(getnetwarelogger());
-		//system("LOAD MFBUG2.NLM /all /o=MFBUG.TXT /d /c /f /a9");
 		
 		while (findnlmhandle("MFBUG2.NLM",NULL)) //rename(PATH_CONFIGTXT,PATH_CONFIGTXT2))
 		{
@@ -87,7 +95,7 @@ int main (int argc, char* argv[])
 				// user interaction on our screen...
 				ActivateScreen(getscreenhandle());
 				
-				printf("** mfbug2.nlm did not complete.\n** Do you want to wait another 5 minutes? (y/n)\n");
+				printf("** External NLM did not complete.\n** Do you want to wait another 5 minutes? (y/n)\n");
 				key = getchar();
 				
 				if ( (key == 121) || (key == 89) )
@@ -115,7 +123,7 @@ int main (int argc, char* argv[])
 
 		if (zip->AddFile("CONFIG.TXT",PATH_CONFIGTXT) != MFZip_OK)
 		{
-			printf("** Could not add MFBUG2.NLM output.\n");
+			printf("** Could not add External NLM output.\n");
 		}
 		
 
@@ -126,11 +134,11 @@ int main (int argc, char* argv[])
 
 		zip->AddFile("SYSTEM\\MAILFLT.NLM","SYS:\\System\\mailflt.nlm");
 		zip->AddFile("SYSTEM\\MAILFLT.BAK","SYS:\\System\\mailflt.bak");
+		zip->AddFile("SYSTEM\\MFAVA.NLM","SYS:\\System\\MFAVA.NLM");
+		zip->AddFile("SYSTEM\\MFBUG.NLM","SYS:\\System\\MFBUG.NLM");
+		zip->AddFile("SYSTEM\\MFBUG2.NLM","SYS:\\System\\MFBUG2.NLM");
 
 		zip->AddFile("SYSTEM\\MFCONFIG.NLM","SYS:\\System\\MFCONFIG.NLM");
-		zip->AddFile("SYSTEM\\MFNRM.NLM","SYS:\\System\\MFNRM.NLM");
-		zip->AddFile("SYSTEM\\MFREST.NLM","SYS:\\System\\MFREST.NLM");
-		zip->AddFile("SYSTEM\\MFUPGR.NLM","SYS:\\System\\MFUPGR.NLM");
 
 		zip->AddFile("SYSTEM\\MFSTART.NCF","SYS:\\System\\MFSTART.NCF");
 		zip->AddFile("SYSTEM\\MFSTOP.NCF","SYS:\\System\\MFSTOP.NCF");
@@ -138,9 +146,11 @@ int main (int argc, char* argv[])
 		zip->AddFile("SYSTEM\\GWIA.CFG","SYS:\\SYSTEM\\GWIA.CFG");
 		zip->AddFile("SYSTEM\\GWIA.NCF","SYS:\\SYSTEM\\GWIA.NCF");
 
+		zip->AddFile("MFPATH.CFG","SYS:\\ETC\\MFPATH.CFG");
 		zip->AddFile("MAILFLT\\EXEPATH.CFG","SYS:\\ETC\\MAILFLT\\EXEPATH.CFG");
 		zip->AddFile("MAILFLT\\CONFIG.BIN","SYS:\\ETC\\MAILFLT\\CONFIG.BIN");
 		zip->AddFile("MAILFLT\\CONFIG.BAK","SYS:\\ETC\\MAILFLT\\CONFIG.BAK");
+		zip->AddFile("MAILFLT\\FILTERS.BIN","SYS:\\ETC\\MAILFLT\\FILTERS.BIN");
 
 		zip->AddFile("MAILFLT\\MAILCOPY.TPL","SYS:\\ETC\\MAILFLT\\MAILCOPY.TPL");
 		zip->AddFile("MAILFLT\\REPORT.TPL","SYS:\\ETC\\MAILFLT\\REPORT.TPL");

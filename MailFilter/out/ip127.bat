@@ -6,4 +6,5 @@ xcopy MFAVA.NLM t:\system\ /y
 xcopy MFDBG.NLM t:\system\ /y
 xcopy MFLT50.NLM t:\system\ /y
 xcopy MFCONFIG.NLM t:\system\ /y
+xcopy MFBUG.NLM t:\system\ /y
 pause
