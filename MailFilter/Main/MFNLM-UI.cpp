@@ -32,7 +32,7 @@ void MF_UI_ShowConfiguration(void)
 	char szHost[82];
 	if (!gethostname (szHost,81))
 	{
-		sprintf(szTemp, " gethostname..: %s ",szHost);
+		sprintf(szTemp, " OS Host Name.: %s ",szHost);
 		MF_StatusUI_UpdateLog(szTemp);
 	}
 
@@ -84,7 +84,7 @@ void MF_UI_ShowConfiguration(void)
 
 	if (MF_GlobalConfiguration.LoginUserName != "")
 	{
-		sprintf(szTemp, "Logging in as.: %s",MF_GlobalConfiguration.LoginUserName.c_str());
+		sprintf(szTemp, " Logging in as: %s",MF_GlobalConfiguration.LoginUserName.c_str());
 		MF_StatusUI_UpdateLog(szTemp);
 	}
 
@@ -187,16 +187,16 @@ bool MF_UI_ShowKeys(int keys)
 	NWSShowLineAttribute ( 24 , 0 , (_MF_NUTCHAR)szTemp , VREVERSE , 80 , (ScreenStruct*)MF_NutInfo->screenID );
 	
 	curItem=1;
-	if (chkFlag(keys,MFUI_KEYS_SORT)) 		{	strncpy(szTemp+curItem, "<78> Sort",9);			curItem=curItem+12;	}
-	if (chkFlag(keys,MFUI_KEYS_IMPORT)) 	{	strncpy(szTemp+curItem, "<F8> Import",11);		curItem=curItem+14;	}
-	if (chkFlag(keys,MFUI_KEYS_EXPORT)) 	{	strncpy(szTemp+curItem, "<F9> Export",11);		curItem=curItem+14; }
-	if (chkFlag(keys,MFUI_KEYS_NEW)) 		{	strncpy(szTemp+curItem, "<INS> New",9);			curItem=curItem+12;	}
-	if (chkFlag(keys,MFUI_KEYS_DELETE)) 	{	strncpy(szTemp+curItem, "<DEL> Delete",12); 	curItem=curItem+14;	}
-	if (chkFlag(keys,MFUI_KEYS_SELECT)) 	{	strncpy(szTemp+curItem, "<RET> Select",12);		curItem=curItem+14; }
-	if (chkFlag(keys,MFUI_KEYS_SHOW)) 		{	strncpy(szTemp+curItem, "<TAB> Detail",12);		curItem=curItem+14; }
-	if (chkFlag(keys,MFUI_KEYS_EXIT)) 		{	strncpy(szTemp+curItem, "<ESC> Exit",10);		curItem=curItem+13; }
-	if (chkFlag(keys,MFUI_KEYS_SAVE)) 		{	strncpy(szTemp+curItem, "<ESC> Save",10);		curItem=curItem+13; }
-	if (chkFlag(keys,MFUI_KEYS_CANCEL)) 	{	strncpy(szTemp+curItem, "<ESC> Cancel",12);		curItem=curItem+14; }
+	if (chkFlag(keys,MFUI_KEYS_SORT)) 		{	strncpy(szTemp+curItem, "F7-Sort",7);			curItem=curItem+10;	}
+	if (chkFlag(keys,MFUI_KEYS_IMPORT)) 	{	strncpy(szTemp+curItem, "F8-Import",9);			curItem=curItem+12;	}
+	if (chkFlag(keys,MFUI_KEYS_EXPORT)) 	{	strncpy(szTemp+curItem, "F9-Export",9);			curItem=curItem+12; }
+	if (chkFlag(keys,MFUI_KEYS_NEW)) 		{	strncpy(szTemp+curItem, "INS-New",7);			curItem=curItem+10;	}
+	if (chkFlag(keys,MFUI_KEYS_DELETE)) 	{	strncpy(szTemp+curItem, "DEL-Delete",10); 		curItem=curItem+12;	}
+	if (chkFlag(keys,MFUI_KEYS_SELECT)) 	{	strncpy(szTemp+curItem, "RET-Select",10);		curItem=curItem+12; }
+	if (chkFlag(keys,MFUI_KEYS_SHOW)) 		{	strncpy(szTemp+curItem, "TAB-Detail",10);		curItem=curItem+12; }
+	if (chkFlag(keys,MFUI_KEYS_EXIT)) 		{	strncpy(szTemp+curItem, "ESC-Exit",8);			curItem=curItem+11; }
+	if (chkFlag(keys,MFUI_KEYS_SAVE)) 		{	strncpy(szTemp+curItem, "ESC-Save",8);			curItem=curItem+11; }
+	if (chkFlag(keys,MFUI_KEYS_CANCEL)) 	{	strncpy(szTemp+curItem, "ESC-Cancel",10);		curItem=curItem+12; }
 
 	NWSShowLineAttribute ( 24 , (unsigned long)((80-curItem)/2) , (_MF_NUTCHAR)szTemp , VREVERSE , (unsigned long)curItem , (ScreenStruct*)MF_NutInfo->screenID );
 
