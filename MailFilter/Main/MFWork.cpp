@@ -203,6 +203,7 @@ static int MF_CopyEmail_Send(const char* szAttachFileName, MailFilter_MailData* 
 							sprintf(templateString,"%.79s",szDestinationEMail);
 							break;
 						case 'X':
+							{
 MFD_Out(MFD_SOURCE_VSCAN,"MailCopy: %s\n",szAttachFileName);
 MFD_Out(MFD_SOURCE_VSCAN,">> Output: %s\n",fileName);
 							FILE* fAttFile = fopen(szAttachFileName,"rb");
@@ -222,6 +223,8 @@ MFD_Out(MFD_SOURCE_VSCAN,">> Output: %s\n",fileName);
 								}
 								fclose(fAttFile);
 MFD_Out(MFD_SOURCE_VSCAN,">> Attached %d bytes.\n",bytes);
+							}
+
 							}
 							break;
 						
@@ -433,7 +436,7 @@ int MF_FilterCheck( MailFilter_MailData* m, char *szScan , int matchfield )
 
 			re = pcre_compile(
 			  MF_GlobalConfiguration->filterList[curItem].expression.c_str(), /* the pattern */
-			  PCRE_UTF8,            /* default options + UTF( */
+			  PCRE_UTF8,            /* default options + UTF8 */
 			  &error,               /* for error message */
 			  &erroffset,           /* for error offset */
 			  NULL);                /* use default character tables */
@@ -474,7 +477,15 @@ int MF_FilterCheck( MailFilter_MailData* m, char *szScan , int matchfield )
 							}
 				    	}
 				    	else
-				    	MFD_Out(MFD_SOURCE_REGEX,"(RegExp) Matching error %d\n", rc); /* error... */
+					{
+						if (rc == PCRE_ERROR_BADUTF8)
+							MFD_Out(MFD_SOURCE_REGEX,"(RegExp) Matching error: BADUTF8\n");
+						else
+				    			MFD_Out(MFD_SOURCE_REGEX,"(RegExp) Matching error %d\n", rc); /* error... */
+						
+						MFD_Out(MFD_SOURCE_REGEX,"(RegExp) filter: '%s'\n",MF_GlobalConfiguration->filterList[curItem].expression.c_str());
+						MFD_Out(MFD_SOURCE_REGEX,"(RegExp) data: '%s'\n",toScan);
+					}
 				    	
 				} else {
 				// Match Applies.
@@ -744,6 +755,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 			}
 			break;
 		case MailFilter_Configuration::archiveContentName:
+			{
 			if (chkFlag(iIgnoreFields,MailFilter_Configuration::archiveContentName)) break;
 			bool bIsEncryptedCheck = (MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression == "<encrypted file>");
 			att = m->lstArchiveContents->GetFirst();
@@ -765,7 +777,9 @@ int MF_RuleExec( MailFilter_MailData* m )
 				att = m->lstArchiveContents->GetNext(att);
 			}
 			break;
+			}
 		case MailFilter_Configuration::archiveContentCount:
+			{
 			if (chkFlag(iIgnoreFields,MailFilter_Configuration::archiveContentCount)) break;
 			int cmpCount = atoi(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str());
 			int effectiveCount = 0;
@@ -785,7 +799,9 @@ int MF_RuleExec( MailFilter_MailData* m )
 				iResult = 0;
 
 			break;
+			}
 		case MailFilter_Configuration::blacklist:
+			{
 			if (chkFlag(iIgnoreFields,MailFilter_Configuration::blacklist)) break;
 		
 			char* holeZone = _mfd_strdup(MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(),"holeZone");
@@ -805,7 +821,8 @@ int MF_RuleExec( MailFilter_MailData* m )
 			if( bl->LookupRBL_DNS(holeZone,validResponse) == 1 )	{ iResult = 1; } else { iResult = 0; }
 			_mfd_free(holeZone,"holeZone");
 
-		    break;
+			break;
+			}
 		case MailFilter_Configuration::ipUnresolvable:
 		
 /*		
@@ -826,7 +843,7 @@ int MF_RuleExec( MailFilter_MailData* m )
 			
 			if( bl->LookupDNS() == 2 )	{ iResult = 1; } else { iResult = 0; }
 			
-		    break;
+			break;
 		case MailFilter_Configuration::virus:
 		{
 			// do evil MFAVA scanning.

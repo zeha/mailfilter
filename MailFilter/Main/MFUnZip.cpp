@@ -56,7 +56,7 @@ long MFUnZip::ExtractCurrentFile(const char* localFilename)
 
 	{
 		if (
-			((zi.compressed_size*100) < zi.uncompressed_size) ||	/* uncompressed size is 100 times bigger than compressed */
+			((zi.compressed_size*500) < zi.uncompressed_size) ||	/* uncompressed size is 500 times bigger than compressed */
 			(zi.uncompressed_size > 512*1024*1024)					/* max. 512 mb */
 		)
 		{

@@ -11,7 +11,7 @@
 #include "MFVirusScan.h"
 #include "MFVersion.h"
 
-#include "../Included/mime/modmimee.h"
+#include "../Libs/mime/modmimee.h"
 #include <tnef-lib.h>
 
 long MFVS_MakeScanPath (char* buffer, unsigned int buflen)

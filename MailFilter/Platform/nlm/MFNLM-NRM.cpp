@@ -10,7 +10,11 @@
 #define _MFD_MODULE			"MFNLM-NRM.CPP"
 //#include "nrm.h"
 #include "MailFilter.h"
+#ifdef __NOVELL_LIBC__
+#include "../nlm-libc/dynaload-nrm.h"
+#else
 #include "dynaload-nrm.h"
+#endif
 #include "MFMail.h++"
 #include "MFConfig-defines.h"
 #include "MFVersion.h"
@@ -774,7 +778,7 @@ int MailFilter_Main_RunAppNRM(bool bStandalone)
 
 	
 	ThreadSwitch();
-	if (cond_init ( &condMainThread , USYNC_THREAD, NULL ) != 0)
+	if (cond_init ( &condMainThread , USYNC_THREAD, 0 ) != 0)
 	{
 		printf("Could not initialize mutex. Startup Failed\n");
 	}

@@ -129,7 +129,7 @@ bool MF_UI_PromptUsernamePassword(std::string prompt, std::string username, std:
 	line++;
 
 	newUser[0] = 0;
-	NWSAppendScrollableStringField  (line, 5, 44, NORMAL_FIELD, (_MF_NUTCHAR)newUser, MAX_PATH, NULL, EF_ANY, NULL, MF_NutInfo);
+	NWSAppendScrollableStringField  (line, 5, 44, NORMAL_FIELD, (_MF_NUTCHAR)newUser, MAX_PATH, NULL, EF_ANY, 0, MF_NutInfo);
 	line++;
 
 
@@ -137,7 +137,7 @@ bool MF_UI_PromptUsernamePassword(std::string prompt, std::string username, std:
 	line++;
 	
 	newPass[0] = 0;
-	NWSAppendPasswordField  (line, 5, 44, NORMAL_FIELD, (_MF_NUTCHAR)newPass, MAX_PATH, NULL, false, NULL, '*', MF_NutInfo);
+	NWSAppendPasswordField  (line, 5, 44, NORMAL_FIELD, (_MF_NUTCHAR)newPass, MAX_PATH, 0, false, 0, '*', MF_NutInfo);
 	line++;
 
 	line++;
@@ -157,7 +157,7 @@ bool MF_UI_PromptUsernamePassword(std::string prompt, std::string username, std:
 		50,			//virtualWidth,
 		FALSE,		//ESCverify,
 		FALSE,		//forceverify,
-		NULL,		//confirmMessage,
+		0,		//confirmMessage,
 		MF_NutInfo
 	);
 

@@ -564,7 +564,7 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_BLACKLIST,		MailFilter_Configuration::blacklist		,MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_IPUNRESOLVABLE,MailFilter_Configuration::ipUnresolvable,MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_VIRUS,			MailFilter_Configuration::virus			,MF_NutInfo);
-	NWSAppendMenuField (line, 20, REQUIRED_FIELD, &newMatchfield, ctlMatchfield, NULL, MF_NutInfo);   
+	NWSAppendMenuField (line, 20, REQUIRED_FIELD, &newMatchfield, ctlMatchfield, 0, MF_NutInfo);   
 	line++;
 
 	NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_MATCHACTION), MF_NutInfo);
@@ -573,8 +573,8 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_PASS,		MailFilter_Configuration::pass,		 	MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_SCHEDULE,	MailFilter_Configuration::schedule,		MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_NOSCHEDULE,	MailFilter_Configuration::noschedule,	MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_COPY,		MailFilter_Configuration::copy,			MF_NutInfo);
-	NWSAppendMenuField (line, 20, REQUIRED_FIELD, &newMatchaction, ctlMatchaction, NULL, MF_NutInfo);   
+	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_COPY,		MailFilter_Configuration::copyMail,		MF_NutInfo);
+	NWSAppendMenuField (line, 20, REQUIRED_FIELD, &newMatchaction, ctlMatchaction, 0, MF_NutInfo);   
 	line++;
 
 
@@ -582,28 +582,28 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 	ctlMatchtype = NWSInitMenuField (MSG_MENU_MAIN_EDIT_FILTERS, 10, 40, MFConfig_EditFilterDialog_MenuAction, 			MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchtype, EDIT_FILTERS_MATCHTYPE_MATCH,			MailFilter_Configuration::match, 		MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchtype, EDIT_FILTERS_MATCHTYPE_NOMATCH,			MailFilter_Configuration::noMatch,		MF_NutInfo);
-	NWSAppendMenuField (line, 20, REQUIRED_FIELD, &newMatchtype, ctlMatchtype, NULL, MF_NutInfo);   
+	NWSAppendMenuField (line, 20, REQUIRED_FIELD, &newMatchtype, ctlMatchtype, 0, MF_NutInfo);   
 	line++;
 	
 	NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_EXPRESSION), MF_NutInfo);
 	strcpy (newExpression, flt->expression.c_str());
-	MFConfig_EditFilterDialog_fieldExpressionEdit = NWSAppendScrollableStringField  (line, 20, 55, REQUIRED_FIELD, (_MF_NUTCHAR)newExpression, 500, (_MF_NUTCHAR)"A..Za..z \\/:_-+.0..9{}[]()*#!\"§$%&=?~", EF_ANY, NULL, MF_NutInfo); 
+	MFConfig_EditFilterDialog_fieldExpressionEdit = NWSAppendScrollableStringField  (line, 20, 55, REQUIRED_FIELD, (_MF_NUTCHAR)newExpression, 500, (_MF_NUTCHAR)"A..Za..z \\/:_-+.0..9{}[]()*#!\"§$%&=?~", EF_ANY, 0, MF_NutInfo); 
 	line++;
 
 	MFConfig_EditFilterDialog_fieldDescriptionLbl = NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_DESCRIPTION), MF_NutInfo);
 	strcpy (newDescription, flt->name.c_str());
-	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newDescription, 60, (_MF_NUTCHAR)"A..Za..z \\/:_-+.0..9{}[]()*#!\"§$%&=?~", EF_ANY, NULL, MF_NutInfo); 
+	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newDescription, 60, (_MF_NUTCHAR)"A..Za..z \\/:_-+.0..9{}[]()*#!\"§$%&=?~", EF_ANY, 0, MF_NutInfo); 
 	
 	line++;
 	
 	line++;
 
 	NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_ENABLEDINCOMING), MF_NutInfo);
-	NWSAppendBoolField (line, 30, NORMAL_FIELD, &newEnabledIncoming, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 30, NORMAL_FIELD, &newEnabledIncoming, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_ENABLEDOUTGOING), MF_NutInfo);
-	NWSAppendBoolField (line, 30, NORMAL_FIELD, &newEnabledOutgoing, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 30, NORMAL_FIELD, &newEnabledOutgoing, 0, MF_NutInfo);
 	line++;
 
 	line++;
@@ -612,30 +612,30 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)">> Postmaster:", MF_NutInfo);
-	NWSAppendBoolField (line, 30, NORMAL_FIELD, &newNotifyAdminIncoming, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 30, NORMAL_FIELD, &newNotifyAdminIncoming, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)">> Sender:", MF_NutInfo);
-	NWSAppendBoolField (line, 30, NORMAL_FIELD, &newNotifySenderIncoming, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 30, NORMAL_FIELD, &newNotifySenderIncoming, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)">> Recipient:", MF_NutInfo);
-	NWSAppendBoolField (line, 30, NORMAL_FIELD, &newNotifyRecipientIncoming, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 30, NORMAL_FIELD, &newNotifyRecipientIncoming, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_NOTIFICATION_OUT), MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)">> Postmaster:", MF_NutInfo);
-	NWSAppendBoolField (line, 30, NORMAL_FIELD, &newNotifyAdminOutgoing, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 30, NORMAL_FIELD, &newNotifyAdminOutgoing, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)">> Sender:", MF_NutInfo);
-	NWSAppendBoolField (line, 30, NORMAL_FIELD, &newNotifySenderOutgoing, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 30, NORMAL_FIELD, &newNotifySenderOutgoing, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)">> Recipient:", MF_NutInfo);
-	NWSAppendBoolField (line, 30, NORMAL_FIELD, &newNotifyRecipientOutgoing, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 30, NORMAL_FIELD, &newNotifyRecipientOutgoing, 0, MF_NutInfo);
 	line++;
 
 	// fix some fields
@@ -789,6 +789,7 @@ static int MFConfig_EditFilters_Act(LONG keyPressed, LIST **elementSelected,
 			return rc;
 
 		case M_DELETE:
+			{
 			int ci = *(int *)((*elementSelected)->otherInfo);
 			MFD_Out(MFD_SOURCE_GENERIC,"debug: %d\n",ci);
 
@@ -798,8 +799,7 @@ static int MFConfig_EditFilters_Act(LONG keyPressed, LIST **elementSelected,
 			MF_GlobalConfiguration->filterList.erase(first);
 
 			return -2;
-
-
+			}
 		case M_SELECT:
 			rc = MFConfig_EditFilterDialog(&MF_GlobalConfiguration->filterList[*(unsigned int *)((*elementSelected)->otherInfo)]);
 			return rc;
@@ -931,7 +931,7 @@ static void MFConfig_EditLicense()
 	*/
 	line = 1;
 	NWSAppendCommentField (line, 2, (_MF_NUTCHAR)programMesgTable[MENU_MAIN_LICENSEKEY], MF_NutInfo);
-	NWSAppendStringField (line+1, 5, MAILFILTER_CONFIGURATION_LENGTH, NORMAL_FIELD, newLicenseKey, (_MF_NUTCHAR)"A..Za..z0..9 @_-+.[]()\"\\#'*?!§$%&/=<>|", NULL, MF_NutInfo);
+	NWSAppendStringField (line+1, 5, MAILFILTER_CONFIGURATION_LENGTH, NORMAL_FIELD, newLicenseKey, (_MF_NUTCHAR)"A..Za..z0..9 @_-+.[]()\"\\#'*?!§$%&/=<>|", 0, MF_NutInfo);
 
 	formSaved = NWSEditPortalForm (
 		/* I- header		*/ 0,
@@ -1038,35 +1038,35 @@ static void MFConfig_EditConfig()
 	
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_GENERAL_PATH_GWIA], MF_NutInfo);
 	strcpy (newPathGwia, MF_GlobalConfiguration->GWIARoot.c_str());
-	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newPathGwia, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z\\/{}[]()=#-_.,:;!§$&+~0..9", EF_SET, NULL, MF_NutInfo); 
+	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newPathGwia, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z\\/{}[]()=#-_.,:;!§$&+~0..9", EF_SET, 0, MF_NutInfo); 
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_GENERAL_PATH_MFLT], MF_NutInfo);
 	strcpy (newPathMflt, MF_GlobalConfiguration->MFLTRoot.c_str());
-	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newPathMflt, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z\\/{}[]()=#-_.,:;!§$&+~0..9", EF_SET, NULL, MF_NutInfo); 
+	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newPathMflt, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z\\/{}[]()=#-_.,:;!§$&+~0..9", EF_SET, 0, MF_NutInfo); 
 	line++;
 
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_DOMAIN_DOMAIN_NAME], MF_NutInfo);
 	strcpy (newDomainName, MF_GlobalConfiguration->DomainName.c_str());
-	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newDomainName, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z_-,.0..9", EF_SET, NULL, MF_NutInfo); 
+	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newDomainName, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z_-,.0..9", EF_SET, 0, MF_NutInfo); 
 
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_DOMAIN_DOMAIN_HOSTNAME], MF_NutInfo);
 	strcpy (newDomainHostname, MF_GlobalConfiguration->DomainHostname.c_str());
-	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newDomainHostname, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z_-.0..9", EF_SET, NULL, MF_NutInfo); 
+	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newDomainHostname, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z_-.0..9", EF_SET, 0, MF_NutInfo); 
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_DOMAIN_POSTMASTER], MF_NutInfo);
 	strcpy (newEmailPostMaster, MF_GlobalConfiguration->DomainEmailPostmaster.c_str());
-	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newEmailPostMaster, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z@_-+!<>.0..9", EF_SET, NULL, MF_NutInfo); 
+	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newEmailPostMaster, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z@_-+!<>.0..9", EF_SET, 0, MF_NutInfo); 
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_DOMAIN_MAILFILTER], MF_NutInfo);
 	strcpy (newEmailMailFilter, MF_GlobalConfiguration->DomainEmailMailFilter.c_str());
-	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newEmailMailFilter, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z@_-+!<>.0..9", EF_SET, NULL, MF_NutInfo); 
+	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newEmailMailFilter, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"A..Za..z@_-+!<>.0..9", EF_SET, 0, MF_NutInfo); 
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"General E-Mail Address without Domain Names:", MF_NutInfo);
@@ -1080,12 +1080,12 @@ static void MFConfig_EditConfig()
 	// username+password
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_LOGIN_USERNAME], MF_NutInfo);
 	strcpy (newLoginUsername, MF_GlobalConfiguration->LoginUserName.c_str());
-	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newLoginUsername, MAILFILTER_CONFIGURATION_LENGTH, NULL, EF_ANY, NULL, MF_NutInfo);
+	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newLoginUsername, MAILFILTER_CONFIGURATION_LENGTH, 0, EF_ANY, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_LOGIN_PASSWORD], MF_NutInfo);
 	strcpy (newLoginPassword, MF_GlobalConfiguration->LoginUserPassword.c_str());
-	NWSAppendPasswordField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newLoginPassword, MAILFILTER_CONFIGURATION_LENGTH, NULL, true, NULL, '*', MF_NutInfo);
+	NWSAppendPasswordField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newLoginPassword, MAILFILTER_CONFIGURATION_LENGTH, 0, true, 0, '*', MF_NutInfo);
 	line++;
 
 	line++;
@@ -1093,51 +1093,51 @@ static void MFConfig_EditConfig()
 	// schedule
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)programMesgTable[EDIT_BWL_SCHEDULETIME], MF_NutInfo);
 	strcpy (newScheduleTime, MF_GlobalConfiguration->BWLScheduleTime.c_str());
-	NWSAppendScrollableStringField (line, 50, 25, NORMAL_FIELD, (_MF_NUTCHAR)newScheduleTime, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"0..9-:,", EF_SET, NULL, MF_NutInfo); 
+	NWSAppendScrollableStringField (line, 50, 25, NORMAL_FIELD, (_MF_NUTCHAR)newScheduleTime, MAILFILTER_CONFIGURATION_LENGTH, (_MF_NUTCHAR)"0..9-:,", EF_SET, 0, MF_NutInfo); 
 	line++;
 
 	// other stuff
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"GWIA Mode/Version: (see manual)", MF_NutInfo);
 	newGwiaVersion = (unsigned long)MF_GlobalConfiguration->GWIAVersion;
-	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newGwiaVersion, 550, 600, NULL, MF_NutInfo);
+	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newGwiaVersion, 550, 600, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Number of Mail Queues:", MF_NutInfo);
 	newScanDirNum = (unsigned long)MF_GlobalConfiguration->MailscanDirNum;
-	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newScanDirNum, 0, 50, NULL, MF_NutInfo);
+	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newScanDirNum, 0, 50, 0, MF_NutInfo);
 	line++;
 
 /*	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"MailFilter Control/Config Password:", MF_NutInfo);
 	strcpy (newControlPassword, MF_GlobalConfiguration->ControlPassword.c_str());
-	NWSAppendPasswordField(line, 50, 20, NORMAL_FIELD, (_MF_NUTCHAR)newControlPassword, 50, NULL, true, NULL, '*', MF_NutInfo); 
+	NWSAppendPasswordField(line, 50, 20, NORMAL_FIELD, (_MF_NUTCHAR)newControlPassword, 50, 0, true, NULL, '*', MF_NutInfo); 
 	line++;
 */	
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable PFA Functionality:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnablePFA, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnablePFA, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Drop Broken Messages:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newDropBrokenMessages, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newDropBrokenMessages, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Drop Partial Messages:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newDropPartialMessages, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newDropPartialMessages, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable Netware Remote Manager Snap-In:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableNRMThread, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableNRMThread, 0, MF_NutInfo);
 	line++;
 	
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable Mail Restore in N. Remote Manager:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableNRMRestore, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableNRMRestore, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Notify Postmaster on Log-Cycle Error:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminLogs, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminLogs, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Send Daily Status Report to Postmaster:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminDailyReport, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminDailyReport, 0, MF_NutInfo);
 	line++;
 
 	line++;
@@ -1146,16 +1146,16 @@ static void MFConfig_EditConfig()
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"No Mail Transport without CA eTrust running:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newRequireAVA, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newRequireAVA, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Unpack Mails for Virus Scanner:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableAttachmentDecoder, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableAttachmentDecoder, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Seconds to wait for Real Time Scan:", MF_NutInfo);
 	newScanDirWait = (unsigned long)MF_GlobalConfiguration->MailscanTimeout;
-	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newScanDirWait, 0, 600, NULL, MF_NutInfo);
+	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newScanDirWait, 0, 600, 0, MF_NutInfo);
 	line++;
 
 	line++;
@@ -1164,17 +1164,17 @@ static void MFConfig_EditConfig()
 	line++;
 	
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Maximum Total Size (kBytes):", MF_NutInfo);
-	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newProblemDir_MaxSize, 0, 1000000, NULL, MF_NutInfo);
+	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newProblemDir_MaxSize, 0, 1000000, 0, MF_NutInfo);
 	NWSAppendCommentField (line, 65, (_MF_NUTCHAR)"(0=disabled)", MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Maximum File Age (Days):", MF_NutInfo);
-	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newProblemDir_MaxAge, 0, 10000, NULL, MF_NutInfo);
+	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newProblemDir_MaxAge, 0, 10000, 0, MF_NutInfo);
 	NWSAppendCommentField (line, 65, (_MF_NUTCHAR)"(0=disabled)", MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Notify Postmaster On Cleanup:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminMailsKilled, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminMailsKilled, 0, MF_NutInfo);
 	line++;
 
 	line++;
@@ -1183,27 +1183,27 @@ static void MFConfig_EditConfig()
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Postmaster, Incoming:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminIn, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminIn, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Postmaster, Outgoing:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminOut, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminOut, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Internal Recipient:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_InternalRcpt, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_InternalRcpt, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Internal Sender:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_InternalSndr, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_InternalSndr, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"External Recipient:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_ExternalRcpt, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_ExternalRcpt, 0, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"External Sender:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_ExternalSndr, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_ExternalSndr, 0, MF_NutInfo);
 	line++;
 
 

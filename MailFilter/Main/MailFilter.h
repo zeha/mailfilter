@@ -44,6 +44,11 @@
 #include <string.h>
 #include <sys/stat.h>
 
+/* GCC */
+#ifdef __GNUC__
+#define __int64 long long
+#endif
+
 #include "streamprintf.h"
 
 /* *****    N E T W A R E    ***** */
@@ -102,9 +107,9 @@
 
 	typedef int BOOL;
 
+#include <nks/thread.h>
 #include <netware.h>
 #include <library.h>
-#include <nks/thread.h>
 #include <sys/utsname.h>
 #include <fsio.h>
 #include <screen.h>
@@ -112,18 +117,23 @@
 #endif
 
 /* TCP/IP Support */
+#ifndef MAILFILTER_WITH_WINSOCK2
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-
+#else
+#include <winsock/novsock2.h>
+#endif
 
 #undef WIN32
 
 #ifndef HAVE_WINSOCK
 
+/*
 #define SOCKET		unsigned int
 #define	closesocket	close
+*/
 
 #ifndef __NOVELL_LIBC__
 static NETDB_DEFINE_CONTEXT
@@ -151,6 +161,7 @@ static NETINET_DEFINE_CONTEXT
 // *Windows Defines*
 #undef HANDLE
 #define HANDLE	int
+#define _HANDLE
 // *Windows Macros*
 #ifndef LOBYTE
 #define MAKELONG(a, b)      ((LONG)(((WORD)((DWORD_PTR)(a) & 0xffff)) | ((DWORD)((WORD)((DWORD_PTR)(b) & 0xffff))) << 16))
@@ -272,7 +283,7 @@ typedef LONG rtag_t;
 #include "mfpcre.h"
 
 // Include I18N header
-#include "../Included/mime/comi18n.h"
+#include "../Libs/mime/comi18n.h"
 
 // Include String Table
 #include "mailflt.mlh"

@@ -1399,6 +1399,8 @@ int main( int argc, char *argv[ ])
 
 	ThreadSwitch();
 
+	int rc = 0;		// put this here
+	
 extern int MF_ParseCommandLine( int argc, char **argv );
 
 	// Parse Command Line and build some vars...
@@ -1448,8 +1450,6 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 
 
 	ThreadSwitch();
-
-	int rc = 0;
 	
 	unlink("SYS:\\SYSTEM\\MFINST.NLM");
 	unlink("SYS:\\SYSTEM\\MFREST.NLM");
@@ -1474,7 +1474,7 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 			MF_DisplayCriticalError("MAILFILTER: Could not read configuration. Terminating!\n");
 			goto MF_MAIN_TERMINATE;
 		}
-		
+		printf("Starting Server Application...\n");
 		rc = MailFilter_Main_RunAppServer(argv[0]);
 		break;
 		

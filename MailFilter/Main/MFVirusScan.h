@@ -17,5 +17,5 @@ long MFVS_CheckAttachment(const char* szAttFile, const char* szAttachmentFilenam
 long MFVS_CheckZIPFile(const char* szAttFile, std::string szZipFilename, MailFilter_MailData* m);
 long MFVS_CheckWinmailDat(const char* szAttFile, std::string szTNEFFilename, MailFilter_MailData* m);
 
-
 /* eof */
+

@@ -217,11 +217,11 @@ int MFRestore_ShowDetails(const char* fileName, int enableRestoreField)
 		line++;
 		
 		NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Restore this Mail:", MF_NutInfo);
-		NWSAppendBoolField    (line, 22, NORMAL_FIELD, &newRestore, NULL, MF_NutInfo);
+		NWSAppendBoolField    (line, 22, NORMAL_FIELD, &newRestore, 0, MF_NutInfo);
 		line++;
 		
 		NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Queue for Re-Check:", MF_NutInfo);
-		NWSAppendBoolField    (line, 22, NORMAL_FIELD, &newRecheck, NULL, MF_NutInfo);
+		NWSAppendBoolField    (line, 22, NORMAL_FIELD, &newRecheck, 0, MF_NutInfo);
 		line++;
 	}	
 
@@ -318,7 +318,7 @@ int MFRestore_ShowFile(const char* fileName)
 	if (fp == NULL)
 	{
 		NWSDisplayInformation (
-			NULL,
+			0,
 			5,
 			0,
 			0,
@@ -610,3 +610,4 @@ int MailFilter_Main_RunAppRestore(bool bStandalone)
 		
 	return true;
 }
+

@@ -10,6 +10,8 @@
 
 #include "MailFilter.h"
 #include <string>
+#include <sys/socket.h>
+#define SOCKET unsigned int
 
 class DCCInterface
 {
