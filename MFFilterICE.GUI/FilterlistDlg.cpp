@@ -340,6 +340,6 @@ void CFilterlistDlg::OnHelpAbout()
 
 void CFilterlistDlg::OnHelpTextfiledocumentation()
 {
-	ShellExecute(this->m_hWnd, "open", "docs/notes/MFFilterICE.en.html", "", "", SW_SHOW);
+	ShellExecute(this->m_hWnd, "open", "docs\\notes\\MFFilterICE.en.html", "", "", SW_SHOW);
 }
 

@@ -47,6 +47,8 @@ REM %CMDIDE% mfrestore mfrestore.mcp
 
 %CMDIDE% mfxor mfxor.mcp
 
+%CMDIDE% EicarTest EicarTest.mcp /t "NLMRelease"
+
 %CMDIDE% mfconfig.nlm-fake MFConfig-fake.mcp /t "MFConfig FAKE"
 
 %CMDIDE% MFAVA MFAVA.mcp /t "AntiVirusAgent"
