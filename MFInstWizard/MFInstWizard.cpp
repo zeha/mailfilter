@@ -479,12 +479,17 @@ BOOL CInstApp::InitInstance()
 						// mfstart.ncf
 						line = mfbinary + "-t server " + szServerAppConfigDest;
 						MF_CreateNCFFile(szAppBaseDest + "\\MFSTART.NCF", line);
+
+						// mfinst.ncf
+						line = mfbinary + "-t install " + szServerAppConfigDest;
+						MF_CreateNCFFile(szAppBaseDest + "\\MFINST.NCF", line);
+					} else {
+						// on an upgrade only write a new MFINST.NCF
+
+						// mfinst.ncf
+						line = mfbinary + "-t upgrade " + szServerAppConfigDest;
+						MF_CreateNCFFile(szAppBaseDest + "\\MFINST.NCF", line);
 					}
-
-					// mfinst.ncf
-					line = mfbinary + "-t install " + szServerAppConfigDest;
-					MF_CreateNCFFile(szAppBaseDest + "\\MFINST.NCF", line);
-
 					// mfconfig.ncf
 //					line = "%if !loaded mailflt&mflt50 then cmd " + mfbinary;
 //					line += "-t config " + szServerAppConfigDest;

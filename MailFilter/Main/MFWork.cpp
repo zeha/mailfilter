@@ -3374,6 +3374,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 
 				if (access(fileIn,W_OK) == 0)
 				{
+#ifdef _TRACE
 					/* code for icc-* and vm* servers to copy status mail in a seperate directory for debugging */
 					if (
 						(
@@ -3389,6 +3390,8 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 						MF_CopyFileToDir(fileIn,"SYS:\\TMP\\");
 					}
 					/* end debug code */
+#endif
+
 					MF_MoveFileToDir(fileIn,MFT_GWIA_ResultDirOut,false);
 				}
 
