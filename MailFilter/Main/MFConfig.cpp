@@ -13,6 +13,7 @@
 
 #define _MFD_MODULE			"MFCONFIG.CPP"
 #include "MailFilter.h"
+#include "MFConfig-defines.h"
 
 #define MAILFILTER_CONFIGURATIONFILE_STRING (MAILFILTER_CONFIGURATION_LENGTH+1)
 

@@ -98,9 +98,11 @@ const char* iXDir::GetCurrentEntryName()
 
 long long iXDir::GetCurrentEntrySize()
 {
+#ifndef IXPLAT_WIN32
 	if (m_Entry != NULL)
 		return m_Entry->d_size;
 	else
+#endif
 		return -1;
 }
 
@@ -143,10 +145,10 @@ time_t iXDir::GetCurrentEntryModificationTime()
 		stat(fullE,&st);
 		free(fullE);
 		
-#ifdef IXPLAT_NETWARE_CLIB
-		return st.st_mtime;
-#else
+#ifdef IXPLAT_NETWARE_LIBC
 		return st.st_mtime.tv_sec;
+#else
+		return st.st_mtime;
 #endif
 		// just in case.
 		return -2;

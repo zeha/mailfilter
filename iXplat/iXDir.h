@@ -23,7 +23,7 @@ public:
 private:
 	char* m_DirectoryName;
 
-#ifdef IXPLAT_NETWARE_LIBC
+#if defined(IXPLAT_NETWARE_LIBC) || defined(IXPLAT_WIN32)
 	DIR* m_Directory;
 	struct dirent* m_Entry;
 #endif

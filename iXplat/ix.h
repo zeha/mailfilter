@@ -72,13 +72,16 @@ typedef enum { IX_FAILURE = -1, IX_SUCCESS = 0 } IXStatus;
 //#ifdef _IX_LIBRARY
 #include <dirent.h>
 #include <unistd.h>
-#include <sys/time.h>
 
 #ifdef IXPLAT_WIN32
 #	define WIN32_LEAN_AND_MEAN
 #	include <windows.h>
 #	include <winsock2.h>
 #	include <errno.h>
+#	include <time.h>
+#	include <stdlib.h>
+#else
+#	include <sys/time.h>
 #endif
 
 //#endif

@@ -260,6 +260,8 @@ typedef LONG rtag_t;
 #define memicmp			ix_memicmp
 #endif // __MSL__
 
+#define ThreadSwitch()
+
 #define HAVE_WINSOCK
 //#endif
 

@@ -130,9 +130,9 @@ std::string MF_MakeValidPath(std::string thePath)
 	std::string ret;
 
 	fullpath = (char*)malloc(_MAX_PATH);
-	if (fullpath == NULL) { MF_OutOfMemoryHandler();	return; }
+	if (fullpath == NULL) { MF_OutOfMemoryHandler();	return ""; }
 
-	if (_fullpath( fullpath, thePath, _MAX_PATH ) != NULL )
+	if (_fullpath( fullpath, thePath.c_str(), _MAX_PATH ) != NULL )
 		ret = fullpath;
 
 	free(fullpath);

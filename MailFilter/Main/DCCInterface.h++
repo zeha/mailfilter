@@ -9,7 +9,6 @@
 #define DCCInterface_H
 
 #include "MailFilter.h"
-#include <sys/socket.h>
 #include <string>
 
 class DCCInterface

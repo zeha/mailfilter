@@ -1209,7 +1209,7 @@ MFD_Out(MFD_SOURCE_WORKER,"Made %s\n",szTemp);
 
 
 
-static int MF_HandleMailFile(MailFilter_MailData* m)
+int MF_HandleMailFile(MailFilter_MailData* m)
 {
 	// do the parse work
 	int q = MF_ParseMail(m,false);
