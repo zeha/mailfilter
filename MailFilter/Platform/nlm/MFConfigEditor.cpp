@@ -1665,7 +1665,7 @@ int MailFilter_Main_RunAppConfig(bool bStandalone)
 	memset(szTemp,' ',80);
 	szTemp[81]=0;
 	sprintf(szTemp,"  MailFilter Configuration Editor NLM/CUI Version %s",
-									programMesgTable[MSG_PROGRAM_VERSION]);
+									MAILFILTERVERNUM);
 	szTemp[81]=0;
 	NWSShowLineAttribute ( 0 , 0 , (_MF_NUTCHAR)szTemp , VNORMAL , 80 , (struct ScreenStruct*)MF_NutInfo->screenID );
 
