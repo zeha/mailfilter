@@ -452,6 +452,7 @@ BOOL CInstApp::InitInstance()
 					bErrors = true;
 				if (!api.UnloadNLM("MFNRM.NLM"))
 					bErrors = true;
+				bErrors = false;
 				if (!bErrors)
 					szError = "";
 			}
