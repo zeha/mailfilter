@@ -1,5 +1,5 @@
 ;
-;  (c) Copyright 2001-2003 Christian Hofstaedtler
+;  (c) Copyright 2001-2004 Christian Hofstaedtler
 ;
 ;  This is the MailFilter professional Installation
 ;  Script. 
@@ -38,13 +38,13 @@
 
   !define MUI_WELCOMEFINISHPAGE_BITMAP "..\Graphics\mailfilter-wizard-new-small.bmp"
 
-  !define MUI_LANGDLL_REGISTRY_ROOT "HKCU" 
-  !define MUI_LANGDLL_REGISTRY_KEY "Software\${PROD_NAME}" 
-  !define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
+;  !define MUI_LANGDLL_REGISTRY_ROOT "HKCU" 
+;  !define MUI_LANGDLL_REGISTRY_KEY "Software\${PROD_NAME}" 
+;  !define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
 
   !define MUI_ABORTWARNING
   !define MUI_LICENSEPAGE_RADIOBUTTONS
-  !define MUI_COMPONENTSPAGE_NODESC
+;  !define MUI_COMPONENTSPAGE_NODESC
   !define MUI_FINISHPAGE_NOAUTOCLOSE
 ;  !define MUI_FINISHPAGE_RUN "$INSTDIR\MFInstallWizard.exe"
 ;  !define MUI_FINISHPAGE_RUN_NOTCHECKED
@@ -241,9 +241,9 @@ Section "Uninstall"
 
 SectionEnd
 
-Function un.onInit
-  !insertmacro MUI_UNGETLANGUAGE
-FunctionEnd
+;Function un.onInit
+;  !insertmacro MUI_UNGETLANGUAGE
+;FunctionEnd
 
 
 

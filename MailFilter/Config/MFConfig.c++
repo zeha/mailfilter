@@ -535,6 +535,7 @@ bool Configuration::CreateFromInstallFile(std::string installFile)
 	unsigned int myGwiaVersion;
 	std::string myConfDir;
 	std::string filterFilePath;
+	bool isUpgrade = false;
 
 	std::ifstream install(installFile.c_str());
 	
@@ -556,6 +557,14 @@ bool Configuration::CreateFromInstallFile(std::string installFile)
 				
 				if (param == "licensekey")
 					myLicenseKey = value;
+
+				if (param == "config-mode")
+				{
+				if (value == "upgrade")
+					isUpgrade = true;
+					else
+					isUpgrade = false;
+				}
 
 				if (param == "home-gwia")
 					myHomeGwia = value;
@@ -582,33 +591,38 @@ bool Configuration::CreateFromInstallFile(std::string installFile)
 	printf("   Done reading install data file!\n");
 	install.close();
 
-	this->config_build = MAILFILTER_CONFIGURATION_THISBUILD;
+	if (!isUpgrade)
+	{
+		this->config_build = MAILFILTER_CONFIGURATION_THISBUILD;
 
-	this->filterList.clear();
-	
-	this->setDefaults(myConfDir,myDomain);
-	if (myHostname != "")
-		this->DomainHostname = myHostname;
-
-	if (myHomeGwia != "")
-		this->GWIARoot = myHomeGwia;
-	if (myHomeMailFilter != "")
-		this->MFLTRoot = myHomeMailFilter;
-
-	if (myLicenseKey != "")
-		this->LicenseKey = myLicenseKey;
+		this->filterList.clear();
 		
-	if (myGwiaVersion != 0)
-	{
-		if (!((myGwiaVersion == 550) || (myGwiaVersion == 600)))
-			myGwiaVersion = 600;
-		this->GWIAVersion = myGwiaVersion;
-	}
-	if (filterFilePath != "")
-	{
-		printf("   Importing rule package %s\n",filterFilePath.c_str());
-		if (!this->ReadFilterListFromRulePackage(filterFilePath))
-			printf("      ... FAILED.\n");
+		this->setDefaults(myConfDir,myDomain);
+		if (myHostname != "")
+			this->DomainHostname = myHostname;
+
+		if (myHomeGwia != "")
+			this->GWIARoot = myHomeGwia;
+		if (myHomeMailFilter != "")
+			this->MFLTRoot = myHomeMailFilter;
+
+		if (myLicenseKey != "")
+			this->LicenseKey = myLicenseKey;
+			
+		if (myGwiaVersion != 0)
+		{
+			if (!((myGwiaVersion == 550) || (myGwiaVersion == 600)))
+				myGwiaVersion = 600;
+			this->GWIAVersion = myGwiaVersion;
+		}
+		if (filterFilePath != "")
+		{
+			printf("   Importing rule package %s\n",filterFilePath.c_str());
+			if (!this->ReadFilterListFromRulePackage(filterFilePath))
+				printf("      ... FAILED.\n");
+		}
+	} else {
+		this->ReadFromFile("");
 	}
 	
 	printf("   Writing "MAILFILTER_CONFIGURATION_PATHFILE"... \n");

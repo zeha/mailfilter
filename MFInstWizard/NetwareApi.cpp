@@ -44,6 +44,18 @@ bool NetwareApi::LoadNLM(const char* szNLMName)
 	return false;
 }
 
+// Unloads the specified NLM on the specified server
+bool NetwareApi::UnloadNLM(const char* szNLMName)
+{
+	if (this->m_ClientConnection == -1)
+		return false;
+
+	if (NWSMUnloadNLM(this->m_ClientConnection,szNLMName) == 0)
+		return true;
+
+	return false;
+}
+
 // Runs the specified NCF on the specified server
 bool NetwareApi::ExecuteNCF(const char* szNCFName)
 {

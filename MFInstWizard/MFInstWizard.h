@@ -34,6 +34,7 @@ public:
 	BOOL mf_GwiaResetSmtpHome;
 	BOOL mf_InstallLegacyVersion;
 	BOOL mf_LoadMailFilter;
+	BOOL mf_IsUpgrade;
 	CString mf_AppDir;
 	CString mf_GwiaCfgPath;
 	CString mf_LicenseKey;

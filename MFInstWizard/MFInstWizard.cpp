@@ -220,6 +220,9 @@ BOOL CInstApp::InitInstance()
 		
 			WriteLog("***************************************************************");
 			WriteLog("New Installation to server " + this->mf_ServerName + ", AppDir: " + this->mf_AppDir);
+			if (this->mf_IsUpgrade)
+				WriteLog(" *** UPGRADE UPGRADE UPGRADE ***");
+
 			WriteLog("Gwia.Cfg: " + this->mf_GwiaCfgPath);
 			WriteLog("License Key: " + this->mf_LicenseKey);
 
@@ -372,6 +375,7 @@ BOOL CInstApp::InitInstance()
 
 					// base
 					szError = "Could not copy NCF file.";
+					if (!this->mf_IsUpgrade)
 					if (MF_CopyFile(progressCtrl, sourceBase, szAppBaseDest, "MFSTOP.NCF") == FALSE)			bErrors = true;
 
 					// binaries
@@ -381,7 +385,6 @@ BOOL CInstApp::InitInstance()
 					if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MFLT50.NLM") == FALSE)			bErrors = true;
 					DeleteFile(szAppBinaryDest + "\\MFCONFIG.NLM");
 					DeleteFile(szAppBinaryDest + "\\MFUPGR.NLM");
-					//if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MFCONFIG.NLM") == FALSE)		bErrors = true;
 					if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MFREST.NLM") == FALSE)			bErrors = true;
 					if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MFNRM.NLM") == FALSE)			bErrors = true;
 
@@ -389,12 +392,14 @@ BOOL CInstApp::InitInstance()
 					if (!bErrors)
 						szError = "Could not copy configuration file.";
 					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "FILTERS.BIN") == FALSE)		bErrors = true;
-					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "MAILCOPY.TPL") == FALSE)		bErrors = true;
-					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "REPORT.TPL") == FALSE)			bErrors = true;
-					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "RINSIDE.TPL") == FALSE)		bErrors = true;
-					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "ROUTRCPT.TPL") == FALSE)		bErrors = true;
-					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "ROUTSNDR.TPL") == FALSE)		bErrors = true;
-
+					if (!this->mf_IsUpgrade)
+					{
+						if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "MAILCOPY.TPL") == FALSE)		bErrors = true;
+						if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "REPORT.TPL") == FALSE)			bErrors = true;
+						if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "RINSIDE.TPL") == FALSE)		bErrors = true;
+						if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "ROUTRCPT.TPL") == FALSE)		bErrors = true;
+						if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "ROUTSNDR.TPL") == FALSE)		bErrors = true;
+					}
 					if (!bErrors)
 						szError = "";
 				}
@@ -407,48 +412,60 @@ BOOL CInstApp::InitInstance()
 				progressCtrl->SetPos(progressCtrl->GetPos()+1);
 				progressTextCtrl->SetWindowText("Creating NCF files");
 				{
-					// mfstart.ncf
-					CString line = "LOAD ";
+					CString mfbinary = "LOAD ";
 					if (!((server_majorVersion == 5) && (server_minorVersion == 0)))
-						line += "PROTECTED ";
-					line += szServerAppBinaryDest;
-					line += "\\";
+						mfbinary += "PROTECTED ";
+					mfbinary += szServerAppBinaryDest + "\\MAILFLT.NLM ";
+					if (this->mf_InstallLegacyVersion)
+						mfbinary = szServerAppBinaryDest + "\\MFLT50.NLM ";
 
-					if (!this->mf_InstallLegacyVersion)
-						line += "MAILFLT";
-					else
-						line += "MFLT50";
-
-					line += ".NLM -t server ";
-					line += szServerAppConfigDest;
-
+					CString line;
+					
+					// mfstart.ncf
+					line = mfbinary + "-t server " + szServerAppConfigDest;
 					MF_CreateNCFFile(szAppBaseDest + "\\MFSTART.NCF", line);
 
 					// mfinst.ncf
-					line = "LOAD ";
-					if (!((server_majorVersion == 5) && (server_minorVersion == 0)))
-						line += "PROTECTED ";
-					line += szServerAppBinaryDest;
-					line += "\\";
-
-					if (!this->mf_InstallLegacyVersion)
-						line += "MAILFLT";
-					else
-						line += "MFLT50";
-
-					line += ".NLM -t install ";
-					line += szServerAppConfigDest;
-
+					line = mfbinary + "-t install " + szServerAppConfigDest;
 					MF_CreateNCFFile(szAppBaseDest + "\\MFINST.NCF", line);
+
+					// mfconfig.ncf
+					line = "%if !loaded mailflt&mflt50 then cmd " + mfbinary;
+					line += "-t config " + szServerAppConfigDest;
+					MF_CreateNCFFile(szAppBaseDest + "\\MFCONFIG.NCF", line);
 				}
+			}
+
+			if ((this->mf_IsUpgrade) && (!bErrors))
+			{
+				// 4: Unload MailFilter on upgrade
+				WriteLog("4 - Upgrade: Unload MailFilter");
+				progressCtrl->SetPos(progressCtrl->GetPos()+1);
+				progressTextCtrl->SetWindowText("Unloading MailFilter NLMs...");
+
+				szError = "An error occoured while unloading a MailFilter NLM. Please check the System Console/Logger Screen!";
+				if (!api.ExecuteNCF("MFSTOP.NCF"))
+					bErrors = true;
+				if (!api.UnloadNLM("MAILFLT.NLM"))
+					bErrors = true;
+				if (!api.UnloadNLM("MFLT50.NLM"))
+					bErrors = true;
+				if (!api.UnloadNLM("MFNRM.NLM"))
+					bErrors = true;
+				if (!bErrors)
+					szError = "";
 			}
 
 			if (!bErrors)
 			{
-				// 4: Create Configuration
-				WriteLog("4 - Create Install Configuration.");
+				// 5: Create Configuration
+				WriteLog("5 - Create Install Configuration.");
 				progressCtrl->SetPos(progressCtrl->GetPos()+1);
-				progressTextCtrl->SetWindowText("Creating configuration files");
+				if (!this->mf_IsUpgrade)
+					progressTextCtrl->SetWindowText("Creating configuration files");
+				else
+					progressTextCtrl->SetWindowText("Upgrading configuration files");
+
 				{
 					WriteLog("Writing install.cfg as " + szAppConfigDest + "\\INSTALL.CFG");
 					DeleteFile(szAppConfigDest + "\\INSTALL.CFG");
@@ -456,24 +473,32 @@ BOOL CInstApp::InitInstance()
 					if (installCfg.is_open())
 					{
 						installCfg << "# created by MFInstallWizard" << std::endl;
-						installCfg << "/domain=" << this->mf_DomainName << std::endl;
-							WriteLog("  /domain="+this->mf_DomainName);
-						installCfg << "/hostname=" << this->mf_HostName << std::endl;
-							WriteLog("  /hostname="+this->mf_HostName);
-						installCfg << "/config-directory=" << szAppConfigDest << std::endl;
-							WriteLog("  /config-directory="+szAppConfigDest);
-						installCfg << "/gwia-version=" << (this->mf_GroupwiseVersion6 ? 600 : 550) << std::endl;
-							WriteLog(this->mf_GroupwiseVersion6 ? "  /gwia-version=600" : "  /gwia-version=550");
-						installCfg << "/home-gwia=" << this->mf_GwiaDHome << std::endl;
-							WriteLog("  /home-gwia="+this->mf_GwiaDHome);
-						installCfg << "/home-mailfilter=" << this->mf_GwiaSmtpHome << std::endl;
-							WriteLog("  /home-mailfilter="+this->mf_GwiaSmtpHome);
-						installCfg << "/licensekey=" << this->mf_LicenseKey << std::endl;
-							WriteLog("  /licensekey="+this->mf_LicenseKey);
-						installCfg << "/config-importfilterfile=" << szAppConfigDest + "\\FILTERS.BIN" << std::endl;
-							WriteLog("  /config-importfilterfile="+ szAppConfigDest + "\\FILTERS.BIN");
-						installCfg << "/config-deleteinstallfile=yes" << std::endl;
-							WriteLog("  /config-deleteinstallfile=yes");
+						if (!this->mf_IsUpgrade)
+						{
+							installCfg << "/config-mode=install" << std::endl;
+								WriteLog("  /config-mode=install");
+							installCfg << "/domain=" << this->mf_DomainName << std::endl;
+								WriteLog("  /domain="+this->mf_DomainName);
+							installCfg << "/hostname=" << this->mf_HostName << std::endl;
+								WriteLog("  /hostname="+this->mf_HostName);
+							installCfg << "/config-directory=" << szAppConfigDest << std::endl;
+								WriteLog("  /config-directory="+szAppConfigDest);
+							installCfg << "/gwia-version=" << (this->mf_GroupwiseVersion6 ? 600 : 550) << std::endl;
+								WriteLog(this->mf_GroupwiseVersion6 ? "  /gwia-version=600" : "  /gwia-version=550");
+							installCfg << "/home-gwia=" << this->mf_GwiaDHome << std::endl;
+								WriteLog("  /home-gwia="+this->mf_GwiaDHome);
+							installCfg << "/home-mailfilter=" << this->mf_GwiaSmtpHome << std::endl;
+								WriteLog("  /home-mailfilter="+this->mf_GwiaSmtpHome);
+							installCfg << "/licensekey=" << this->mf_LicenseKey << std::endl;
+								WriteLog("  /licensekey="+this->mf_LicenseKey);
+							installCfg << "/config-importfilterfile=" << szAppConfigDest + "\\FILTERS.BIN" << std::endl;
+								WriteLog("  /config-importfilterfile="+ szAppConfigDest + "\\FILTERS.BIN");
+						} else {
+							installCfg << "/config-mode=upgrade" << std::endl;
+								WriteLog("  /config-mode=upgrade");
+							installCfg << "/config-deleteinstallfile=yes" << std::endl;
+								WriteLog("  /config-deleteinstallfile=yes");
+						}
 						installCfg.close();
 
 						progressCtrl->SetPos(progressCtrl->GetPos()+1);
@@ -488,15 +513,18 @@ BOOL CInstApp::InitInstance()
 					} else {
 						WriteLog("  => ofstream() failed");
 						bErrors = true;
-						szError = "Could not write initial configuration file.";
+						if (!this->mf_IsUpgrade)
+							szError = "Could not write initial configuration file.";
+						else
+							szError = "Could not write Configuration Update instructions file.";
 					}
 				}
 			}
 
-			if (!bErrors)
+			if ((!this->mf_IsUpgrade) && (!bErrors))
 			{
-				// 5: patch autoexec.ncf
-				WriteLog("5 - patch autoexec.ncf.");
+				// 6: patch autoexec.ncf
+				WriteLog("6 - patch autoexec.ncf.");
 				progressCtrl->SetPos(progressCtrl->GetPos()+5);
 				progressTextCtrl->SetWindowText("Updating Server Configuration");
 				{
@@ -521,10 +549,10 @@ BOOL CInstApp::InitInstance()
 				}
 			}
 
-			if (!bErrors)
+			if ((!this->mf_IsUpgrade) && (!bErrors))
 			{
-				// 6: patch gwia.cfg
-				WriteLog("6 - patch gwia.ncf.");
+				// 7: patch gwia.cfg
+				WriteLog("7 - patch gwia.ncf.");
 				progressCtrl->SetPos(progressCtrl->GetPos()+5);
 				progressTextCtrl->SetWindowText("Updating GroupWise Configuration");
 				if (this->mf_GwiaResetSmtpHome)
@@ -542,52 +570,64 @@ BOOL CInstApp::InitInstance()
 
 					std::string line;
 					std::string value;
-					std::ifstream oldcfgfile(oldGwiaCfg);
-					std::ofstream newcfgfile(this->mf_GwiaCfgPath);
-					bool bPatchedSmtpHome = false;
-					while (oldcfgfile >> line)
+
+					FILE* oldcfgfile = fopen(oldGwiaCfg,"rt");
+					if (oldcfgfile == NULL)
 					{
-						if (line[0] == '/')
+						bErrors = true;
+						szError = "The backup copy of gwia.cfg could not be opened. It is usually named gwia.cfg.mfold.";
+					} else {
+						bool bPatchedSmtpHome = false;
+						char szBuf[2048];
+						std::ofstream newcfgfile(this->mf_GwiaCfgPath);
+
+						while (!feof(oldcfgfile))
 						{
-							value = "";
-							i = line.find("=");
-							if (i == npos) 
-								i = line.find("-");
-							if (i != npos)
-								value = line.substr(++i);
-
-							if (value[0] == '"')
-								value = value.substr(1);
-							if (value[value.length()-1] == '"')
-								value = value.substr(0,value.length()-1);
-
-							// /PARAMETER
-							if (stricmp(line.substr(0,9).c_str(),"/smtphome") == 0)
+							memset(szBuf,0,2047);
+							fgets(szBuf,2040,oldcfgfile);
+							line = szBuf;
+							if (line[0] == '/')
 							{
-								line = smtpHomeLine;
-								bPatchedSmtpHome = true;
-								WriteLog("  > overriding old smtphome setting");
+								value = "";
+								i = line.find("=");
+								if (i == npos) 
+									i = line.find("-");
+								if (i != npos)
+									value = line.substr(++i);
+
+								if (value[0] == '"')
+									value = value.substr(1);
+								if (value[value.length()-1] == '"')
+									value = value.substr(0,value.length()-1);
+
+								// /PARAMETER
+								if (stricmp(line.substr(0,9).c_str(),"/smtphome") == 0)
+								{
+									line = smtpHomeLine;
+									bPatchedSmtpHome = true;
+									WriteLog("  > overriding old smtphome setting");
+								}
 							}
+							newcfgfile << line << std::endl;
 						}
-						newcfgfile << line << std::endl;
-					}
 
-					if (!bPatchedSmtpHome)
-					{
-						WriteLog("  > adding new smtphome setting");
-						newcfgfile << smtpHomeLine << std::endl;
-					}
+						if (!bPatchedSmtpHome)
+						{
+							WriteLog("  > adding new smtphome setting");
+							newcfgfile << smtpHomeLine << std::endl;
+						}
 
-					newcfgfile.close();
-					oldcfgfile.close();
+						newcfgfile.close();
+						fclose(oldcfgfile);
+					}
 				} else
 					WriteLog("  -> NOT modifying gwia.cfg - user said NO!");
 			}
 
 			if (!bErrors)
 			{
-				// 7: load mailfilter if yes
-				WriteLog("7 - load mailfilter if yes");
+				// 8: load mailfilter if yes
+				WriteLog("8 - load mailfilter if yes");
 				progressCtrl->SetPos(progressCtrl->GetPos()+1);
 				if (this->mf_LoadMailFilter == TRUE)
 				{

@@ -46,5 +46,11 @@ BOOL InstallDlg::OnSetActive(void)
 	CStatic* headerCtrl = ((CStatic*)this->GetDlgItem(IDC_TITLE));
 	headerCtrl->SetFont(headerFont);
 
+	CInstApp* app = (CInstApp*)AfxGetApp();
+	if (app->mf_IsUpgrade)
+		headerCtrl->SetWindowText("Upgrade MailFilter");
+	else
+		headerCtrl->SetWindowText("Finish Installation");
+
 	return CPropertyPage::OnSetActive();
 }

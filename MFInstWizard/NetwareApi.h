@@ -22,6 +22,9 @@ public:
 	// Runs the specified NCF on the specified server
 	bool ExecuteNCF(const char* szNCFName);
 
+	// Unloads the specified NLM on the specified server
+	bool UnloadNLM(const char* szNLMName);
+
 	// Get the primary server name from Client32
 	bool GetPrimaryServerName(char* szServerBuffer, signed int bufferSize);
 

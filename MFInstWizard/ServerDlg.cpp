@@ -72,17 +72,77 @@ LRESULT ServerDlg::OnWizardNext(void)
 		return -1;
 	}
 
-	CString newGwiaPath = "\\\\";
-	newGwiaPath += app->mf_ServerName;
-	newGwiaPath += "\\SYS\\SYSTEM\\gwia.cfg";
-	CFile file;
-	if (file.Open(newGwiaPath,file.modeRead) == TRUE)
+	// upgrade check
+	app->mf_IsUpgrade = FALSE;
+
+	CString mfpathCfg = "\\\\" + app->mf_ServerName + "\\SYS\\ETC\\MFPATH.CFG";
+	CString oldMFPath = "";
+	FILE* mfpathFile = fopen(mfpathCfg,"rt");
+	if (mfpathFile != NULL)
 	{
-		app->mf_GwiaCfgPath = newGwiaPath;
+		char szTemp[MAX_PATH+1];
+		memset(szTemp,0,MAX_PATH);
+		fgets(szTemp,MAX_PATH,mfpathFile);
+		oldMFPath = szTemp;
+		fclose(mfpathFile);
 	}
+	if (oldMFPath == "")
+	{
+		CString oldSharedPath = "\\\\" + app->mf_ServerName + "\\SYS\\ETC\\MAILFLT\\CONFIG.BIN";
+		CFileStatus status;
+		if (CFile::GetStatus(oldMFPath + "\\CONFIG.BIN", status) == TRUE)
+			oldMFPath = "\\\\" + app->mf_ServerName + "\\SYS\\ETC\\MAILFLT";
+
+	}
+	if (oldMFPath != "")
+	{
+		CFileStatus status;
+		if (CFile::GetStatus(oldMFPath + "\\CONFIG.BIN", status) == TRUE)
+		{
+			if (AfxMessageBox("The Wizard detected a previous installation of MailFilter. Do you want to upgrade this installation?\n\nConfig Location: " + oldMFPath + "\n\nYes - Upgrade previous installation\nNo - Install new copy of MailFilter",MB_ICONQUESTION|MB_YESNO) == IDYES)
+			{
+				app->mf_IsUpgrade = TRUE;
+				oldMFPath.MakeUpper();
+
+				CString oldSharedBasePath = "\\\\" + app->mf_ServerName + "\\SYS\\ETC\\MAILFLT";
+				oldSharedBasePath.MakeUpper();
+				if (oldMFPath == oldSharedBasePath)
+				{
+					app->mf_SharedInstallation = TRUE;
+				} else {
+					// dig out volume and path
+					if (oldMFPath.Left(2).Compare("\\\\") == 0)
+					{
+						oldMFPath.Delete(0,2);
+						oldMFPath.Delete(0,oldMFPath.Find('\\')+1);
+						oldMFPath.SetAt(oldMFPath.Find('\\'),':');
+					}
+					app->mf_AppDir = oldMFPath;
+					AfxMessageBox("Note: using the following path to upgrade MailFilter:\n  " + app->mf_AppDir + "\nThis has to be a valid NetWare Server Path!",MB_ICONINFORMATION);
+				}
+			}
+		}
+	}
+	
+	// gwia.cfg detection
+	if (!app->mf_IsUpgrade)
+	{
+		CString newGwiaPath = "\\\\";
+		newGwiaPath += app->mf_ServerName;
+		newGwiaPath += "\\SYS\\SYSTEM\\gwia.cfg";
+		CFile file;
+		if (file.Open(newGwiaPath,file.modeRead) == TRUE)
+		{
+			app->mf_GwiaCfgPath = newGwiaPath;
+		}
+	}
+
 	EndWaitCursor();
 
-	return CPropertyPage::OnWizardNext();
+	if (!app->mf_IsUpgrade)
+		return CPropertyPage::OnWizardNext();
+	else
+		return IDD_INSTALL;
 }
 
 static void FillServerList(CExtendedListBox &listCtrl)
