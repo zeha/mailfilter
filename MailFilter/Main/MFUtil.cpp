@@ -256,13 +256,17 @@ void MF_GetServerName(char* serverName, unsigned long bufSize)	//, char* sourceP
 	strncpy(serverName,u.servername,bufSize);
 #endif
 */
+	serverName[0] = '\0';
+	
 	// ReturnFileServerName gets called by both uname and ParsePath
 	// so we just call it oureselves and that's fine.
 	//
 	// from http://developer.novell.com/ndk/doc/samplecode/smscomp_sample/NLM_tsatest/TSATest.h.html
-	ReturnFileServerName(serverName);
+	int retLen = ReturnFileServerName(serverName);
+	serverName[retLen] = '\0';
+	strcpy(serverName, serverName + 1);
 	
-	if (serverName[0] == 0)
+	if (serverName[0] == '\0')
 	{
 		// damn
 		// ReturnFileServerName doesn't always return useful stuff (in autoexec.ncf!)
@@ -271,6 +275,11 @@ void MF_GetServerName(char* serverName, unsigned long bufSize)	//, char* sourceP
 		
 		gethostname (serverName,(int)bufSize);
 	}	
+
+	if (serverName[0] == '\0')
+	{
+		consoleprintf("MAILFILTER: ERROR: Could not detect servername.\n");
+	}
 
 #endif
 #ifdef WIN32
