@@ -97,22 +97,44 @@ UINT32 MF_NLM_RM_HttpHandler(
 	/* MailFilter Server/NLM */
 	DL_HttpSendData(hndl,"  <b>MailFilter Server</b><br>");
 	
-	MailFilter_GetStats = NULL; //(long(*)(int,int))ImportSymbol( (int)GetNLMHandle() , "MailFilter_API_GetStats" );
 
-	if (MailFilter_GetStats != NULL)
+	if (MF_GlobalConfiguration.NRMInitialized == true)
 	{
-		statRet = MailFilter_GetStats(0,0) / 60;
-//		HttpSendDataSprintf(hndl," &nbsp;&nbsp; Run-Time: %d h %d min.<br>\n" , (statRet/60) , (statRet) - (((long)(statRet/60))*60) );
-		DL_HttpSendData(hndl," &nbsp;&nbsp; <br>\n");
-		DL_HttpSendData(hndl,"  <b>MailFilter Mail Delivery</b><br>\n");
-//		HttpSendDataSprintf(hndl," &nbsp;&nbsp; Mails Input Total / Failed: %d / %d<br>\n",MailFilter_GetStats(1,1),MailFilter_GetStats(1,2));
-//		HttpSendDataSprintf(hndl," &nbsp;&nbsp; Mails Output Total / Failed: %d / %d<br>\n",MailFilter_GetStats(2,1),MailFilter_GetStats(2,2));
+		std::string sztemp;
+		char buffer [sizeof(long)*8+1];
+		
+		sztemp = "  <b>MailFilter Mail Delivery</b><br>\n";
+		sztemp += " &nbsp;&nbsp; Mails Input Total / Failed: ";
+		ultoa(MFS_MF_MailsInputTotal,buffer,10); sztemp += buffer;
+		sztemp += " / ";
+		ultoa(MFS_MF_MailsInputFailed,buffer,10); sztemp += buffer;
+		sztemp += "<br>\n";
 
-		//UnimportSymbol( (int)GetNLMHandle() , "MailFilter_API_GetStats" );
+		DL_HttpSendData(hndl,sztemp.c_str());
 
-
+	//		HttpSendDataSprintf(hndl," &nbsp;&nbsp; Run-Time: %d h %d min.<br>\n" , (statRet/60) , (statRet) - (((long)(statRet/60))*60) );
+	//		HttpSendDataSprintf(hndl," &nbsp;&nbsp; Mails Input Total / Failed: %d / %d<br>\n",MailFilter_GetStats(1,1),MailFilter_GetStats(1,2));
+	//		HttpSendDataSprintf(hndl," &nbsp;&nbsp; Mails Output Total / Failed: %d / %d<br>\n",MailFilter_GetStats(2,1),MailFilter_GetStats(2,2));
+		
 	} else {
-		DL_HttpSendData(hndl," &nbsp;&nbsp; MailFilter/ax Server/NLM is not loaded, not loaded in the OS space, or is incompatible with this Version of MailFilter/NRM.<br>\n");
+	
+		MailFilter_GetStats = NULL; //(long(*)(int,int))ImportSymbol( (int)GetNLMHandle() , "MailFilter_API_GetStats" );
+		
+		if (MailFilter_GetStats != NULL)
+		{
+			statRet = MailFilter_GetStats(0,0) / 60;
+	//		HttpSendDataSprintf(hndl," &nbsp;&nbsp; Run-Time: %d h %d min.<br>\n" , (statRet/60) , (statRet) - (((long)(statRet/60))*60) );
+			DL_HttpSendData(hndl," &nbsp;&nbsp; <br>\n");
+			DL_HttpSendData(hndl,"  <b>MailFilter Mail Delivery</b><br>\n");
+	//		HttpSendDataSprintf(hndl," &nbsp;&nbsp; Mails Input Total / Failed: %d / %d<br>\n",MailFilter_GetStats(1,1),MailFilter_GetStats(1,2));
+	//		HttpSendDataSprintf(hndl," &nbsp;&nbsp; Mails Output Total / Failed: %d / %d<br>\n",MailFilter_GetStats(2,1),MailFilter_GetStats(2,2));
+
+			//UnimportSymbol( (int)GetNLMHandle() , "MailFilter_API_GetStats" );
+
+
+		} else {
+			DL_HttpSendData(hndl," &nbsp;&nbsp; MailFilter/ax Server/NLM is not loaded, not loaded in the OS space, or is incompatible with this Version of MailFilter/NRM.<br>\n");
+		}
 	}
 	
 	DL_HttpSendData(hndl,"    <br>\n");

@@ -1134,6 +1134,8 @@ MF_MAIN_RUNLOOP:
 		{
 			if (!nlmisloadedprotected())
 			{
+				MFD_Out(MFD_SOURCE_CONFIG,"NRM thread will be started.\n");
+			
 				// Start Thread: ** NRM **
 				#ifdef __NOVELL_LIBC__
 				NXContext_t ctx;
@@ -1155,6 +1157,7 @@ MF_MAIN_RUNLOOP:
 		//			goto MF_MAIN_TERMINATE;
 				}
 			} else {
+				MFD_Out(MFD_SOURCE_CONFIG,"NRM thread will NOT be started --> not in OS space.\n");
 				MF_StatusText("NOTE: NOT loading NRM -- MailFilter is not loaded in OS address space");
 			}
 		}
@@ -1231,8 +1234,9 @@ MF_MAIN_RUNLOOP:
 				NXThreadContinue (MF_Thread_SMTP);
 #endif
 
-			if ( (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::NRM) || (MF_GlobalConfiguration.NRMInitialized == true) )
+			if ( MF_GlobalConfiguration.NRMInitialized == true )
 			{
+				MFD_Out(MFD_SOURCE_CONFIG,"shutting down NRM thread\n");
 				MailFilter_NRM_sigterm();
 			}
 
