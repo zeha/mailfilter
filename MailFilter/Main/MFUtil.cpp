@@ -13,6 +13,7 @@
 
 #define _MFD_MODULE			"MFUTIL.CPP"
 #include "MailFilter.h"
+#include "MFVersion.h"
 #include <string>
 
 
@@ -130,7 +131,69 @@ int MF_CountAllFilters()
 	return num;
 }
 
+int MFUtil_CheckCurrentVersion()
+{
+	// Version Up2Date check
+	struct hostent *he;
 
+	he = gethostbyname("version-1.mailfilter.cc");
+	if (he == NULL)
+	{
+		MF_StatusLog("Error while checking for MailFilter updates.");
+		MFD_Out(MFD_SOURCE_CONFIG,"Could not get current MF version.\n");
+		return 0;
+	} else {
+		struct in_addr host_ipaddress;
+		memcpy(&host_ipaddress.S_un.S_addr,he->h_addr_list[0],4);
+		
+		int majorVersion = host_ipaddress.S_un.S_un_b.s_b1;
+		int buildNumber = (host_ipaddress.S_un.S_un_b.s_b2 * 100) + host_ipaddress.S_un.S_un_b.s_b3;
+		int otherNews = host_ipaddress.S_un.S_un_b.s_b4;
+		MFD_Out(MFD_SOURCE_CONFIG,"Current Build for R%d: %d (have other news: %d)\n",majorVersion,buildNumber,otherNews);
+		MFD_Out(MFD_SOURCE_CONFIG,"and this Build is: R%d %d\n",MAILFILTERVER_MAJOR,MAILFILTERVER_BUILD);
+		
+		if (
+			(majorVersion > MAILFILTERVER_MAJOR) ||
+			(buildNumber > MAILFILTERVER_BUILD)
+			)
+		{
+			char* szEmail = (char*)malloc(5000);
+			sprintf(szEmail,"Dear PostMaster!\r\n\r\n"
+						"A newer version of MailFilter is available from the MailFilter website,\r\n"
+						"http://www.mailfilter.cc/ .\r\n"
+						"\r\n"
+						"Yours,\r\nMailFilter Version %s on %s.\r\n\r\n",
+						MAILFILTERVERNUM,
+						MF_GlobalConfiguration.ServerName.c_str()
+						);
+
+			MF_EMailPostmasterGeneric(
+						"New Version Available",szEmail,
+						"","");
+			free(szEmail);
+		}
+			
+		if ( otherNews != 0)
+		{
+			char* szEmail = (char*)malloc(5000);
+			sprintf(szEmail,"Dear PostMaster!\r\n\r\n"
+						"Important News about MailFilter are available on the MailFilter website,\r\n"
+						"http://www.mailfilter.cc/ .\r\n"
+						"\r\n"
+						"Yours,\r\nMailFilter Version %s on %s.\r\n\r\n",
+						MAILFILTERVERNUM,
+						MF_GlobalConfiguration.ServerName.c_str()
+						);
+
+			MF_EMailPostmasterGeneric(
+						"Important News Available",szEmail,
+						"","");
+			free(szEmail);
+		}
+
+		return 1;
+	}
+}
 
 int MF_ParseCommandLine( int argc, char **argv )
 {
@@ -208,7 +271,7 @@ int MF_ParseCommandLine( int argc, char **argv )
 						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::RESTORE;
 						bTArgOkay = true;
 					}
-#if !defined(__NOVELL_LIBC__)				
+#if defined(N_PLAT_NLM) && !defined(__NOVELL_LIBC__)				
 					if (strcmp(argv[ix_optind],"install") == 0)
 #else
 					if (strcasecmp(argv[ix_optind],"install") == 0)
@@ -217,8 +280,17 @@ int MF_ParseCommandLine( int argc, char **argv )
 						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::INSTALL;
 						bTArgOkay = true;
 					}
+#if defined(N_PLAT_NLM) && !defined(__NOVELL_LIBC__)				
+					if (strcmp(argv[ix_optind],"upgrade") == 0)
+#else
+					if (strcasecmp(argv[ix_optind],"upgrade") == 0)
+#endif
+					{
+						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::UPGRADE;
+						bTArgOkay = true;
+					}
 #if defined(N_PLAT_NLM)
-#if !defined(__NOVELL_LIBC__)				
+#if !defined(__NOVELL_LIBC__)
 					if (strcmp(argv[ix_optind],"nrm") == 0)
 #else
 					if (strcasecmp(argv[ix_optind],"nrm") == 0)

@@ -566,6 +566,7 @@ int MF_CountAllFilters();
 void MF_CheckProblemDirAgeSize();
 bool MF_NutInit(void);
 bool MF_NutDeinit(void);
+int MFUtil_CheckCurrentVersion();
 
 bool MF_UI_ShowKeys(int keys);
 

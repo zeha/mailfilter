@@ -34,7 +34,8 @@ namespace MailFilter_Configuration
 		CONFIG, 
 		RESTORE, 
 		NRM,
-		INSTALL
+		INSTALL,
+		UPGRADE
 		};
 
 class Configuration

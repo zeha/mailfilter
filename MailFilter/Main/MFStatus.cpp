@@ -13,9 +13,8 @@
 #define _MFD_MODULE			"MFSTATUS.CPP"
 #include "MailFilter.h"
 
-// Include Auto-Generated version header
+// Include "Auto-Generated" version header
 #include "..\..\Main\MFVersion.h"
-//#include <winsock2.h>
 
 static FILE* MF_Log_FileHandle			= NULL;
 static bool MF_Status_Initialized		= false;
@@ -161,7 +160,7 @@ static bool MF_StatusCycleLog2()
 // Cycle Log File at ~ 23:00 ...
 bool MF_StatusCycleLog()
 {
-	
+	bool rc = false;
 	time_t curTime;
 	tm     curTimeTM;
 
@@ -176,7 +175,11 @@ bool MF_StatusCycleLog()
 
 	MFT_StatusLogCycledOnDay = curTimeTM.tm_mday;
 
-	return MF_StatusCycleLog2();
+	rc = MF_StatusCycleLog2();
+	
+	MFUtil_CheckCurrentVersion();
+	
+	return rc;
 }
 
 // Write to log file

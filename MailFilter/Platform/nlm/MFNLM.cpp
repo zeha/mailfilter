@@ -191,6 +191,8 @@ void MF_NutHandlerKeyF2 (void *handle)		// debug stuff
 	sprintf(buf,"StackAvail: %d, DebugLevel: %d",stackavail(),MFT_Debug);
 	MF_StatusUI_UpdateLog(buf);
 
+	MFUtil_CheckCurrentVersion();
+
 	MF_LoginUser();
 }
 
@@ -1305,6 +1307,22 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		printf("    Saving new configuration to file...\n");
 		MF_GlobalConfiguration.WriteToFile("");
 		printf("  MailFilter_Configuration::INSTALL complete!\n");
+#ifdef __NOVELL_LIBC__
+		if (MFT_Debug)
+			pressenter();
+#endif
+		
+		break;
+		
+	case MailFilter_Configuration::UPGRADE:
+		MFD_UseMainScreen();
+		printf("  MailFilter_Configuration::UPGRADE kick off!\n");
+		
+		MF_GlobalConfiguration.config_mode_strict = false;
+		MF_GlobalConfiguration.ReadFromFile("");
+		printf("    Saving new configuration to file...\n");
+		MF_GlobalConfiguration.WriteToFile("");
+		printf("  MailFilter_Configuration::UPGRADE complete!\n");
 #ifdef __NOVELL_LIBC__
 		if (MFT_Debug)
 			pressenter();
