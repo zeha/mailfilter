@@ -1,4 +1,3 @@
-#pragma once
 
 #ifndef _IXLIST_H_
 #define _IXLIST_H_
@@ -50,4 +49,4 @@ private:
 	iXList_StorageRoot* m_StorageRoot;
 };
 
-#endif _IXLIST_H_
+#endif /* !_IXLIST_H_ */

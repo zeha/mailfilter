@@ -47,7 +47,7 @@
 *Exceptions:
 *
 *******************************************************************************/
-
+/*
 static int __cdecl __ascii_memicmp (
         const void * first,
         const void * last,
@@ -70,9 +70,9 @@ static int __cdecl __ascii_memicmp (
         }
         return ( f - l );
 }
+*/
 
-
-int __cdecl ix_memicmp (
+int ix_memicmp (
         const void * first,
         const void * last,
         unsigned int count

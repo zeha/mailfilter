@@ -157,3 +157,4 @@ IXApi(unsigned long)	ix_adler32(unsigned long adler, const unsigned char *buf, u
 
 
 #endif //!_IX_H_INCLUDED
+

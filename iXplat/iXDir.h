@@ -1,4 +1,3 @@
-#pragma once
 #include "iX.h"
 
 #ifndef _IXDIR_H_
@@ -34,4 +33,5 @@ private:
 
 };
 
-#endif // _IXDIR_H_
+#endif /* !_IXDIR_H_ */
+
