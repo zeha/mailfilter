@@ -4,11 +4,14 @@
 <head>
 	<title>MailFilter professional: Release Notes</title>
 	<style>
-	P,TD,A,BODY { font-family : Verdana, Geneva, Arial, Helvetica, sans-serif; font-size : 9pt; font-variant : normal; line-height : 130%; color: black; background-color: white; }
+	BODY { background-color: #999; }
+	P,TD,A,BODY { font-family : Verdana, Geneva, Arial, Helvetica, sans-serif; font-size : 9pt; font-variant : normal; line-height : 130%; color: black; }
+	P,TD,A,H1,H2,LI { background-color: white; }
 	h1 { line-height: 100%; font-size: 24pt; font-weight: bold; margin: 0 0 0 0; padding: 0 0 0 0; }
 	h2 { font-size: 17pt; }
 	body { padding-left: 10px; padding-right: 10px; padding-top: 0px; border: 0 0 0 0; margin: 0 0 0 0; }
 	pre { border: 1px solid red; padding: 4px 4px 4px 4px; margin-left: 10px; margin-right: 40px; }
+	li { padding-bottom: 7px; }
 	</style>
 </head>
 <body>
@@ -16,7 +19,7 @@
 	<tr><td><a href="http://www.mailfilter.cc/"><img src="mailfilter-notes.png" border="0"></a></td></tr>
 	<tr><td style="padding-left: 5px;"><br><h1>Release Notes</h1></td></tr>
 	<tr><td style="padding-left: 5px; padding-right: 5px;">
-
+<br>
 <h4>Version 1.5.8 (1134)</h4>
 <ul>
 	<li>Computer Associates eTrust Antivirus 7 is now supported directly.<br>
@@ -60,6 +63,11 @@
 	<li>Updated MFFilterICE to match new configuration format.</li>
 	<li>"Legacy" MailFilter has been renamed to MFLT50.NLM. Only the LibC Version is named MAILFLT.NLM now.</li>
 
+	<li>Troubleshooting "Cannot communicate with NWSNUT!" Error:<br>
+	This sometimes happens on NetWare Versions prior to Consolidated Support Pack 11 and when MailFilter is loaded protected.<br>
+	If you get this error, try loading THREADS.NLM into the MailFilter address space (before loading MailFlt.NLM!)<br>
+	If you can't resolve it this way, please contact MailFilter support.</li>
+
 </ul>
 
 
@@ -83,7 +91,12 @@
 	<li>MailFilter Core: Internal Configuration System rewrite.</li>
 	<li>Local Installer: Updated, should cause less problems.</li>
 </ul>
-
+	<br>
+	If you have any questions, please contact <a href="mailto:support@mailfilter.cc">MailFilter Support!</a><br>
+	<br>
+	<br>
+	&copy; 2004 Christian Hofst&auml;dtler.<br>
+	<br>
 </td>
 </tr>
 </table>
