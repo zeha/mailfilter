@@ -188,7 +188,7 @@ static bool outputMailList(HINTERNET hndl, int startPage)
 							"<tr bgcolor=\"#efeee9\"><td>%s</td><td>%s</td><td>%6d kB</td><td>%s</td></tr>\n",
 							(iDirection == 1) ? "Outgoing" : "Incoming", 
 							szDate, 
-							((dir.GetCurrentEntrySize())/1024)+1, 
+							(long)(((dir.GetCurrentEntrySize())/1024)+1), 	// type mismatch - 64 vs. 32bit
 							szFileOut)
 							);
 
