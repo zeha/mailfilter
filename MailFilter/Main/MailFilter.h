@@ -6,7 +6,6 @@
  *		Copyright 2001-2004 Christian Hofstädtler.
  *		
  *		
- *		- 17/Aug/2001 ; ch   ; Moved from MailFilter.cpp
  *		
  *		
  */
@@ -46,6 +45,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#include "streamprintf.h"
+
 /* *****    N E T W A R E     ***** */
 #ifdef N_PLAT_NLM
 
@@ -56,16 +57,19 @@
 #define _NWNSPACE_H_
 #include <errno.h>
 #include <unistd.h>
-#include <nwsnut.h>
 #include <dirent.h>
 #include <fcntl.h>
+
+#include <nwsnut.h>
 
 #undef SEVERITY_WARNING
 #undef SEVERITY_FATAL
 
+
+
 #ifndef __NOVELL_LIBC__
-#include <unicode.h>
 #include <nwadv.h>
+#include <unicode.h>
 #include <nwerrno.h>
 #include <nwcalls.h>
 #include <nwclxcon.h>
@@ -78,7 +82,6 @@
 #include <nwclxcon.h>
 #include <nwserver.h>
 #include <nwconn.h>
-// #include <nwsmp.h>
 #include <nwfinfo.h>
 #include <nwfileio.h>
 #include <nwfileng.h>
@@ -94,7 +97,6 @@
 #ifdef __cplusplus
 extern "C" { 
 	int snprintf  (     char* str,     size_t n, const char *  format,  ... ); 
-//	#define snprint	LIBC@snprintf
 }
 #endif // __cplusplus
 
@@ -119,16 +121,6 @@ extern "C" {
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
-/*
-// Windows and Winsock2 Includes.
-#define _INC_WINDOWS
-#define UINT int
-#include <basetsd.h>
-#include <ws2nlm.h>
-
-
-#define HAVE_WINSOCK
-*/
 
 #undef WIN32
 
@@ -181,9 +173,11 @@ static NETINET_DEFINE_CONTEXT
 #ifndef BYTE
 #define BYTE unsigned char
 #endif
-//#ifndef NULL
-//#define NULL 0
-//#endif
+
+#ifndef __RTAG_T
+typedef LONG rtag_t;
+#endif
+
 // *End*
 
 
@@ -273,8 +267,10 @@ static NETINET_DEFINE_CONTEXT
 #endif /* WIN32 */
 /* *****  end     W I N 3 2   only   ***** */
 
-//#include "match.h"
-//#include "mfpre.h"
+
+
+
+
 #include "mfpcre.h"
 
 // Include I18N header
@@ -330,35 +326,32 @@ static NETINET_DEFINE_CONTEXT
 
 #endif // _MAILFILTER_MAIN_
 
-// Import Configuration Values
-//#define	_MAILFILTER_MFCONFIG_DONTWANTFILTERCACHE
-//#include "../Config/MFConfig.h"
 
 // Temporary Configuration Storage
 #ifdef N_PLAT_NLM
+
 	// NLM Data ...
 #ifndef __NOVELL_LIBC__
 	_MFGS(	unsigned int,	MF_NLMHandle,						0		);
 	_MFGS(	int,			mainThread_ThreadGroupID,			1		);
 	_MFGS(	int,			MF_ScreenID,						0		);
-	_MFGS(	int,			MFD_ScreenID,						0		);
+	_MFGS(	int,			MFD_ScreenID,						NULL	);
 #else
 	_MFGS(	void*,			MF_NLMHandle,						0		);
-	_MFGS(	void*,			MF_ScreenID,						NULL	);
+	_MFGS(	void*,			MF_ScreenID,						0		);
 	_MFGS(	void*,			MFD_ScreenID,						NULL	);
 	_MFGS(	rtag_t,			MFD_ScreenTag,						NULL	);
 #endif
 
+
 	// DS Handles ...
 #ifndef __NOVELL_LIBC__
-	_MFGS(		NWDSContextHandle, MFT_NLM_DS_Context, 		NULL	);
+	_MFGS(	NWDSContextHandle, MFT_NLM_DS_Context, 				NULL	);
 	_MFGS(	LONG,			MFT_NLM_Connection_HandleCLIB,		NULL	);
 	_MFGS(	NWCONN_HANDLE,	MFT_NLM_Connection_Handle,			NULL	);
 #endif
 #endif
 	// Temporary Configuration Data	(MFT_)
-//	_MFGS(	char*, 			MFT_Local_ServerName,				NULL	);
-//	_MFGS(	char*,	 		MFT_MF_LogDir,						NULL	);
 	_MFGS(	bool,			MFT_InOutSameServerVolume,			false	);
 	_MFGS(	bool,			MFT_RemoteDirectories,				false	);
 	_MFGS(	bool,			MFT_Verbose,						false	);
@@ -375,10 +368,12 @@ static NETINET_DEFINE_CONTEXT
 	_MFGS(	NXThreadId_t,	MF_Thread_Work,						0		);
 	_MFGS(	NXThreadId_t,	MF_Thread_NRM,						0		);
 	_MFGS(	NXThreadId_t,	MF_Thread_SMTP,						0		);
+	_MFGS(	NXThreadId_t,	MF_Thread_Cleanup,					0		);
 #else
 	_MFGS(	HANDLE,			MF_Thread_Work,						0		);
 	_MFGS(	HANDLE,			MF_Thread_NRM,						0		);
 	_MFGS(	HANDLE,			MF_Thread_SMTP,						0		);
+	_MFGS(	HANDLE,			MF_Thread_Cleanup,					0		);
 #endif
 
 	// When were we last alive ?
@@ -410,29 +405,9 @@ static NETINET_DEFINE_CONTEXT
 #define NXThreadYield	ThreadSwitch
 #define consoleprintf	ConsolePrintf
 #define mkdir(a,b)		mkdir(a)
-#define CloseScreen		DestroyScreen
 #define _MF_NUTCHAR		unsigned char*
 #define ActivateScreen	DisplayScreen
 #endif
-#endif
-
-#ifndef COLOR_NONE
-#define COLOR_NONE            0
-#define COLOR_GREY            8
-#define COLOR_SILVER          7
-#define COLOR_WHITE           15
-#define COLOR_NAVY            1
-#define COLOR_BLUE            (0x01|8)
-#define COLOR_GREEN           2
-#define COLOR_LIME            (0x02|8)
-#define COLOR_TEAL            3
-#define COLOR_CYAN            (0x03|8)
-#define COLOR_MAROON          4
-#define COLOR_RED             (0x04|8)
-#define COLOR_PURPLE          5
-#define COLOR_MAGENTA         (0x05|8)
-#define COLOR_OLIVE           6
-#define COLOR_YELLOW          (0x06|8) 
 #endif
 
 #define MFD_SOURCE_GENERIC		0x0001
@@ -448,18 +423,20 @@ static NETINET_DEFINE_CONTEXT
 
 // Debug Prototypes
 #ifdef _MF_CLEANBUILD
-//#define MFD_Out 0
-#undef MFT_Verbose
-#undef MFT_Debug
-#define MFT_Verbose	0
-#define MFT_Debug	0
 
-#define MFD_Out(...)
+	// non-debug build.
+	#undef MFT_Verbose
+	#undef MFT_Debug
+	#define MFT_Verbose	0
+	#define MFT_Debug	0
+
+	#define MFD_Out(...)
 
 #else
-
-void MFD_Out_func(int attr, const char* format, ...);
-#define MFD_Out				MFD_Out_func
+	// Debug build.
+	void MFD_Out_func(int attr, const char* fmt, ...);
+	
+	#define MFD_Out					MFD_Out_func
 
 #endif
 
@@ -482,11 +459,11 @@ static inline void _mfd_nt_free(void *ptr, const char* szFuncName)
 
 #ifdef _MF_MEMTRACE
 static inline void _mfd_cpp_allocX( const char* szArea, size_t approxSize )
-{	++MFD_AllocCountsCPP;	
+{	++MFD_AllocCountsCPP;
 //	consoleprintf("MAILFILTER: ++ALLC in "_MFD_MODULE" ; count: %d ; %s ; %d\n",MFD_AllocCountsCPP,szArea,approxSize);
 }
 static inline void _mfd_cpp_freeX( const char* szArea, size_t approxSize )
-{	--MFD_AllocCountsCPP;	
+{	--MFD_AllocCountsCPP;
 //	consoleprintf("MAILFILTER: ++FREE in "_MFD_MODULE" ; count: %d ; %s ; %d\n",MFD_AllocCountsCPP,szArea,approxSize);
 }
 
@@ -531,10 +508,10 @@ static inline char *_mfd_strdup( const char * str , const char* szFuncName )
 #endif 
 
 // Message Support Macro
-#define MF_Msg(id)						programMesgTable[id]
-#define MF_NMsg(id)						(_MF_NUTCHAR)programMesgTable[id]
-#define MF_DisplayCriticalError(id)		fprintf(stderr,MF_Msg(id))
-#define MF_StatusNothing(void)			MF_StatusText("")
+#define MF_Msg(id)							programMesgTable[id]
+#define MF_NMsg(id)							(_MF_NUTCHAR)programMesgTable[id]
+#define MF_DisplayCriticalErrorId(id)		MF_DisplayCriticalError("%s",MF_Msg(id))
+#define MF_StatusNothing(void)				MF_StatusText("")
 
 // MFL Prototypes
 int MFL_Init(int rLvl);
@@ -576,6 +553,10 @@ int MF_CountAllFilters();
 void MF_CheckProblemDirAgeSize();
 bool MF_NutInit(void);
 bool MF_NutDeinit(void);
+
+extern "C" {
+	void MF_DisplayCriticalError(const char* format, ...);
+}
 
 int MailFilter_Main_RunAppConfig(bool bStandalone);
 #ifdef N_PLAT_NLM

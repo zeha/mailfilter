@@ -54,11 +54,12 @@ typedef struct MailFilter_MailData {
 	int	  iFilterHandle;
 	bool  bSchedule;
 	int	  iPriority;
-//	int   iBlacklistResults;
 	char* szReceivedFrom;
 	bool  bHaveReceivedFrom;
 	bool  bCopy;
-	iXList*	lstAttachments;	// should be the latest entry
+	// below only things we cannot copy to the MFS file
+	iXList*	lstAttachments;
+	iXList*	lstArchiveContents;
 	iXList* lstCopies;
 } MailFilter_MailData;
 

@@ -42,14 +42,14 @@ int MFUnZip::ExtractCurrentFile(const char* localFilename)
 
 	if (!this->zipFile)
 	{
-		MFD_Out(MFD_SOURCE_ZIP,"ERROR: No Zip File open!\n");
+		MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: No Zip File open!\n");
 		return MFUnZip_NOZIPFILE;
 	}
 
 	err = unzGetCurrentFileInfo(this->zipFile,&zi,filename_inzip,sizeof(filename_inzip),NULL,0,NULL,0);
 	if (err != MFUnZip_OK)
 	{
-		MFD_Out(MFD_SOURCE_ZIP,"Error %d returned from GetCurrentFileInfo\n",err);
+		MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: %d returned from GetCurrentFileInfo\n",err);
 		return err;
 	}
 
@@ -60,14 +60,14 @@ int MFUnZip::ExtractCurrentFile(const char* localFilename)
 	Buf = (void*)_mfd_malloc(sizeBuf,"MFUnZip::ExtractCurrentFile");
 	if (Buf == NULL)
 	{
-		MFD_Out(MFD_SOURCE_ZIP,"ERROR: Could not get enough memory.\n");
+		MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: Could not get enough memory.\n");
 		return MFUnZip_OUTOFMEMORY;
 	}
 
 	err = unzOpenCurrentFile(this->zipFile);
 	if (err != MFUnZip_OK)
 	{
-		MFD_Out(MFD_SOURCE_ZIP,"ERROR: Could not open inner zipfile.\n");
+		MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: Could not open inner zipfile.\n");
 		return MFUnZip_BADZIPFILE;
 	}
 
@@ -75,7 +75,7 @@ int MFUnZip::ExtractCurrentFile(const char* localFilename)
 	if (fout == NULL)
 	{
 		unzCloseCurrentFile(this->zipFile);
-		MFD_Out(MFD_SOURCE_ZIP,"ERROR: Could not open local file\n");
+		MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: Could not open local file\n");
 	}
 
 	if (fout != NULL)
@@ -85,14 +85,14 @@ int MFUnZip::ExtractCurrentFile(const char* localFilename)
 			err = unzReadCurrentFile(this->zipFile,Buf,sizeBuf);
 			if (err < 0)
 			{
-				MFD_Out(MFD_SOURCE_ZIP,"ERROR: %d from ReadCurrentFile.\n",err);
+				MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: %d from ReadCurrentFile.\n",err);
 				break;
 			}
 			if (err > 0)
 			{
 				if (fwrite(Buf,(size_t)err,1,fout) != 1)
 				{
-					MFD_Out(MFD_SOURCE_ZIP,"ERROR: cant write to local file\n");
+					MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: cant write to local file\n");
 					err = MFUnZip_ERRNO;
 					break;
 				}
@@ -106,7 +106,7 @@ int MFUnZip::ExtractCurrentFile(const char* localFilename)
 	{
 		err = unzCloseCurrentFile(this->zipFile);
 		if (err != MFUnZip_OK)
-			MFD_Out(MFD_SOURCE_ZIP,"ERROR: %d from unzCloseCurrentFile\n",err);
+			MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: %d from unzCloseCurrentFile\n",err);
 	} else
 		unzCloseCurrentFile(this->zipFile);
 
@@ -119,13 +119,13 @@ int MFUnZip::ExtractFile(const char* innerFilename, const char* localFilename)
 {
 	if (!this->zipFile)
 	{
-		MFD_Out(MFD_SOURCE_ZIP,"ERROR: No Zip File open!\n");
+		MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: No Zip File open!\n");
 		return MFUnZip_NOZIPFILE;
 	}
 
 	if (unzLocateFile(this->zipFile,innerFilename,2) != MFUnZip_OK)
 	{
-		MFD_Out(MFD_SOURCE_ZIP,"ERROR: Could not find '%s' in zipfile.\n",innerFilename);
+		MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: Could not find '%s' in zipfile.\n",innerFilename);
 		return MFUnZip_FILENOTFOUND;
 	}
 	return this->ExtractCurrentFile(localFilename);
@@ -142,7 +142,7 @@ iXList* MFUnZip::ReadZipContents()
 	err = unzGetGlobalInfo (this->zipFile,&gi);
 	if (err!=MFUnZip_OK)
 	{
-		MFD_Out(MFD_SOURCE_ZIP,"ERROR: zipfile prob (%d) in unzGetGlobalInfo\n",err);
+		MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: zipfile prob (%d) in unzGetGlobalInfo\n",err);
 	}
 	for (i=0;i<gi.number_entry;i++)
 	{
@@ -156,14 +156,16 @@ iXList* MFUnZip::ReadZipContents()
 			break;
 		}
 
-		lst->AddValueBool(filename_inzip,false);
+		// false == not encrypted
+		// true == encrytped...
+		lst->AddValueBool(filename_inzip, (bool)(file_info.flag & 0x1) );
 
 		if ((i+1)<gi.number_entry)
 		{
 			err = unzGoToNextFile(this->zipFile);
 			if (err!=MFUnZip_OK)
 			{
-				MFD_Out(MFD_SOURCE_ZIP,"ERROR: zipfile prob (%d) in unzGoToNextFile\n",err);
+				MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: zipfile prob (%d) in unzGoToNextFile\n",err);
 				break;
 			}
 		}

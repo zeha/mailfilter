@@ -4,12 +4,12 @@
 char *programMesgTable[] =
 {
 	"MailFilter",
-	"******VERSION******",
+	"********VERSION**PADDING********",
 	"Unload MailFilter?",
 	"MailFilter Resource Tag",
 	"MailFilter",
 	"Show Configuration",
-	"Terminate MailFilter: Y",
+	"  Terminate MailFilter: (Y/N)",
 	"Idle.",
 	"MailFilter: Enabled Logging.\n",
 	"MailFilter: Disabled Logging.\n",
@@ -19,10 +19,10 @@ char *programMesgTable[] =
 	"MailFilter: Thread Init Failure!\n",
 	"MailFilter UI",
 	"MailFilter Work",
-	"MailFilter: Register Event DOWN_SERVER Failure!\n",
+	"MailFilter: Event Registration failed!\n",
 	"\r  http://www.mailfilter.cc/\n  order@mailfilter.cc\n",
-//	"   F5 - Show Configuration    F6 - Restart    F7 - Exit    F8 - Show Version",
-	"    F4 Configure  F5 Show Configuration  F6 Restart  F7 Exit  F8 Show Version  ",
+	// f6 restart f7 exit f8 info f9 log f10 options
+	"  F6-Restart  F7-Exit                     F9-Show Configuration  F10-Configure  ",
 	"MailFilter: *** INVALID CONFIGURATION FILE FORMAT ***\n\tPlease upgrade it if you just upgraded MailFilter.\n",
 	"MailFilter: *** NO (VALID) Configuration ? ***\n",
 	"MailFilter: *** NO (VALID) Filter List ? ***\n",
@@ -51,9 +51,9 @@ char *programMesgTable[] =
 	"MailFilter: *** UNABLE TO INITIALIZE LOGGING ***\n",
 	"*** ERROR CYCLING LOG ***",
 	"This is MailFilter professional Version %s.",
-	"Virus-Scanning: %3s                                  %4d Days %2d Hrs %2d Mins",
-	"Scheduling....: %3s                                    In: %4d, Failed: %4d",
-	"   (%2ds)                                              Out: %4d, Failed: %4d",
+	"  **                                                  %4d Days %2d Hrs %2d Mins  ",
+	"  **                                                    In: %4d, Failed: %4d  ",
+	"  **                                                   Out: %4d, Failed: %4d  ",
 	"\nCheck the System Console for Error Messages!\nError Code: %d\n",
 // config app messages
 	"MailFilter Configuration",
@@ -119,6 +119,8 @@ char *programMesgTable[] =
 	"MFLT:",
 	"View File (truncated by 8kB)",
 	// others
-	"Delete previous filter rules?"
+	"Delete previous filter rules?",
+	//
+	"Archive Content: Filename",
+	"Archive Content: Count of files"
 };
-// UpTime:   0 Days  9 Hrs 38 Mins

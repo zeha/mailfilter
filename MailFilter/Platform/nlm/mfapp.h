@@ -7,7 +7,7 @@
 #undef _MF_WITHOUTNUT
 
 // set this to #define _MF_MEMTRACE 1 and you will get much output :)  (~ 9k)
-// also define _trace
+// also define _TRACE
 //#undef _MF_MEMTRACE 1
 
 // Define for use of .msg files

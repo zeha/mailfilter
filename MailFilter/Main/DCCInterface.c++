@@ -9,6 +9,8 @@
 #define INVALID_SOCKET 0
 #define SOCKET_ERROR -1
 
+#ifdef _WITH_EXPERIMENTAL_DCC
+
 typedef struct sockaddr_in SOCKADDR_IN;
 typedef struct sockaddr SOCKADDR;
 
@@ -47,5 +49,5 @@ DCCInterface::~DCCInterface()
 {
 }
 
-
+#endif
 

@@ -8,7 +8,6 @@
 #include <errno.h>
 #include <stdlib.h>
 #define N_PLAT_NLM
-#include <nwadv.h>
 #include <nwthread.h>
 
 #ifdef __cplusplus

@@ -11,7 +11,6 @@
 //#include "nrm.h"
 #include "MailFilter.h"
 #include "dynaload-nrm.h"
-#include "streamprintf.h"
 //#include <nwfileio.h> 
 
 /* not to exceed 35 chars*/
@@ -26,18 +25,121 @@
 #ifdef __NOVELL_LIBC__
 	#include <synch.h> 
 	static cond_t condMainThread;
-	static void* rTag;
 #else
 	static int MF_NRM_ThreadID = 0;
-	static LONG rTag;
 #endif
+
+static rtag_t rTag;
 
 static struct TOCregistration menuEntry;
 static char *MF_NLM_RM_rTagName		=	"MailFilterRM";
 
 
 int MF_NRM_InitComplete = 0;
-//char	MF_ProductName[]	= "MailFilter/ax 1.5 Web Restore [NLM]";
+//char	MF_ProductName[]	= "MailFilter 1.5 Web Restore [NLM]";
+
+
+static bool outputMailList(HINTERNET hndl, int startPage)
+{
+	int entriesPerPage = 20;
+
+	DL_HttpSendData(hndl, "<table cellpadding=1 cellspacing=0 width=800>\n"
+		"<tr><th width=100>Direction</th><th width=100>Date</th><th width=100>Size</th><th>Original Filename</th></tr>\n" );
+	
+	/*------------------------------------------------------------------------
+	** Look for dropped mails and put them in the list.
+	*/
+
+	std::string szHttpPath;
+	std::string szScanPath;
+
+	szScanPath = MF_GlobalConfiguration.MFLTRoot + "\\MFPROB\\DROP\\";
+	szHttpPath = szScanPath;
+	
+	while (std::string::size_type iR = szHttpPath.find(":"))
+		szHttpPath.replace(iR, 1, "/");
+	while (std::string::size_type iR = szHttpPath.find("\\"))
+		szHttpPath.replace(iR, 1, "/");
+
+
+	iXDir dir(szScanPath.c_str());
+	dir.SkipDotFiles = true;
+	
+	int thisEntry = 0;
+	bool bHaveMoreEntries = false;
+	int iDirection;
+	
+	char szDate[16];
+	std::string szLink;
+	std::string szListLine;
+	time_t fileTime;
+//	tm fileTm;
+	std::string szFileOut;
+	
+	while ( dir.ReadNextEntry() )
+	{
+		thisEntry++;
+		
+		if (thisEntry > (startPage*entriesPerPage))
+		{
+			if (thisEntry > ((startPage+1)*entriesPerPage))
+			{
+				bHaveMoreEntries = true;
+				break;
+			}
+			
+			const char* e = dir.GetCurrentEntryName();
+			iDirection = e[0] == 'S' ? 1 : 2;
+			if (iDirection == 1)
+				szFileOut = MF_GlobalConfiguration.MFLTRoot + "\\SEND\\" + e;
+			else
+				szFileOut = MF_GlobalConfiguration.GWIARoot + "\\RECEIVE\\" + e;
+			
+			fileTime = dir.GetCurrentEntryModificationTime();
+			strcpy(szDate,"");
+//			fileTm = localtime(fileTime);
+//			sprintf(szDate,"%04d/%02d/%02d", fileTime)+1980, GET_MONTH_FROM_DATE(fileTime), GET_DAY_FROM_DATE(fileTime));
+			
+			DL_HttpSendData(hndl,strprintf(
+					"<tr bgcolor=\"#efeee9\" ><td>%s</td><td>%s</td><td>%6d kB</td><td>%s</td></tr>\n",
+					(iDirection == 1) ? "Outgoing" : " Incoming", 
+					szDate, 
+					((dir.GetCurrentEntrySize())/1024)+1, 
+					szFileOut)
+					);
+					
+			DL_HttpSendData(hndl,strprintf(
+					"<tr bgcolor=\"#ffffff\"><td colspan=2></td><td colspan=2>%s &nbsp; "
+					"<a href=\"/"MAILFILTER_NRM_SERVICETAG_RESTORE"/RESTORE/%s\">Restore</a> &nbsp; "
+					"<a href=\"/"MAILFILTER_NRM_SERVICETAG_RESTORE"/RECHECK/%s\">Recheck</a> <br><br>"
+					"</td></tr>\n\n", szLink, dir.GetCurrentEntryName(),dir.GetCurrentEntryName()
+				));
+			
+		}
+		
+	}
+
+	DL_HttpSendData(hndl,"\n<tr>\n");
+	DL_HttpSendData(hndl,"\n<th align=left colspan=2> \n");
+	DL_HttpSendData(hndl,strprintf("\n<a href=\"/"MAILFILTER_NRM_SERVICETAG_RESTORE"/PAGE/0\">|&lt; first page</a> \n",startPage-1));
+	if (startPage>0)
+	{
+		DL_HttpSendData(hndl,strprintf("\n<a href=\"/"MAILFILTER_NRM_SERVICETAG_RESTORE"/PAGE/%d\">&lt;&lt; prev. page</a> \n",startPage-1));
+		
+	}
+	DL_HttpSendData(hndl,"\n</th><th align=right colspan=2> \n");
+	if (bHaveMoreEntries==true)
+	{
+		DL_HttpSendData(hndl,strprintf("\n<a href=\"/"MAILFILTER_NRM_SERVICETAG_RESTORE"/PAGE/%d\">next page &gt;&gt;</a> \n",startPage+1));
+		
+	}
+	DL_HttpSendData(hndl,strprintf("\n <a href=\"/"MAILFILTER_NRM_SERVICETAG_RESTORE"/PAGE/%i\">last page &gt;|</a> \n",thisEntry/entriesPerPage));
+	DL_HttpSendData(hndl,strprintf(" </th></tr>\n"));
+
+	DL_HttpSendData(hndl,strprintf("</table>    <br>\n"));
+
+	return true;
+}
 
 
 /** Remote Manager Function Calls **/
@@ -110,6 +212,8 @@ UINT32 MF_NLM_RM_HttpHandler_Restore(
 
 
 		DL_HttpSendData(hndl," <b><span style=\"color: red;\">WARNING: This tool is a potential security risk. If restored mails are not examined carefully, this could lead to viruses in the system!</span></b><br><br>\n");
+		
+		outputMailList(hndl,0);
 
 	}
 
@@ -131,6 +235,85 @@ ERR_END:
 	
 	return(rCode);
 }
+
+static int MF_NRM_RestoreFile(const char* szInFile, const char* szOutFile, char* szType)
+{
+	FILE* inputFile;
+	FILE* outputFile;
+	char* szScanBuffer	   = NULL;
+
+	bool bWroteXRestore = false;
+
+	inputFile = fopen(szInFile,"rb");
+	if (inputFile == NULL)
+		return -1;
+
+	outputFile = fopen(szOutFile,"wb");
+	if (outputFile == NULL)
+	{	fclose(inputFile);
+		return -1;
+	}
+	
+	szScanBuffer =	(char*)malloc(2002);
+	if (szScanBuffer == NULL)	{ fclose(inputFile); fclose(outputFile);	return -1; }
+	memset ( szScanBuffer	, 0 , 2000 );
+
+#define _MF_NRM_RestoreFile_WriteRestoreHeader()	\
+									if (!bWroteXRestore) { \
+										time_t currentTime = time(NULL); \
+										strftime  (szScanBuffer, 1999, "%a, %d %b %Y %T UTC", gmtime(&currentTime)); \
+										fprintf(outputFile,"X-Restore: (%s) %s at %s\r\n",MF_ProductName,szType,szScanBuffer); \
+										bWroteXRestore = true; \
+									}
+
+	while(!feof(inputFile) )
+	{
+		szScanBuffer[0]=0;
+		fgets(szScanBuffer,2000,inputFile);
+
+		switch(szScanBuffer[0])
+		{
+			case 'x':
+			case 'X':
+				{ 	_MF_NRM_RestoreFile_WriteRestoreHeader(); break; }
+			case 's':
+			case 'S':
+				{ 	_MF_NRM_RestoreFile_WriteRestoreHeader(); break; }
+			case 't':
+			case 'T':
+				{ 	_MF_NRM_RestoreFile_WriteRestoreHeader(); break; }
+		}
+		fwrite(szScanBuffer,sizeof(char),strlen(szScanBuffer),outputFile);
+	}
+	
+	fclose(inputFile);
+	fclose(outputFile);
+	free(szScanBuffer);
+	unlink(szInFile);
+	
+	return 0;
+}
+
+static int stripOffHtml(char* str)
+{
+	char* p = str;
+	int cnt = 0;
+	while ( (p = strchr(p,'<')) != NULL )
+	{
+	    *p = '(';
+	    cnt++;
+	}
+
+	p = str;
+	while ( (p = strchr(p,'>')) != NULL )
+	{
+	    *p = ')';
+	    cnt++;
+	}
+	
+	return cnt;
+}
+
 
 UINT32 MF_NLM_RM_HttpHandler(
 		/* I- httpHndl		*/	HINTERNET hndl,
@@ -208,7 +391,7 @@ UINT32 MF_NLM_RM_HttpHandler(
 
 
 		} else {
-			DL_HttpSendData(hndl," &nbsp;&nbsp; MailFilter/ax Server/NLM is not loaded, not loaded in the OS space, or is incompatible with this Version of MailFilter/NRM.<br>\n");
+			DL_HttpSendData(hndl," &nbsp;&nbsp; MailFilter Server/NLM is not loaded, not loaded in the OS space, or is incompatible with this Version of MailFilter/NRM.<br>\n");
 		}
 	}
 	
@@ -232,7 +415,7 @@ UINT32 MF_NLM_RM_HttpHandler(
 	DL_HttpSendData(hndl,strprintf(" &nbsp;&nbsp; Configuration File: %s<br>\n",MF_GlobalConfiguration.config_file));
 	DL_HttpSendData(hndl,"    <br>\n");
 	
-	DL_HttpSendData(hndl,strprintf(" &nbsp;&nbsp; MailFilter/ax Home: %s<br>\n",MF_GlobalConfiguration.MFLTRoot));
+	DL_HttpSendData(hndl,strprintf(" &nbsp;&nbsp; MailFilter Home: %s<br>\n",MF_GlobalConfiguration.MFLTRoot));
 	DL_HttpSendData(hndl,strprintf(" &nbsp;&nbsp; GWIA Home: %s<br>\n",MF_GlobalConfiguration.GWIARoot));
 	
 	
@@ -266,7 +449,7 @@ int MF_NLM_RM_Init()
 #ifndef __NOVELL_LIBC__
 	rTag = AllocateResourceTag(
 		/* I- NLMHandle 		*/	GetNLMHandle(),
-		/* I- descriptionString	*/	(unsigned char*)MF_NLM_RM_rTagName,
+		/* I- descriptionString	*/	(const unsigned char*)MF_NLM_RM_rTagName,
 		/* I- resourceType		*/	NetWareHttpStackResourceSignature
 		);
 #else
@@ -320,7 +503,7 @@ void MF_NLM_RM_DeInit()
 	if (MF_NRM_InitComplete != 1)
 		return;
 
-	consoleprintf("MAILFILTER: Terminating NRM module.\n");
+	MF_DisplayCriticalError("MAILFILTER: Terminating NRM module.\n");
 
 	MF_NRM_InitComplete = 2; 	/* deinit... */
 

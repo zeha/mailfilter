@@ -120,7 +120,7 @@ static void MFConfig_ImportLicenseKey(void *)
 	{
 		if (access(szTemp,F_OK) != 0)
 		{
-			NWSDisplayErrorText ( ERROR_FILE_NOT_FOUND , NUT_SEVERITY_FATAL , MF_NutInfo , szTemp );
+			NWSDisplayErrorText ( MSG_ERROR_FILE_NOT_FOUND , NUT_SEVERITY_FATAL , MF_NutInfo , szTemp );
 			
 		} else {
 		
@@ -136,7 +136,7 @@ static void MFConfig_ImportLicenseKey(void *)
 			fImp = fopen(szTemp,"rt");
 			if (!fImp)
 			{
-				NWSDisplayErrorText ( ERROR_FILE_NOT_FOUND , NUT_SEVERITY_FATAL , MF_NutInfo , szTemp );
+				NWSDisplayErrorText ( MSG_ERROR_FILE_NOT_FOUND , NUT_SEVERITY_FATAL , MF_NutInfo , szTemp );
 				return;
 			}
 			
@@ -181,7 +181,7 @@ static void MFConfig_ImportLicenseKey(void *)
 			NWSUngetKey(UGK_SPECIAL_KEY,UGK_REFRESH_KEY,MF_NutInfo);
 
 			if (formatPosition != 3)
-				NWSDisplayErrorText ( ERROR_LICENSE_NOT_FOUND , NUT_SEVERITY_FATAL , MF_NutInfo , NULL );
+				NWSDisplayErrorText ( MSG_ERROR_LICENSE_NOT_FOUND , NUT_SEVERITY_FATAL , MF_NutInfo , NULL );
 
 		}
 		
@@ -207,16 +207,22 @@ public:
 					rc = f1.expression > f2.expression;
 				else
 				{
+					if (f1.matchfield == MailFilter_Configuration::blacklist)
+						rc = true;
+					else
+					if (f2.matchfield == MailFilter_Configuration::blacklist)
+						rc = false;
+					else
 					if (f1.matchfield == MailFilter_Configuration::attachment)
 						rc = true;
 					else
 					if (f2.matchfield == MailFilter_Configuration::attachment)
 						rc = false;
 					else
-					if (f1.matchfield == MailFilter_Configuration::blacklist)
+					if (f1.matchfield == MailFilter_Configuration::archiveContentName)
 						rc = true;
 					else
-					if (f2.matchfield == MailFilter_Configuration::blacklist)
+					if (f2.matchfield == MailFilter_Configuration::archiveContentName)
 						rc = false;
 					else
 						rc = f1.matchfield > f2.matchfield;
@@ -413,7 +419,7 @@ static int MF_ConfigReadXXX()
 		
 		} else {
 		
-			fprintf(stderr,"*** ERROR IMPORTING DEFAULT FILTER LIST ***\n");
+			MF_DisplayCriticalError("*** ERROR IMPORTING DEFAULT FILTER LIST ***\n");
 		}
 
 		rc = 0;
@@ -463,7 +469,7 @@ MF_ConfigRead_ERR:
 		{	
 			if (NLM_noUserInterface)
 			{
-				fprintf(stderr,"MFCONFIG: Either the Configuration File is not existant, corrupt or too old.\nMFCONFIG: Aborting Upgrade.\n");
+				MF_DisplayCriticalError("MFCONFIG: Either the Configuration File is not existant, corrupt or too old.\nMFCONFIG: Aborting Upgrade.\n");
 			} else {
 			//**** CONFIG FILE RECOVERY *
 			NWSDisplayErrorText ( ERROR_CONFIGURATION_INVALID , NUT_SEVERITY_FATAL , MF_NutInfo , "" );
@@ -515,7 +521,7 @@ MF_ConfigRead_ERR:
 
 		if (rc)
 		{
-			fprintf(stderr,"MFCONFIG: Error Code %d\n",rc);
+			MF_DisplayCriticalError("MFCONFIG: Error Code %d\n",rc);
 			return FALSE;
 		}
 	}
@@ -602,7 +608,7 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 					0,
 					1,	/* height */
 					50, /* width */
-					EDIT_UTIL_IMPORTFILE_GET, /* header */
+					MSG_EDIT_UTIL_IMPORTFILE_GET, /* header */
 					NO_MESSAGE, /* prompt */
 					(_MF_NUTCHAR)szTemp, /* buffer */
 					49, /* maxlen */
@@ -616,7 +622,7 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 	{
 		if (access(szTemp,F_OK) != 0)
 		{
-			NWSDisplayErrorText ( ERROR_FILE_NOT_FOUND , NUT_SEVERITY_FATAL , MF_NutInfo , szTemp );
+			NWSDisplayErrorText ( MSG_ERROR_FILE_NOT_FOUND , NUT_SEVERITY_FATAL , MF_NutInfo , szTemp );
 			
 		} else {
 			//
@@ -734,7 +740,7 @@ static void MFConfig_Util_ExportListToFile(void* nutHandle)
 					0,
 					1,	/* height */
 					50, /* width */
-					EDIT_UTIL_EXPORTFILE_GET, /* header */
+					MSG_EDIT_UTIL_EXPORTFILE_GET, /* header */
 					NO_MESSAGE, /* prompt */
 					(_MF_NUTCHAR)szTemp, /* buffer */
 					49, /* maxlen */
@@ -748,7 +754,7 @@ static void MFConfig_Util_ExportListToFile(void* nutHandle)
 	{
 		if (access(szTemp,F_OK) == 0)
 		{
-			NWSDisplayErrorText ( ERROR_FILE_EXISTS , NUT_SEVERITY_FATAL , MF_NutInfo , szTemp );
+			NWSDisplayErrorText ( MSG_ERROR_FILE_EXISTS , NUT_SEVERITY_FATAL , MF_NutInfo , szTemp );
 			
 		} else {
 		
@@ -855,7 +861,7 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 //	line++;
 
 	NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_MATCHFIELD), MF_NutInfo);
-	ctlMatchfield = NWSInitMenuField (MENU_MAIN_EDIT_FILTERS, 10, 40, MFConfig_EditFilterDialog_MenuAction, 		MF_NutInfo);
+	ctlMatchfield = NWSInitMenuField (MSG_MENU_MAIN_EDIT_FILTERS, 10, 40, MFConfig_EditFilterDialog_MenuAction, 		MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ALWAYS,		MAILFILTER_MATCHFIELD_ALWAYS, 			MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ATTACHMENT,	MAILFILTER_MATCHFIELD_ATTACHMENT, 		MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL,			MAILFILTER_MATCHFIELD_EMAIL, 			MF_NutInfo);
@@ -865,13 +871,15 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL_TOANDCC,	MAILFILTER_MATCHFIELD_EMAIL_TOANDCC,	MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_SUBJECT,		MAILFILTER_MATCHFIELD_SUBJECT, 			MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_SIZE,			MAILFILTER_MATCHFIELD_SIZE, 			MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ARCHIVECONTENTNAME,MAILFILTER_MATCHFIELD_ARCHIVECONTENTNAME,MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ARCHIVECONTENTCOUNT,MAILFILTER_MATCHFIELD_ARCHIVECONTENTCOUNT,MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_BLACKLIST,		MAILFILTER_MATCHFIELD_BLACKLIST, 		MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_IPUNRESOLVABLE,MAILFILTER_MATCHFIELD_IPUNRESOLVABLE, 	MF_NutInfo);
 	NWSAppendMenuField (line, 20, REQUIRED_FIELD, &newMatchfield, ctlMatchfield, NULL, MF_NutInfo);   
 	line++;
 
 	NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_MATCHACTION), MF_NutInfo);
-	ctlMatchaction = NWSInitMenuField (MENU_MAIN_EDIT_FILTERS, 10, 40, MFConfig_EditFilterDialog_MenuActionAction, 			MF_NutInfo);
+	ctlMatchaction = NWSInitMenuField (MSG_MENU_MAIN_EDIT_FILTERS, 10, 40, MFConfig_EditFilterDialog_MenuActionAction, 			MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_DROP_MAIL,	MAILFILTER_MATCHACTION_DROP_MAIL, 		MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_PASS,		MAILFILTER_MATCHACTION_PASS,		 	MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_SCHEDULE,	MAILFILTER_MATCHACTION_SCHEDULE,		MF_NutInfo);
@@ -882,7 +890,7 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 
 
 	NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_MATCHTYPE), MF_NutInfo);
-	ctlMatchtype = NWSInitMenuField (MENU_MAIN_EDIT_FILTERS, 10, 40, MFConfig_EditFilterDialog_MenuAction, 			MF_NutInfo);
+	ctlMatchtype = NWSInitMenuField (MSG_MENU_MAIN_EDIT_FILTERS, 10, 40, MFConfig_EditFilterDialog_MenuAction, 			MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchtype, EDIT_FILTERS_MATCHTYPE_MATCH,			MAILFILTER_MATCHTYPE_MATCH, 		MF_NutInfo);
 	NWSAppendToMenuField (ctlMatchtype, EDIT_FILTERS_MATCHTYPE_NOMATCH,			MAILFILTER_MATCHTYPE_NOMATCH,		MF_NutInfo);
 	NWSAppendMenuField (line, 20, REQUIRED_FIELD, &newMatchtype, ctlMatchtype, NULL, MF_NutInfo);   
@@ -946,7 +954,7 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 		MFConfig_EditFilterDialog_fieldDescription->fieldData = (unsigned char*)"Destination";
 	
 	formSaved = NWSEditForm (
-		EDIT_FILTERS_EDITRULE,		//headernum	//0
+		MSG_EDIT_FILTERS_EDITRULE,		//headernum	//0
 		3,							//line
 		0,							//col
 		line+4,						//portalHeight
@@ -1119,7 +1127,7 @@ static void MFConfig_EditFilters()
 	*/
 	MFC_CurrentList = 1;
 	rc = (long) NWSList(
-		/* I-	header			*/	MENU_MAIN_EDIT_FILTERS,
+		/* I-	header			*/	MSG_MENU_MAIN_EDIT_FILTERS,
 		/*	I-	centerLine		*/	0,
 		/*	I-	centerColumn	*/	0,
 		/*	I-	height			*/	17,
@@ -1223,7 +1231,7 @@ static void MFConfig_EditLicense()
 					0,
 					1,	/* height */
 					60, /* width */
-					MENU_MAIN_LICENSEKEY, /* header */
+					MSG_MENU_MAIN_LICENSEKEY, /* header */
 					NO_MESSAGE, /* prompt */
 					(_MF_NUTCHAR)newLicenseKey, /* buffer */
 					110, /* maxlen */
@@ -1536,22 +1544,22 @@ static int NLM_MenuMainAct(int index, void *parm)
 
 			break;
 
-		case MENU_MAIN_EDIT_CONFIGURATION:
+		case MSG_MENU_MAIN_EDIT_CONFIGURATION:
 			MFConfig_UI_ShowKeys(MFCONFIG_KEYS_SELECT|MFCONFIG_KEYS_SAVE);
 			MFConfig_EditConfig();
 			break;
 
-		case MENU_MAIN_EDIT_FILTERS:
+		case MSG_MENU_MAIN_EDIT_FILTERS:
 			MFConfig_UI_ShowKeys(MFCONFIG_KEYS_IMPORT|MFCONFIG_KEYS_EXPORT|MFCONFIG_KEYS_NEW|MFCONFIG_KEYS_DELETE|MFCONFIG_KEYS_SELECT|MFCONFIG_KEYS_SORT);
 			MFConfig_EditFilters();
 			break;
 
-		case MENU_MAIN_LICENSEKEY:
+		case MSG_MENU_MAIN_LICENSEKEY:
 			MFConfig_UI_ShowKeys(MFCONFIG_KEYS_CANCEL);
 			MFConfig_EditLicense();
 			break;
 
-		case MENU_MAIN_SAVE_AND_EXIT:
+		case MSG_MENU_MAIN_SAVE_AND_EXIT:
 			MFConfig_UI_ShowKeys(MFCONFIG_KEYS_CANCEL);
 			if (NLM_VerifySaveExit())
 			{
@@ -1560,7 +1568,7 @@ static int NLM_MenuMainAct(int index, void *parm)
 			}
 			break;
 			
-		case MENU_MAIN_SAVE_AND_RESTART:
+		case MSG_MENU_MAIN_SAVE_AND_RESTART:
 			MFConfig_UI_ShowKeys(MFCONFIG_KEYS_CANCEL);
 			MF_GlobalConfiguration.WriteToFile("");
 			return(0);
@@ -1602,16 +1610,16 @@ static void NLM_MenuMain(bool bStandalone)
 	** highlighed by default.
 	*/
 	
-	NWSAppendToMenu(MENU_MAIN_EDIT_CONFIGURATION, MENU_MAIN_EDIT_CONFIGURATION, MF_NutInfo);
+	NWSAppendToMenu(MSG_MENU_MAIN_EDIT_CONFIGURATION, MSG_MENU_MAIN_EDIT_CONFIGURATION, MF_NutInfo);
 
-	NWSAppendToMenu(MENU_MAIN_LICENSEKEY, MENU_MAIN_LICENSEKEY, MF_NutInfo);
+	NWSAppendToMenu(MSG_MENU_MAIN_LICENSEKEY, MSG_MENU_MAIN_LICENSEKEY, MF_NutInfo);
 	
-	NWSAppendToMenu(MENU_MAIN_EDIT_FILTERS, MENU_MAIN_EDIT_FILTERS, MF_NutInfo);
+	NWSAppendToMenu(MSG_MENU_MAIN_EDIT_FILTERS, MSG_MENU_MAIN_EDIT_FILTERS, MF_NutInfo);
 	
 	if (bStandalone)
-		defaultOption = NWSAppendToMenu(MENU_MAIN_SAVE_AND_EXIT, MENU_MAIN_SAVE_AND_EXIT, MF_NutInfo);
+		defaultOption = NWSAppendToMenu(MSG_MENU_MAIN_SAVE_AND_EXIT, MSG_MENU_MAIN_SAVE_AND_EXIT, MF_NutInfo);
 	else
-		defaultOption = NWSAppendToMenu(MENU_MAIN_SAVE_AND_RESTART, MENU_MAIN_SAVE_AND_RESTART, MF_NutInfo);
+		defaultOption = NWSAppendToMenu(MSG_MENU_MAIN_SAVE_AND_RESTART, MSG_MENU_MAIN_SAVE_AND_RESTART, MF_NutInfo);
 
 	NWSEnableInterruptKey	(	K_F8,	MFConfig_ImportLicenseKey,	MF_NutInfo	);
 	MFConfig_UI_ShowKeys(MFCONFIG_KEYS_IMPORT|MFCONFIG_KEYS_EXIT);
@@ -1620,7 +1628,7 @@ static void NLM_MenuMain(bool bStandalone)
 	**	Display the menu and allow user interaction.
 	*/
 	NWSMenu(
-		/*	header				*/	CONFIGAPP_PROGRAMNAME,
+		/*	header				*/	MSG_CONFIGAPP_PROGRAMNAME,
 		/*	centerLine			*/	0,					/* [0,0] means Center of screen*/
 		/*	centerColumn		*/	0,
 		/*	defaultElement		*/	defaultOption,		/* Could use NULL here desired */			
@@ -1650,8 +1658,8 @@ int MailFilter_Main_RunAppConfig(bool bStandalone)
 
 	memset(szTemp,' ',80);
 	szTemp[81]=0;
-	sprintf(szTemp,"  MailFilter/ax Configuration Editor NLM/CUI Version %s",
-									programMesgTable[PROGRAM_VERSION]);
+	sprintf(szTemp,"  MailFilter Configuration Editor NLM/CUI Version %s",
+									programMesgTable[MSG_PROGRAM_VERSION]);
 	szTemp[81]=0;
 	NWSShowLineAttribute ( 0 , 0 , (_MF_NUTCHAR)szTemp , VNORMAL , 80 , (struct ScreenStruct*)MF_NutInfo->screenID );
 

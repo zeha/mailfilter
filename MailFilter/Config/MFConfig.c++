@@ -1,12 +1,11 @@
 /*+
  +		MFConfig.c++
  +		
- +		MailFilter/ax Configuration C++ Interface Implementation
+ +		MailFilter Configuration C++ Interface Implementation
  +		
- +		Copyright 2001-2003 Christian Hofstädtler
+ +		Copyright 2001-2004 Christian Hofstädtler
  +		
  +		
- +		- Sep/2003 ; ch   ; Newly created from the C version
  +		
  +		
 +*/
@@ -387,7 +386,7 @@ int MF_Filter_InitListsV6()
 
 	if (filterList == NULL)
 	{
-		fprintf(stderr,"MAILFILTER: Error while opening configuration file.\n");
+		MF_DisplayCriticalError("MAILFILTER: Error while opening configuration file.\n");
 		return FALSE;
 	}
 
@@ -542,7 +541,7 @@ bool Configuration::CreateFromInstallFile(std::string installFile)
 	printf("   Installation data file: %s\n",installFile.c_str());
 
 	if (!install.good())
-		fprintf(stderr,std::string("   MailFilter Installation: Could not open "+installFile+"!\n").c_str());
+		MF_DisplayCriticalError(std::string("   MailFilter Installation: Could not open "+installFile+"!\n").c_str());
 	
 	while (install >> line)
 	{
@@ -633,7 +632,7 @@ bool Configuration::CreateFromInstallFile(std::string installFile)
 		mailfilterPathFile.close();
 	} else {
 		printf("      ... FAILED.\n");
-		fprintf(stderr,"MailFilter Installation: Could not write "MAILFILTER_CONFIGURATION_PATHFILE"!\n");
+		MF_DisplayCriticalError("MailFilter Installation: Could not write "MAILFILTER_CONFIGURATION_PATHFILE"!\n");
 	}
 		
 	return true;
@@ -664,7 +663,7 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 	} catch (std::exception e)
 	{
 //	 	NetwareAlert(
-		fprintf(stderr,"MAILFILTER: Uncaught Exception in the configuration reader.\n\n");
+		MF_DisplayCriticalError("MAILFILTER: Uncaught Exception in the configuration reader.\n\n");
 	}
 */
 
@@ -678,7 +677,7 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 
 	std::string pConfigFile = (alternateFilename == "" ? this->config_file : alternateFilename);
 
-	fprintf(stderr,"MAILFILTER: Configuration: %s\n",this->config_directory.c_str());
+	MF_DisplayCriticalError("MAILFILTER: Configuration: %s\n",this->config_directory.c_str());
 	MFD_Out(MFD_SOURCE_CONFIG,"MFC: Starting with %s.\n",pConfigFile.c_str());
 
 	// compatiblity for MF Licensing Stages
@@ -755,7 +754,7 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 */
 	this->LogDirectory = this->MFLTRoot + IX_DIRECTORY_SEPARATOR_STR + "MFLOG" + IX_DIRECTORY_SEPARATOR_STR; //,this->LogDirectory);
 	
-//	fprintf(stderr,"Logging to: %s\n",this->LogDirectory.c_str());
+//	MF_DisplayCriticalError("Logging to: %s\n",this->LogDirectory.c_str());
 
 	this->DomainName = MF_ConfigReadString(pConfigFile, 3);
 
@@ -856,21 +855,21 @@ MF_ConfigRead_ERR:
 
 		if (rc < 100)
 		{
-			MF_DisplayCriticalError(CONMSG_CONFIG_ERRCONFIGFORMAT);
+			MF_DisplayCriticalErrorId(CONMSG_CONFIG_ERRCONFIGFORMAT);
 		} else {
 			if (rc < 200)
 			{
-				MF_DisplayCriticalError(CONMSG_CONFIG_ERRCONFIGURATION);
+				MF_DisplayCriticalErrorId(CONMSG_CONFIG_ERRCONFIGURATION);
 			} else {
 				if ( rc < 300 )
 				{
-					MF_DisplayCriticalError(CONMSG_CONFIG_ERRFILTERLIST);
+					MF_DisplayCriticalErrorId(CONMSG_CONFIG_ERRFILTERLIST);
 				} else {
 					if ( rc < 350 )
 					{
-						MF_DisplayCriticalError(CONMSG_CONFIG_ERRDIRECTORIES);
+						MF_DisplayCriticalErrorId(CONMSG_CONFIG_ERRDIRECTORIES);
 					} else {
-							MF_DisplayCriticalError(CONMSG_CONFIG_ERRGENERIC);
+							MF_DisplayCriticalErrorId(CONMSG_CONFIG_ERRGENERIC);
 					}
 				}
 			}
@@ -935,7 +934,7 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 	} catch (std::exception e)
 	{
 //	 	NetwareAlert(
-		fprintf(stderr,"MAILFILTER: Uncaught Exception in the configuration reader.\n\n");
+		MF_DisplayCriticalError("MAILFILTER: Uncaught Exception in the configuration reader.\n\n");
 	}
 */
 
@@ -951,7 +950,6 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 	std::string pConfigFile = (alternateFilename == "" ? this->config_file : alternateFilename);
 	std::string pConfigFileBackup = pConfigFile + ".BAK";
 
-	fprintf(stderr,"MFC: Saving to %s.\n",pConfigFile.c_str());
 	MFD_Out(MFD_SOURCE_CONFIG,"MFC: Saving to %s.\n",pConfigFile.c_str());
 
 	rename(pConfigFile.c_str(),pConfigFileBackup.c_str());

@@ -7,14 +7,11 @@
  +		Copyright 2001-2004 Christian Hofstädtler.
  +		
  +		
- +		- Aug/2001 ; ch   ; Initial Code
- +		- Aug/2002 ; ch   ; Major Improvements
- +		- Sep/2003 ; ch   ; C++ updates
  +		
  */
 
 
-#define _MFD_MODULE			"MFWORK.CPP"
+#define _MFD_MODULE			"MFWork.CPP"
 #include "MailFilter.h"
 #include "MFMail.h++"
 #include "MFRelayHost.h++"
@@ -85,8 +82,8 @@ static bool MF_Worker_WSA_Shutdown()
 //static MailFilter_Filter MFC_Filters[MailFilter_MaxFilters];
 //static char MFT_ModifyInt_ListFrom[MFT_ModifyInt_ListFrom_MAX][50];
 
-/* Dynamic Sleep Timer, in milli-seconds ... */
-unsigned int MFT_SleepTimer = 1500;
+/* Sleep Time for the worker thread */
+#define MF_WORKER_SLEEPTIME 3000
 
 static char* MF_GetRoot();
 
@@ -138,8 +135,6 @@ static int MF_CopyEmail_Send(const char* szAttachFileName, MailFilter_MailData* 
 	
 	_mfd_free(fileTemplate,"MailCopy (Tmpl)");
 	
-//	fprintf(fMailFile,"X-Mailer: MailFilter professional "MAILFILTERVERNUM"\r\n");
-
 	if (fTemplate == NULL)
 	{
 		MF_StatusText("Error reading MailCopy template!");
@@ -667,9 +662,6 @@ int MF_RuleExec_RE(const char* expression, char* scan)
 // > Returns: 1 = success
 int MF_RuleExec( MailFilter_MailData* m )
 {
-#ifdef _TRACE
-fprintf(stderr,("***RuleExec called***\n");
-#endif
 
 	int curItem = 0;
 	bool bOverrideErrorMessage = false;
@@ -796,21 +788,59 @@ fprintf(stderr,("***RuleExec called***\n");
 				
 			break;
 		case MailFilter_Configuration::attachment:
-//MFD_Out("A");
 			att = m->lstAttachments->GetFirst();
 			while (att != NULL)
 			{
 				if (((char*)att->data)[0]==0)
 					break;
-				iResult = 0;
+
 				iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),(char*)att->data);	szFieldDescription = "Attachment Name";
 
-//MFD_Out("%i:",iResult);
 				if (iResult == 1)
 					break;
 
 				att = m->lstAttachments->GetNext(att);
 			}
+			break;
+		case MailFilter_Configuration::archiveContentName:
+			bool bIsEncryptedCheck = (MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression == "<encrypted file>");
+			att = m->lstArchiveContents->GetFirst();
+			while (att != NULL)
+			{
+				if (((char*)att->name)[0]==0)
+					break;
+
+				if (!bIsEncryptedCheck)
+				{
+					iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),att->name);	szFieldDescription = "Archive Attachment";
+				} else {
+					iResult = (((bool)att->data == true) ? 1 : 0);
+				}
+
+				if (iResult == 1)
+					break;
+
+				att = m->lstArchiveContents->GetNext(att);
+			}
+			break;
+		case MailFilter_Configuration::archiveContentCount:
+			int cmpCount = atoi(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str());
+			int effectiveCount = 0;
+			att = m->lstArchiveContents->GetFirst();
+			while (att != NULL)
+			{
+				if (((char*)att->name)[0]==0)	break;
+				++effectiveCount;
+				att = m->lstArchiveContents->GetNext(att);
+			}
+
+			if (effectiveCount == cmpCount)
+			{
+				iResult = 1;
+				break;
+			} else
+				iResult = 0;
+
 			break;
 		case MailFilter_Configuration::blacklist:
 		
@@ -883,9 +913,6 @@ fprintf(stderr,("***RuleExec called***\n");
 		{
 			if (MF_GlobalConfiguration.filterList[(unsigned int)curItem].action == MAILFILTER_MATCHACTION_COPY)
 			{
-#ifdef _TRACE
-fprintf(stderr,("**-- copy matches\n");
-#endif
 				m->bCopy = true;
 				iResult = 0;
 				m->lstCopies->AddValueChar("", MF_GlobalConfiguration.filterList[(unsigned int)curItem].name.c_str());
@@ -970,27 +997,6 @@ MFD_Out(MFD_SOURCE_RULE,"%s",MF_GlobalConfiguration.filterList[(unsigned int)cur
 
 MFD_Out(MFD_SOURCE_RULE,"\n");	
 	return 1;
-}
-
-
-static void MF_SleepTimerIncrease(int howMuch)
-{
-	// Increase the Sleep Timer
-	MFT_SleepTimer = MFT_SleepTimer + howMuch;
-
-	// ... to a maximum of 20 seconds ;)
-	if (MFT_SleepTimer > 20000)
-		MFT_SleepTimer = 15250;
-}
-
-static void MF_SleepTimerDecrease(int howMuch)
-{
-	// Increase the Sleep Timer
-	MFT_SleepTimer = MFT_SleepTimer - howMuch;
-
-	// ... to a minimum of 1.5 seconds ;)
-	if (MFT_SleepTimer < 1501)
-		MFT_SleepTimer = 1500;
 }
 
 // Moves a File
@@ -1332,7 +1338,7 @@ static int MF_ExamineFile(MailFilter_MailData* m)
 							if (iThisAttSize > 0)
 							{
 								m->iTotalAttachmentSize += iThisAttSize;
-								MFVS_CheckWinmailDat(szAttFile,szThisAttachment,m);
+								MFVS_CheckAttachment(szAttFile,szThisAttachment,m);
 							}
 								
 							MFD_Out(MFD_SOURCE_VSCAN,"New Total Size: %d (increased by %d)\n",m->iTotalAttachmentSize,iThisAttSize);
@@ -1348,13 +1354,13 @@ static int MF_ExamineFile(MailFilter_MailData* m)
 					}
 				}
 			}
-//fprintf(stderr,(" XNLX");
+//MF_DisplayCriticalError((" XNLX");
 			while ((curChr != '\n') && (curChr != -1))
 			{
 				if (curPos >= 2000) break;
 				curChr = fgetc(mailFile);
 
-//	fprintf(stderr,(" %c[%d/%d] ",curChr,curChr,curPos);
+//	MF_DisplayCriticalError((" %c[%d/%d] ",curChr,curChr,curPos);
 				curPos++;
 
 				if ((curChr == '\n') || (curChr == -1))
@@ -1413,7 +1419,7 @@ if ( feof(mailFile) )
 				break;	// end
 			}
 
-//fprintf(stderr,(" XNLS:%d ",bNextLineStartSpace);
+//MF_DisplayCriticalError((" XNLS:%d ",bNextLineStartSpace);
 			
 			if (bNextLineStartSpace)
 				curPos--;
@@ -1651,7 +1657,7 @@ if ( feof(mailFile) )
 					
 					strncpy(szCmpBuffer,szScanBuffer+9,245);
 					szCmpBuffer[245]=0;
-MFD_Out(MFD_SOURCE_MAIL,"UU Attachment: '%s'\n",szCmpBuffer);					
+MFD_Out(MFD_SOURCE_MAIL,"UU Attachment: '%s'\n",szCmpBuffer);
 		
 					strncpy(szThisAttachment,szCmpBuffer,250);
 					m->lstAttachments->AddValueChar("UUEncode", szCmpBuffer);
@@ -1671,7 +1677,7 @@ MFD_Out(MFD_SOURCE_MAIL,"UU Attachment: '%s'\n",szCmpBuffer);
 						{
 //CHANGE
 							m->iTotalAttachmentSize += iThisAttSize;
-							MFVS_CheckWinmailDat(szAttFile,szCmpBuffer,m);
+							MFVS_CheckAttachment(szAttFile,szCmpBuffer,m);
 						}
 					}
 				}
@@ -2313,7 +2319,7 @@ int MF_ParseTemplate(const char* szTemplateName, FILE* fMailFile, MailFilter_Mai
 	{
 		MF_StatusText("Error reading postmaster report template!");
 
-		fprintf(fMailFile,"Subject: MailFilter/ax Problem Report\r\n\r\n");
+		fprintf(fMailFile,"Subject: MailFilter Problem Report\r\n\r\n");
 
 		fprintf(fMailFile,"MailFilter Verification failed on the mail specified below.\r\n");
 		fprintf(fMailFile,"%s\r\n\r\n",mMailInfo->szErrorMessage);
@@ -2539,53 +2545,21 @@ int MF_Notification_Send2(const char messageType, const char* bounceRcpt, MailFi
 			fprintf(mail,"DATA\n");
 		
 		fprintf(mail,"From: %s\r\nTo: %s\r\n",MF_GlobalConfiguration.DomainEmailMailFilter.c_str(),bounceRcpt);
-//		fprintf(mail,"X-Mailer: MailFilter/ax professional "MAILFILTERVERNUM"\r\nMime-Version: 1.0\r\nContent-Type: text/plain; charset=US-ASCII\r\nContent-Transfer-Encoding: 7bit\r\nContent-Disposition: inline\r\n");
 
 		if (messageType > 1)
 		{
 			MF_ParseTemplate("RINSIDE.TPL", mail, mMailInfo);
-/*			fprintf(mail,"Subject: MailFilter/ax Problem Report (%s)\r\n\r\n",errorText);
-
-			fprintf(mail,"MailFilter/ax scans Incoming and Outgoing E-Mails for e.g. Viruses.\r\n");
-			fprintf(mail,"You are getting this Problem Report because one of the scanned mails \r\n"
-						 "from or to you got dropped. The message has been saved, but you will have to \r\n"
-						 "contact your System Administrator to read the message in suspicion.\r\n");
-			fprintf(mail,"Cause of the drop: %s\r\n\r\n",errorText);
-			fprintf(mail,"Original Mail Information:\r\n  From: \"%s\"\r\n  To: \"%s\"\r\n",mailFrom,mailRcpt);
-			fprintf(mail,"  Subject: \"%s\"\r\n",mailSubject);
-			fprintf(mail,"\r\n\r\nPlease contact your Administrator (%s).\r\nAdministrative Information:\r\n\"%s\"\r\n\r\n\r\nRegards,\r\nMailFilter/%s.\r\n\r\n",MFC_DOMAIN_EMail_PostMaster,fileIn,MF_GlobalConfiguration.ServerName.c_str());*/
 		}
 		
 		if (messageType == 0)
 		{
 			MF_ParseTemplate("ROUTSNDR.TPL", mail, mMailInfo);
-/*			fprintf(mail,"Subject: MailFilter/ax Problem Report\r\n\r\n");
-
-			fprintf(mail,"MailFilter/ax has scanned an E-Mail you sent to \r\n%s,\r\n",strcmp(bounceRcpt,mailFrom)==0 ? mailRcpt : mailFrom);
-			fprintf(mail,"and has detected that either the contents or an\r\n"
-						 "attachment is forbidden by the organizational policy. \r\n"
-						 "Please contact either the origial recipient or the \r\n"
-						 "Postmaster %s.\r\n",MFC_DOMAIN_EMail_PostMaster);
-			fprintf(mail,"\nDetails:\r\n From: \"%s\"\r\n To: \"%s\"\r\n",mailFrom,mailRcpt);
-			fprintf(mail," Subject: \"%s\"\r\n",mailSubject);
-			fprintf(mail,"\r\nMailFilter/ax -- www.mailfilter.cc\r\n");*/
 			
 			fprintf(mail,"\r\n.\r\nQUIT\r\n");
 		}
 		if (messageType == 1)
 		{
 			MF_ParseTemplate("ROUTRCPT.TPL", mail, mMailInfo);
-/*			fprintf(mail,"Subject: MailFilter/ax Problem Report\r\n\r\n");
-
-			fprintf(mail,"MailFilter/ax has scanned an E-Mail from \r\n%s,\r\n",strcmp(bounceRcpt,mailFrom)==0 ? mailRcpt : mailFrom);
-			fprintf(mail,"and has detected that either the contents or an\r\n"
-						 "attachment is forbidden by the organizational policy. \r\n"
-						 "Please contact either the origial sender or the \r\n"
-						 "Postmaster %s.\r\n",MFC_DOMAIN_EMail_MailFilter);
-			fprintf(mail,"\nDetails:\r\n From: \"%s\"\r\n To: \"%s\"\r\n",mailFrom,mailRcpt);
-			fprintf(mail," Subject: \"%s\"\r\n",mailSubject);
-			fprintf(mail,"\r\nMailFilter/ax -- www.mailfilter.cc\r\n");*/
-			
 			fprintf(mail,"\r\n.\r\nQUIT\r\n");
 		}
 		fclose(mail);
@@ -2647,110 +2621,6 @@ int MF_MailProblemReport(MailFilter_MailData* mMailInfo) //const char* errorText
 	MF_ParseTemplate("REPORT.TPL", mail, mMailInfo);
 	
 	
-/*	fprintf(mail,"X-Mailer: MailFilter/ax professional "MAILFILTERVERNUM"\r\n");
-
-	if (mTemplate == NULL)
-	{
-		MF_StatusText("Error reading postmaster report template!");
-
-		fprintf(mail,"Subject: MailFilter/ax Problem Report\r\n\r\n");
-
-		fprintf(mail,"MailFilter/ax Verification failed on the mail specified below.\r\n");
-		fprintf(mail,"%s\r\n\r\n",errorText);
-		fprintf(mail,"From: \"%s\"\r\nRecipient: \"%s\"\r\nSubject: \"%s\"\r\n\r\n",mailFrom,mailRcpt,mailSubject);
-//		fprintf(mail,"Probably you are the only one, who has been notified! Please take approaite actions,\r\ne.g. inform the sender and/or the recipient of the original mail.\r\n\r\n");
-//		fprintf(mail,"The message (file) handle was:\r\n%s\r\n\r\n\nRegards,\r\nMailFilter/%s.\r\n",fileIn,MF_GlobalConfiguration.ServerName.c_str());
-		fprintf(mail,"ERROR: This is the default test.\r\n");
-		fprintf(mail,"It is used, because your template is not accessible!\r\n\r\n");
-	} else {
-
-		while ( (szTemplateChar = fgetc(mTemplate)) != EOF )
-		{
-			if (szTemplateChar == '#')
-			{
-				if ( (szTemplateCharPrev == '\r') || (szTemplateCharPrev == '\n') )
-				{
-					// a comment starts here ...
-					while ( (szTemplateChar = fgetc(mTemplate)) != EOF )
-					{	
-						// as we only support line-start to line-end comments,
-						// look for the line end here...
-						if ( (szTemplateChar == '\r') || (szTemplateChar == '\n') )
-							break;
-					}
-				}
-			
-			} else {
-
-				if ( (szTemplateCharPrev == '%') && (szTemplateChar != '%') )
-				{
-					// allocate a buffer
-					if (templateString == NULL)
-						templateString = (char*)_mfd_malloc(100,"templateString");
-				
-					// overwrite the previously written %
-					fseek(mail,ftell(mail)-1,SEEK_SET);
-					
-					switch (szTemplateChar)
-					{
-						case 'f':
-							// original mail from
-							sprintf(templateString,"%.79s",mailFrom);
-							break;
-						case 't':
-							// original mail to
-							sprintf(templateString,"%.79s",mailRcpt);
-							break;
-						case 's':
-							// original mail subject 
-							sprintf(templateString,"%.79s",mailSubject);
-							break;
-						case 'R':
-							// drop reason
-							sprintf(templateString,"%.79s",errorText);
-							break;
-						case 'F':
-							// Filename
-							sprintf(templateString,"%.79s",fileIn);
-							break;
-						case 'P':
-							// PostMaster E-Mail
-							sprintf(templateString,"%.79s",MFC_DOMAIN_EMail_PostMaster);
-							break;
-						case 'M':
-							// MailFilter E-Mail
-							sprintf(templateString,"%.79s",MFC_DOMAIN_EMail_MailFilter);
-							break;
-						case 'S':
-							// Servername
-							sprintf(templateString,"%.79s",MF_GlobalConfiguration.ServerName.c_str());
-							break;
-						case 'V':
-							// MailFilter/ax Product Version
-							sprintf(templateString,"%.79s",MAILFILTERVERNUM);
-							break;
-					}
-					
-					fprintf(mail,"%s",templateString);
-				} else {
-					// nothing special; write it out...
-					fputc(szTemplateChar,mail);
-				}
-			}
-
-			szTemplateCharPrev = szTemplateChar;
-		}
-	
-		fclose(mTemplate);
-		
-	}
-
-	if (templateString != NULL)
-	{
-		_mfd_free(templateString,"templateString");
-		templateString = NULL;
-	}
-*/	
 	fclose(mail);
 	return 0;
 
@@ -2807,7 +2677,6 @@ int MF_EMailPostmasterGeneric(const char* Subject, const char* Text, const char*
 			
 			strncpy(szB64File,szAttachFileName,MAX_PATH);
 			strcpy(szB64File+strlen(szB64File)-3,"b64");
-MFD_Out(MFD_SOURCE_GENERIC,"MailAtt: %s -> %s\n",szAttachFileName,szB64File);
 			unlink(szB64File);
 		
 			MFUtil_EncodeFile(szAttachFileName,szB64File,mimeEncodingBase64);
@@ -3359,7 +3228,6 @@ MFD_Out(MFD_SOURCE_WORKER,"Processing %s ...\n", fileName);
 		while(waitCount < 5)
 		{
 			rc = MF_ExamineFile ( m );
-			MFD_Out(MFD_SOURCE_MAIL,"ExamineFile has returned, continuing in ProcessFile()\n");
 			switch (rc)
 			{
 				case 0:		/* SUCCESS ; VirusScanning is disabled */
@@ -3400,8 +3268,6 @@ MFD_Out(MFD_SOURCE_WORKER,"Processing %s ...\n", fileName);
 					if ( MF_MoveFileToFile( m->szFileWork, m->szFileIn, true ) )
 						MF_StatusText("Could not move E-Mail back.");
 					
-					MF_SleepTimerIncrease(10000);
-					
 					break;
 				
 				default:	/* 240 = err. opening */
@@ -3436,12 +3302,6 @@ MFD_Out(MFD_SOURCE_WORKER,"Processing %s ...\n", fileName);
 			strcpy(emptyMailInfo->szMailCC,"Unknown");
 			strcpy(emptyMailInfo->szErrorMessage,"The mail could not be moved/opened from the MFWORK directory.");
 			delete(emptyMailInfo);
-				
-/*				m->szFileIn,
-				"The mail could not be moved/opened from the MFWORK directory.",
-				"Unknown",
-				"Unknown",
-				"Unknown"*/
 		}
 
 		/* Increase Counters ... */
@@ -3451,12 +3311,11 @@ MFD_Out(MFD_SOURCE_WORKER,"Processing %s ...\n", fileName);
 			MFS_MF_MailsInputTotal++;
 
 	} else {
-MFD_Out(MFD_SOURCE_WORKER,"MFSCAN: ProcessFile: Done, ERROR. %d\n",rc);
+MFD_Out(MFD_SOURCE_ERROR,"Worker: ProcessFile: ERROR: %d\n",rc);
 		if (rc != 239)
 		{
 			// * Do Nothing, so this will be queued for next loop.
 			MF_StatusLog("Skipped Mail, Couldn't read it ... Will Retry Later.");
-			MF_SleepTimerIncrease(5000);
 		} else {
 			MF_OutOfMemoryHandler();
 		}
@@ -3684,7 +3543,7 @@ void MF_CheckProblemDirAgeSize()
 	struct dirent	*dirEntry;
 #endif
 
-	MF_StatusText("Checking MFPROB size...");
+	MFD_Out(MFD_SOURCE_GENERIC,"Checking MFPROB size...");
 
 	if ((MF_GlobalConfiguration.ProblemDirMaxSize == 0) && (MF_GlobalConfiguration.ProblemDirMaxAge == 0))
 		return;
@@ -3799,7 +3658,7 @@ MFD_Out(MFD_SOURCE_GENERIC,"prb: %s\n",probDir);
 	} else
 		MFD_Out(MFD_SOURCE_GENERIC,"==> not trying size reduction\n");
 	
-	MFD_Out(MFD_SOURCE_GENERIC,
+	MFD_Out(MFD_SOURCE_GENERIC,	
 #ifdef __NOVELL_LIBC__ // 64bit
 			" > Total Files: %d, Size: %lld kBytes\n > Total Killed: %d, Size: %lld kBytes\n > New Totals: %d, Size: %lld kBytes\n",
 #else
@@ -3851,6 +3710,7 @@ static bool CheckDirectory(const char* szDirectoryName, bool bCleanUp)
 	if (bCleanUp == true)
 	{
 		time_t mintime = time(NULL) - (2*(24*60*60));
+
 		iXDir dir(szDirectoryName);
 		
 		char szTemp[250];
@@ -3911,40 +3771,9 @@ static bool HandleGwiaDirectory(const char* szDirectoryName, const char* szDirec
 	return true;
 }
 
-// 
-// **** Worker Thread ****
-//
-#ifndef WIN32
-void MF_Work_Startup(void *dummy)
-#else
-DWORD WINAPI MF_Work_Startup(void *dummy)
-#endif // WIN32
+void MFWorker_SetupPaths()
 {
-#pragma unused(dummy)
-
-	DIR* mailDir;
-	DIR* readentry;
-
-	char fileIn[MAX_PATH];
-	char fileOut[MAX_PATH];
 	char scanDir[MAX_PATH];
-	char scanPath[MAX_PATH];
-	int tlc = 0;
-	int lc = 255;
-	int shallTerminate = 0;
-
-#pragma unused(scanPath)
-
-	MFT_NLM_ThreadCount++;
-	
-	// Rename this Thread
-#if defined( N_PLAT_NLM ) && (!defined(__NOVELL_LIBC__))
-	RenameThread(GetThreadID(),programMesgTable[THREADNAME_WORK]);		// 15 (16?) Chars max.
-#endif
-#if defined( N_PLAT_NLM ) && (defined(__NOVELL_LIBC__))
-	NXContextSetName(NXContextGet(),"MailFilterWorker");
-#endif
-
 
 #define PS IX_DIRECTORY_SEPARATOR_STR
 
@@ -3970,6 +3799,9 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 
 	sprintf(scanDir,"%sCRASH"PS,MFT_MF_ProbDir);	CheckDirectory(scanDir					,false	);
 	sprintf(scanDir,"%sDROP"PS,MFT_MF_ProbDir);		CheckDirectory(scanDir					,false	);
+	/* Remap MFPROB to MFPROB/DROP */
+	sprintf(scanDir,"%sDROP"PS,MFT_MF_ProbDir);
+	strcpy(MFT_MF_ProbDir,scanDir);
 
 	// Create SCAN directory.
 	sprintf(scanDir,"%s"IX_DIRECTORY_SEPARATOR_STR"MFSCAN"PS,MF_GlobalConfiguration.MFLTRoot.c_str());
@@ -3982,6 +3814,43 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 		sprintf(scanDir,"%s"PS"MFSCAN"PS"%04i"PS,MF_GlobalConfiguration.MFLTRoot.c_str(),iScanDir);
 		CheckDirectory(scanDir					,true	);
 	}
+}
+
+// 
+// **** Worker Thread ****
+//
+#ifndef WIN32
+void MF_Work_Startup(void *dummy)
+#else
+DWORD WINAPI MF_Work_Startup(void *dummy)
+#endif // WIN32
+{
+#pragma unused(dummy)
+
+	DIR* mailDir;
+	DIR* readentry;
+
+	char fileIn[MAX_PATH];
+	char fileOut[MAX_PATH];
+	char scanDir[MAX_PATH];
+	char scanPath[MAX_PATH];
+	int tlc = 0;
+	int lc = 255;
+	int shallTerminate = 0;
+	int iScanDir;
+
+#pragma unused(scanPath)
+
+	MFT_NLM_ThreadCount++;
+	
+	// Rename this Thread
+#if defined( N_PLAT_NLM ) && (!defined(__NOVELL_LIBC__))
+	RenameThread(GetThreadID(),programMesgTable[MSG_THREADNAME_WORK]);		// 15 (16?) Chars max.
+#endif
+#if defined( N_PLAT_NLM ) && (defined(__NOVELL_LIBC__))
+	NXContextSetName(NXContextGet(),"MailFilterWorker");
+#endif
+
 
 	// OLD BROKEN CODE
 	// PLEASE REPLACE WITH iXDir c++ api!
@@ -4041,7 +3910,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 		}
 		if (mailDir != NULL)		closedir(mailDir);
 	}
-	
+
 	MF_Worker_WSA_Startup();
 
 /*	// MFSCAN Crash Recovery
@@ -4068,20 +3937,17 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 	// -- MFWORK
 */
 
-	/* Remap MFPROB to MFPROB/DROP */
-	sprintf(scanDir,"%sDROP"PS,MFT_MF_ProbDir);
-	strcpy(MFT_MF_ProbDir,scanDir);
 
 
 	// Endless Loop ...
 	while (MFT_NLM_Exiting == 0)
 	{
 
-		/* Send Directory ... */
+		//* Send Directory ... *
 		HandleGwiaDirectory(MFT_GWIA_SendDirIn,MFT_GWIA_SendDirOut,0,tlc);
 		if (MFT_NLM_Exiting > 0)	break;
 
-		/* Receive Directory ... */
+		//* Receive Directory ... *
 		HandleGwiaDirectory(MFT_GWIA_RecvDirIn,MFT_GWIA_RecvDirOut,1,tlc);
 		if (MFT_NLM_Exiting > 0)	break;
 		
@@ -4130,7 +3996,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 			{
 				if (lc == 0)
 				{
-					fprintf(stderr,"\nMailFilter: Unexpected Error (Code: WTLLNE)\n");
+					MF_DisplayCriticalError("\nMailFilter: Unexpected Error (Code: WTLLNE)\n");
 					shallTerminate=255;
 					break;
 				} else {
@@ -4148,8 +4014,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 						
 						if (rCode)
 						{
-							fprintf(stderr,"\nMailFilter: Unexpected Error (Code: CEIFF)\n");
-//							fprintf(stderr,"  Error Code was: %d\n",errcode);
+							MF_DisplayCriticalError("\nMailFilter: Unexpected Error (Code: CEIFF)\n");
 							shallTerminate=255;
 							break;
 						}
@@ -4168,16 +4033,12 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 						etime = (time_t)atol(ev);
 						if ( (ctime-etime) > 2592000 )
 						{
-							fprintf(stderr,"\nMailFilter: *** Evaluation Period Expired! ***\n");
+							MF_DisplayCriticalError("\nMailFilter: *** Evaluation Period Expired! ***\n");
 							shallTerminate=255;
 							break;
 						}
 					}
 
-/*					MFC_Filters[15].name[0]=0;
-					MFC_Filters[15].expression[0]=0;
-					MFC_Filters[15].enabled=false;*/
-					
 					MFL_VerInfo();	// print eval info
 				}
 			} else {
@@ -4219,7 +4080,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 				MF_GlobalConfiguration.BWLScheduleTime = "";
 		}
 
-		/* Scheduling Directory: Send */
+		//* Scheduling Directory: Send *
 		_MF_DIRECTORY_OPENDIR(MFT_MF_ScheduleDirSend);
 		while ( mailDir != NULL )
 		{
@@ -4229,7 +4090,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 
 			if ( _MF_DIRECTORY_FILENAME[0] != '.' )
 			{
-MFD_Out(MFD_SOURCE_WORKER,"Schedule: Found %s for Sched.\n",_MF_DIRECTORY_FILENAME);
+				MFD_Out(MFD_SOURCE_WORKER,"Schedule: Found %s for Sched.\n",_MF_DIRECTORY_FILENAME);
 				// Build filenames...
 				sprintf(fileIn,  "%s%s", MFT_MF_ScheduleDirSend, _MF_DIRECTORY_FILENAME);
 				sprintf(fileOut, "%s%s", MFT_GWIA_SendDirOut,	 _MF_DIRECTORY_FILENAME);
@@ -4246,10 +4107,8 @@ MFD_Out(MFD_SOURCE_WORKER,"Schedule: Found %s for Sched.\n",_MF_DIRECTORY_FILENA
 
 		if (MFT_NLM_Exiting > 0)	break;
 		
-		/* */
 
-		// Wait (1500+MFT_SleepTimer)ms and then SwitchThread
-		delay(1500+MFT_SleepTimer);
+		delay(MF_WORKER_SLEEPTIME);
 #ifdef N_PLAT_NLM
 		NXThreadYield();
 #endif
@@ -4257,26 +4116,21 @@ MFD_Out(MFD_SOURCE_WORKER,"Schedule: Found %s for Sched.\n",_MF_DIRECTORY_FILENA
 		// Check for Invalid License.
 		if ((tlc > 500) && (lc == -1))
 		{
-			fprintf(stderr,"\nMailFilter: Unexpected Error (Code: TLWOLC)\n");
+			MF_DisplayCriticalError("\nMailFilter: Unexpected Error (Code: TLWOLC)\n");
 			shallTerminate=255;
 			break;
 		}
 
-		// Decrease the sleep timer 1 second.
-		MF_SleepTimerDecrease(1000);
-
 		//
-		// A) Check the Problem Directory Size and Age 
-		// B) Check for Tampering
+		// Check for Tampering
 		//
 		if (tlc > 21600)		// ~ 4 hours ...
 		{
-			MF_CheckProblemDirAgeSize();
 			tlc = 0;
 			if (lc != MFL_Certified)
 			{
 				// Break the Cycle.
-				fprintf(stderr,"\nMailFilter: Unexpected Error (Code: WTLDLC)\n");
+				MF_DisplayCriticalError("\nMailFilter: Unexpected Error (Code: WTLDLC)\n");
 				shallTerminate=255;
 				break;
 			}

@@ -20,7 +20,7 @@ void MF_UI_ShowConfiguration(void)
 	uname(&u);
 #endif
 		
-	sprintf(szTemp, "Active Configuration - Use F9 to re-read configuration.");
+	sprintf(szTemp, "Active Configuration:        [MailFilter compiled: %s]",MAILFILTERCOMPILED);
 	MF_StatusUI_UpdateLog(szTemp);
 
 	/*------------------------------------------------------------------------

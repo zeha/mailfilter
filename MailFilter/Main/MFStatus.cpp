@@ -42,7 +42,7 @@ bool MF_StatusInit()
 	
 	if (MF_Log_FileHandle == NULL)
 	{
-		MF_DisplayCriticalError(LOGGING_ERROR_INIT);
+		MF_DisplayCriticalErrorId(MSG_LOGGING_ERROR_INIT);
 		return false;
 	}
 	
@@ -54,19 +54,11 @@ bool MF_StatusInit()
 
 	MF_Status_Initialized = true;
 
-#if defined(MAILFILTER_VERSION_BETA) || defined(_TRACE)
-	char szTemp[80];
-#endif
-//	sprintf(szTemp,"This is MailFilter professional Version %s.",MAILFILTERVERNUM);
-//	MF_StatusText(szTemp);
-
 #ifdef MAILFILTER_VERSION_BETA
-	sprintf(szTemp,"__WARNING: This is a BETA version! Use at your own risk. (%s)__",MAILFILTER_VERSION_BETA);
-	MF_StatusText(szTemp);
+	MF_StatusText("__WARNING: This is a BETA version! Use at your own risk.__");
 #endif // MAILFITLER_VERSION_BETA
 #ifdef _TRACE
-	sprintf(szTemp,"__WARNING: INTERNAL TRACE VERSION - Type G to continue in Debugger__");
-	MF_StatusText(szTemp);
+	MF_StatusText("__WARNING: INTERNAL TRACE VERSION - Type G to continue in Debugger__");
 #endif // _TRACE
 
 	return true;
@@ -82,7 +74,7 @@ void MF_StatusFree()
 
 	if (MF_Log_FileHandle != NULL)
 	{
-//		fprintf(stderr,programMesgTable[CONMSG_LOGGING_DISABLED]);
+//		MF_DisplayCriticalError(programMesgTable[CONMSG_LOGGING_DISABLED]);
 		fclose( MF_Log_FileHandle );
 		MF_Log_FileHandle = NULL;
 	}
@@ -152,7 +144,7 @@ static bool MF_StatusCycleLog2()
 	
 	if ( rename ( LogFileOld , LogFileNew ) )
 	{
-		MF_StatusUI_Update ( LOGGING_ERROR_CYCLE );
+		MF_StatusUI_Update ( MSG_LOGGING_ERROR_CYCLE );
 		failed = true;
 	}
 
@@ -227,8 +219,7 @@ void MF_StatusLog( const char *newText )
 // Set Status Text ...
 void MF_StatusText( const char *newText )
 {
- char statusText[82];
-// char statusText2[82];
+	char statusText[82];
 
 	if (!MF_Status_Initialized)
 		return;			// Silent
@@ -249,26 +240,7 @@ void MF_StatusText( const char *newText )
 
 	statusText[79]=0;
 
-/*#ifdef N_PLAT_NLM
-	if (MF_LastAlive)
-	{
-		sprintf(statusText2, "\xAF%s",statusText);		// 175 somethg like 2 '>' chars, at least at the server ...
-		MF_LastAlive = 0;
-	} else {
-		sprintf(statusText2, ">%s",statusText);
-		MF_LastAlive = 1;
-	}
-*/
-	MF_StatusUI_Update("");	//statusText2);
-/*
-#else
-	if (strcmp(statusText,statusText2) != 0)
-	{
-		strcpy(statusText2,statusText);
-		MF_StatusUI_Update(statusText2);
-	}
-#endif*/
-
+	MF_StatusUI_Update("");
 
 }
 

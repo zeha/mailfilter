@@ -95,7 +95,7 @@ MailFilter_MailData* MailFilter_MailRead(char* szInFile) {
 	MailFilter_MailData* m = MailFilter_MailInit(NULL,0);
 	if (m == NULL)
 	{
-		fprintf(stderr,"MAILFILTER: EEEK! MailInit returned NULL! TRACECHECK 4001\n");
+		MF_DisplayCriticalError("MAILFILTER: EEEK! MailInit returned NULL! TRACECHECK 4001\n");
 		fclose(fp);
 		return NULL;
 	}
@@ -145,13 +145,9 @@ MFD_Out(MFD_SOURCE_MAIL,"mfmail: will read %d items\n",iListCount);
 
 	for (i = 0; i < iListCount; i++)
 	{
-MFD_Out(MFD_SOURCE_MAIL,"%d ",i);
 		fgets(szTemp,4000-2,fp);	szTemp[4000-1]=0; ilen=strlen(szTemp); if ((ilen>0)&&(szTemp[ilen-1] == '\n')) { ilen--; szTemp[ilen]=0; } if ((ilen>0)&&(szTemp[ilen-1] == '\r')) szTemp[ilen-1]=0;
-MFD_Out(MFD_SOURCE_MAIL,".");
 		fgets(szTemp2,4000-2,fp);	szTemp2[4000-1]=0; ilen=strlen(szTemp2); if ((ilen>0)&&(szTemp2[ilen-1] == '\n')) { ilen--; szTemp2[ilen]=0; } if ((ilen>0)&&(szTemp2[ilen] == '\r')) szTemp2[ilen-1]=0;
-MFD_Out(MFD_SOURCE_MAIL,".");
 		m->lstCopies->AddValueChar(szTemp,szTemp2);
-MFD_Out(MFD_SOURCE_MAIL,".\n");
 	}
 
 MFD_Out(MFD_SOURCE_MAIL,"mfmail: done reading items\n");
@@ -227,11 +223,12 @@ MailFilter_MailData* MailFilter_MailInit(char* szFileName, int iMailSource)
 		(mail->szReceivedFrom == NULL)
 		)
 		{
-			fprintf(stderr,"MAILFILTER: EEEEEK!\n\tMEMORY ALLOCATION ERROR!\n\tI WILL ABEND IN A FEW SECONDS...\n\tGOOD ADVICE: SAVE AND LOG OUT NOW.\n");
+			MF_DisplayCriticalError("MAILFILTER: MEMORY ALLOCATION ERROR!\n\tABEND IN A FEW SECONDS...\n\tGOOD ADVICE: SAVE AND LOG OUT NOW.\n");
 			return NULL;
 		}
 		
 	mail->lstAttachments = new iXList;
+	mail->lstArchiveContents = new iXList;
 	mail->lstCopies = new iXList;
 	
 	return mail;
@@ -241,6 +238,7 @@ int MailFilter_MailDestroy(MailFilter_MailData* mail)
 {
 	// free this in reverse order!
 	delete(mail->lstCopies);							mail->lstCopies = NULL;
+	delete(mail->lstArchiveContents);					mail->lstArchiveContents = NULL;
 	delete(mail->lstAttachments);						mail->lstAttachments = NULL;
 
 	if ( NULL != mail->szReceivedFrom			 )		_mfd_free ( mail->szReceivedFrom			,"Destroy"	);

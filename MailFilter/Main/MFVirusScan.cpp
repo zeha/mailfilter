@@ -7,6 +7,7 @@
 #define _MFD_MODULE "MFVirusScan.cpp"
 #include "MailFilter.h"
 #include "MFMail.h++"
+#include "MFUnZip.h"
 #include "MFVirusScan.h"
 
 #include "../Included/mime/modmimee.h"
@@ -47,18 +48,66 @@ long MFVS_MakeScanPath (char* buffer, unsigned int buflen)
 		return 1;
 }
 
+long MFVS_CheckAttachment(const char* szAttFile, const char* szAttachmentFilename, MailFilter_MailData* m)
+{
+	long iNumAdditionalAttachments = 0;
+	std::string szAttachmentFilename2;
 
-long MFVS_CheckWinmailDat(char* szAttFile, char* szTNEFFilename, MailFilter_MailData* m)
+	szAttachmentFilename2 = szAttachmentFilename;
+	transform (szAttachmentFilename2.begin(),szAttachmentFilename2.end(), szAttachmentFilename2.begin(), (char(*)(int))tolower);
+
+	iNumAdditionalAttachments = MFVS_CheckWinmailDat(szAttFile, szAttachmentFilename2, m);
+	if (iNumAdditionalAttachments != 0)
+		return iNumAdditionalAttachments;
+
+	iNumAdditionalAttachments = MFVS_CheckZIPFile(szAttFile, szAttachmentFilename2, m);
+	if (iNumAdditionalAttachments != 0)
+		return iNumAdditionalAttachments;
+		
+	return 0;
+}
+
+long MFVS_CheckZIPFile(const char* szAttFile, std::string szZipFilename, MailFilter_MailData* m)
+{
+	std::string szZipExt;
+	szZipExt = szZipFilename.substr(szZipFilename.length()-4);
+	
+	if (szZipExt == ".zip")
+	{
+		MFUnZip unzip(szAttFile);
+	
+		iXList* zipAttachments = unzip.ReadZipContents();
+		if (zipAttachments != NULL)
+		{
+			MFD_Out(MFD_SOURCE_MAIL,"MFVS: ZIP: ");
+		
+			iXList_Storage* att = zipAttachments->GetFirst();
+			while (att != NULL)
+			{
+				if (att->name[0]==0)
+					break;
+					
+				// weird stuff.
+				m->lstArchiveContents->AddValueBool(att->name,(bool)att->data);
+				MFD_Out(MFD_SOURCE_MAIL, "%s ", att->name );
+				
+				att = zipAttachments->GetNext(att);
+			}
+			MFD_Out(MFD_SOURCE_MAIL,"\n");
+			delete(zipAttachments);
+		}
+	}
+	
+	return 0;
+}
+
+long MFVS_CheckWinmailDat(const char* szAttFile, std::string szTNEFFilename, MailFilter_MailData* m)
 {
 	struct LibTNEF_ClientData data;
-	char szFilename[MAX_PATH+1];
 	int iAttachments = 0;
 	int type = 0;
 	
-	strncpy(szFilename,szTNEFFilename,MAX_PATH); szFilename[MAX_PATH]=0;
-	strlwr(szFilename);
-
-	if (strcmp(szFilename,"winmail.dat") == 0)
+	if (szTNEFFilename == "winmail.dat")
 	{
 	
 		data.STRUCTSIZE = sizeof(struct LibTNEF_ClientData);
@@ -149,7 +198,7 @@ static int MFVS_WriteOutEncodedStream ( const char *buf, int size, void *closure
 }
 
 
-long MFVS_DecodeAttachment(char* szScanFile, FILE* mailFile, mimeEncodingType encodingType)
+long MFVS_DecodeAttachment(const char* szScanFile, FILE* mailFile, mimeEncodingType encodingType)
 {
 //	if (!MFC_MAILSCAN_Enabled)
 //		return 0;
@@ -170,7 +219,7 @@ long MFVS_DecodeAttachment(char* szScanFile, FILE* mailFile, mimeEncodingType en
 	szScanBuffer				=	(char*)_mfd_malloc(2002,"Decode");
 	if (szScanBuffer == NULL)		{ fclose(fAttFile); return -239; }
 	
-	MFD_Out(MFD_SOURCE_VSCAN,"Decoding to %s\n",szScanFile);
+	MFD_Out(MFD_SOURCE_VSCAN,"Decoding to %s. ",szScanFile);
 	
 	if (encodingType == mimeEncodingBase64)
 	{	// Initialize Base64 Decoder
@@ -244,7 +293,7 @@ long MFVS_DecodeAttachment(char* szScanFile, FILE* mailFile, mimeEncodingType en
 	mimeDecoder = NULL;
 
 	iSize = ftell(fAttFile);
-MFD_Out(MFD_SOURCE_VSCAN,"Decode made %d bytes\n",iSize);	
+MFD_Out(MFD_SOURCE_VSCAN,"=> %d bytes\n",iSize);
 	fclose(fAttFile);
 
 	/*if (szScanBuffer != NULL)	*/_mfd_free(szScanBuffer,"Decode");
@@ -303,7 +352,6 @@ long MFUtil_EncodeFile(const char* szInFile, const char* szOutFile, mimeEncoding
 		return -237;
 	}
 	
-MFD_Out(MFD_SOURCE_VSCAN,"** Starting...\n");
 	// Read In lines and decode ...
 	do {
 		curPos = 0; curChr = 0;
@@ -311,7 +359,6 @@ MFD_Out(MFD_SOURCE_VSCAN,"** Starting...\n");
 
 		curPos = (int)fread(szScanBuffer,sizeof(char),1999,fInFile);
 
-		MFD_Out(MFD_SOURCE_MAIL," %d ",curPos);
 		if (curPos == 0)									{ bCodeDone = true; }	/* do not break here */
 		if (ferror(fInFile))								{ bCodeDone = true; }	/* do not break here */
 		if (feof(fInFile))									{ bCodeDone = true; }	/* do not break here */
@@ -332,9 +379,9 @@ MFD_Out(MFD_SOURCE_VSCAN,"** Starting...\n");
 		{
 */		
 		int iWrote = 0;
-//fprintf(stderr,"write: %d chars, curPos=%d\n", strlen(szScanBuffer),curPos);
+//MF_DisplayCriticalError("write: %d chars, curPos=%d\n", strlen(szScanBuffer),curPos);
 			iWrote = MimeEncoderWrite (mimeCoder, szScanBuffer, curPos);
-//fprintf(stderr,"-> %d\n",iWrote);
+//MF_DisplayCriticalError("-> %d\n",iWrote);
 			
 			if (iWrote == 1)
 				bCodeDone = true;
@@ -362,7 +409,7 @@ MFD_Out(MFD_SOURCE_VSCAN,"** Done...\n");
 
 MFD_Out(MFD_SOURCE_VSCAN,"** ftell...\n");
 	iSize = ftell(fOutFile);
-MFD_Out(MFD_SOURCE_VSCAN,"Encode made %d bytes\n",iSize);	
+MFD_Out(MFD_SOURCE_VSCAN,"Encode made %d bytes\n",iSize);
 	fclose(fInFile);
 	fclose(fOutFile);
 

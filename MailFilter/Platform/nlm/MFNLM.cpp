@@ -33,9 +33,11 @@
 #include "MFRelayHost.h++"
 // Include Version Header
 #include "..\..\Main\MFVersion.h"
+
 #include <sys/utsname.h>
+
 #ifdef __NOVELL_LIBC__
-#include <nks/netware.h>
+	#include <nks/netware.h>
 #endif
 
 // And undef it ... ;)
@@ -49,26 +51,25 @@ extern void MailFilter_NRM_sigterm();
 // NUT: Local Prototypes
 static int MF_NutVerifyExit(void);
 //static bool MF_NutInit();
-static void MF_NutHandlerKeyF4 (void *handle);
-static void MF_NutHandlerKeyF5 (void *handle);
 static void MF_NutHandlerKeyF6 (void *handle);
 static void MF_NutHandlerKeyF7 (void *handle);
-static void MF_NutHandlerKeyF8 (void *handle);
 static void MF_NutHandlerKeyF9 (void *handle);
+static void MF_NutHandlerKeyF10 (void *handle);
+static void MF_NutHandlerKeyF2 (void *handle);
+
 // NUT: Status Portal Handle
 static PCB *statusPortalPCB = NULL;
-static PCB *infoPortalPCB = NULL;
 
-// Thread Group ID
-// Event Handle for Server ShutDown event
-static LONG eventHandleShutDown = (LONG)-1;
 static bool MFT_NUT_GetKey = true;
+
 // Time ...
 static tm tmp_TimeTM;
 static time_t tmp_Time;
 
 static int MF_NutMutexQueryUser = 0;
 
+
+extern void MFWorker_SetupPaths();
 
 
 //
@@ -118,15 +119,9 @@ void MF_ExitProc(void)
 		MF_NutInfo = NULL;
 		
 		statusPortalPCB = NULL;
-		infoPortalPCB = NULL;
+//		infoPortalPCB = NULL;
 	}
 #ifndef __NOVELL_LIBC__
-	// Deregister Shutdown events ...
-	if(eventHandleShutDown != NULL)
-	{
-		UnregisterForEvent(eventHandleShutDown);
-		eventHandleShutDown = NULL;
-	}
 	
 	// Log out from Server.
 	if ( MFT_NLM_Connection_Handle != NULL)
@@ -146,12 +141,12 @@ void MF_ExitProc(void)
 		// DS Logout
 		ccode = NWDSLogout ( MFT_NLM_DS_Context );
 		if(ccode)
-			fprintf(stderr,"MailFilter: NWDSLogout returned %X\n", ccode);
+			MF_DisplayCriticalError("MailFilter: NWDSLogout returned %X\n", ccode);
 
 		// DSLIB Free Context 
 		ccode = NWDSFreeContext( MFT_NLM_DS_Context );
 		if(ccode)
-			fprintf(stderr,"MailFilter: NWDSFreeContext returned %X\n", ccode);
+			MF_DisplayCriticalError("MailFilter: NWDSFreeContext returned %X\n", ccode);
 
 	}
 
@@ -169,31 +164,17 @@ void MF_ExitProc(void)
 #endif
 	
 	// Destroy Screen ...
-	if (MFD_ScreenID)	CloseScreen ( MFD_ScreenID );
-#ifndef __NOVELL_LIBC__
-	if (MF_ScreenID )	CloseScreen ( MF_ScreenID  );
-#endif
+//	if (MFD_ScreenID)	CloseScreen ( MFD_ScreenID );
+//#ifndef __NOVELL_LIBC__
+//	if (MF_ScreenID )	CloseScreen ( MF_ScreenID  );
+//#endif
 
 }
 
-void MF_NutHandlerKeyF4 (void *handle)		// Handler F5 = ShowConfig()
-{
-	int rc = 0;
-	handle = handle;			// Keep compiler quiet.
+//	"   F6-Restart  F7-Exit                   F9-Show Configuration  F10 Configure  ",
 
-	MFT_NLM_Exiting = 253;
-	
-	// We need this to wake the UI thread up ...
-	NWSUngetKey ( K_ESCAPE , 0 , MF_NutInfo );
 
-	return;
-}
-void MF_NutHandlerKeyF5 (void *handle)		// Handler F5 = ShowConfig()
-{
-	handle = handle;			// Keep compiler quiet.
-	MF_UI_ShowConfiguration();
-}
-void MF_NutHandlerKeyF6 (void *handle)		// Handler for configuration reread
+void MF_NutHandlerKeyF6 (void *handle)		// RESTART
 {
 	int rc = 0;
 	handle = handle;			// Keep compiler quiet.
@@ -207,67 +188,49 @@ void MF_NutHandlerKeyF6 (void *handle)		// Handler for configuration reread
 
 	return;
 }
-void MF_NutHandlerKeyF7 (void *handle)		// Handler F7 = Exit!()
+void MF_NutHandlerKeyF7 (void *handle)		// EXIT
 {
 	
 	if (MF_NutVerifyExit())
 	{
 		MF_StatusText("Shutting Down On Keyboard Request ...");
-		fprintf(stderr,"MAILFILTER: Shutting Down On Keyboard Request ...\n");
+		MF_DisplayCriticalError("MAILFILTER: Shutting Down On Keyboard Request ...\n");
 
 		// Disable Func. Keys so user can't exit a 2nd time
 		NWSDisableAllInterruptKeys((NUTInfo*)handle);
 
-//		raise(SIGTERM);
+#ifdef __NOVELL_LIBC__
+		raise(SIGTERM);
+#else
 		system("MFSTOP");
+#endif
 	}
 }
-void MF_NutHandlerKeyF8 (void *handle)		// Handler to display release infos
+
+void MF_NutHandlerKeyF10 (void *handle)		// CONFIGURE ME
 {
+	int rc = 0;
 	handle = handle;			// Keep compiler quiet.
 
-	char buf[82];
-	buf[0] = 0;
+	MFT_NLM_Exiting = 253;
+	
+	// We need this to wake the UI thread up ...
+	NWSUngetKey ( K_ESCAPE , 0 , MF_NutInfo );
 
-#ifdef MAILFILTER_VERSION_BETA
-	strcpy(buf,"BETA ");
-#endif
-#ifdef _TRACE
-	strcpy(buf,"DBUG ");
-#endif
-
-	strcat(buf,"MailFilter professional Server (NLM) ");
-	strcat(buf,MAILFILTERVERNUM);
-
-	MF_StatusUI_UpdateLog(buf);
-
-	sprintf(buf,"Language ID: %d, Messages: %d, Compiled: %s.", MFT_I18N_LanguageID, MFT_I18N_MessageCount, MAILFILTERCOMPILED);
-	MF_StatusUI_UpdateLog(buf);
-
-#ifdef MAILFILTER_VERSION_BETA
-	sprintf(buf,"** WARNING: BETA - USE AT YOUR OWN RISK! **");
-	MF_StatusUI_UpdateLog(buf);
-#endif // MAILFILTER_VERSION_BETA
-#ifdef _TRACE
-	sprintf(buf,"** WARNING: DEBUG = ON | In Debugger: type G to continue! **");
-	MF_StatusUI_UpdateLog(buf);
-#endif // _TRACE
-
-
-#ifdef MF_WITH_ZIP
-	sprintf(buf,"** Contains EXPERIMENTAL on-the-fly zip support **");
-	MF_StatusUI_UpdateLog(buf);
-#endif
-
-
+	return;
 }
-void MF_NutHandlerKeyF9 (void *handle)		// Handler F6 = ShowDetails()
+void MF_NutHandlerKeyF9 (void *handle)		// SHOW CONFIG
+{
+	handle = handle;			// Keep compiler quiet.
+	MF_UI_ShowConfiguration();
+}
+
+
+void MF_NutHandlerKeyF2 (void *handle)		// debug stuff
 {
 	handle = handle;			// Keep compiler quiet.
 
 	char buf[81];
-
-	MF_CheckProblemDirAgeSize();
 
 #ifdef _MF_MEMTRACE
 	sprintf(buf,"AllocCount: %d",MFD_AllocCounts);
@@ -279,24 +242,7 @@ void MF_NutHandlerKeyF9 (void *handle)		// Handler F6 = ShowDetails()
 
 	sprintf(buf,"StackAvail: %d, DebugLevel: %d",stackavail(),MFT_Debug);
 	MF_StatusUI_UpdateLog(buf);
-	
-	unlink("SYS:\\System\\mailflt.tmp");
-	unlink("SYS:\\System\\mailflt.mfz");
 
-	FILE* f = fopen("SYS:\\System\\mailflt.tmp","wt");
-	fprintf(f,"This is a test MFZ (ZIP) file generated by MailFilter pro!\nIt should contain: ReadMe.txt (this file), MailFlt.nlm and if existed MailFlt.bak.\n");	
-	fclose(f);
-	
-	MFZip *zip;
-	zip = new MFZip("SYS:\\System\\MailFlt.MFZ",9,1);
-	zip->AddFile("MailFlt.NLM","SYS:\\System\\mailflt.nlm");
-	zip->AddFile("ReadMe.TXT","SYS:\\System\\mailflt.tmp");
-	zip->AddFile("MailFlt.BAK","SYS:\\System\\mailflt.bak");
-	delete(zip);		// close it
-
-	unlink("SYS:\\System\\mailflt.tmp");
-	MF_StatusUI_UpdateLog("Wrote a test ZIP to SYS:\\System\\MailFlt.MFZ.");
-	
 	MF_StatusUI_UpdateLog("Note: DNBL-Test always uses bl.spamcop.net.");
 	MFRelayHost bl("127.0.0.2"); //("bl.spamcop.net","127.0.0.2");
 	if (bl.LookupRBL_DNS("bl.spamcop.net","127.0.0.1"))
@@ -305,7 +251,6 @@ void MF_NutHandlerKeyF9 (void *handle)		// Handler F6 = ShowDetails()
 		MF_StatusUI_UpdateLog("Test: 127.0.0.2 is _not_ blacklisted.");
 
 }
-
 
 void MFL_VerInfo()
 {
@@ -321,33 +266,30 @@ void MFL_VerInfo()
 //
 bool MF_NutInit(void)
 {
-	#ifdef __NOVELL_LIBC__
 	rtag_t	tagID;
-	#else
-	LONG	tagID;
-	#endif
 	long	ccode;
+	char szTemp[80+2];
 
 
-	strcpy(MF_Msg(PROGRAM_VERSION),MAILFILTERVERNUM);
+	strcpy(MF_Msg(MSG_PROGRAM_VERSION),MAILFILTERVERNUM);
 	#ifdef __NOVELL_LIBC__
 	tagID=AllocateResourceTag(
 		/*	NLMHandle			*/	MF_NLMHandle,
-		/*	descriptionString	*/	MF_Msg(PROGRAM_TAG_NAME),
+		/*	descriptionString	*/	MF_Msg(MSG_PROGRAM_TAG_NAME),
 		/*	resourceType		*/	AllocSignature
 		);
 	#else
 	tagID=AllocateResourceTag(
 		/*	NLMHandle			*/	MF_NLMHandle,
-		/*	descriptionString	*/	(const unsigned char *)MF_Msg(PROGRAM_TAG_NAME),
+		/*	descriptionString	*/	 (const unsigned char*)MF_Msg(MSG_PROGRAM_TAG_NAME),
 		/*	resourceType		*/	AllocSignature
 		);
 	#endif
 	if(tagID == NULL) {	return false;	}
 
 	ccode=NWSInitializeNut(
-		/*	utility				*/	PROGRAM_NAME,
-		/*	version				*/	PROGRAM_VERSION,
+		/*	utility				*/	MSG_PROGRAM_NAME,
+		/*	version				*/	MSG_PROGRAM_VERSION,
 		/*	headerType			*/	SMALL_HEADER,	//NORMAL_HEADER,
 		/*	compatibilityType	*/	NUT_REVISION_LEVEL,
 #ifdef __NOVELL_LIBC__		
@@ -361,6 +303,22 @@ bool MF_NutInit(void)
 		/*	handle				*/	&MF_NutInfo
 		);
 	if(ccode != NULL) {	return false;	}
+
+
+	memset(szTemp,' ',81);
+	sprintf(szTemp,"  MailFilter Server %s", programMesgTable[MSG_PROGRAM_VERSION]);
+
+#ifdef MAILFILTER_VERSION_BETA
+	char* szBeta = "** BETA **";
+	memcpy(szTemp+55,szBeta,strlen(szBeta));
+#endif
+#ifdef _TRACE
+	char* szTrace = "** DEBUG **";
+	memcpy(szTemp+55,szTrace,strlen(szTrace));
+#endif
+
+	NWSShowLineAttribute ( 0 , 0 , (_MF_NUTCHAR)szTemp , VINTENSE , 80 , (struct ScreenStruct*)MF_NutInfo->screenID );
+
 
 	return true;
 }
@@ -383,28 +341,11 @@ static bool MailFilterApp_Server_InitNut()
   
 	statusPortal = 
 		NWSCreatePortal(
-			6,
+			4,
 			0,
-			18,
+			20,
 			80,
-			18,
-			80,
-			SAVE,
-			NULL, //(unsigned char *)"Application Messages",
-			VNORMAL,
-			SINGLE,
-			VNORMAL,
-			CURSOR_OFF,
-			VIRTUAL,
-			MF_NutInfo);
-
-	LONG	infoPortal;
-	infoPortal = NWSCreatePortal(
-			1,
-			0,
-			5,
-			80,
-			5,
+			20,
 			80,
 			SAVE,
 			NULL, //(unsigned char *)"Application Messages",
@@ -420,29 +361,21 @@ static bool MailFilterApp_Server_InitNut()
 	NWSClearPortal(statusPortalPCB);
 	NWSDeselectPortal(MF_NutInfo);
 
-	NWSGetPCB(&infoPortalPCB, infoPortal, MF_NutInfo);
-	NWSSelectPortal(infoPortal, MF_NutInfo);
-	NWSClearPortal(infoPortalPCB);
-	
-	char* szTemp = "Initializing...";
-	
-	NWSShowPortalLine(0, 0, (_MF_NUTCHAR) szTemp, strlen(szTemp), infoPortalPCB);
-	NWSUpdatePortal(infoPortalPCB);
-	NWSDeselectPortal(MF_NutInfo);
-
-	NWSEnableFunctionKey (	K_F4 , MF_NutInfo );
-	NWSEnableFunctionKey (	K_F5 , MF_NutInfo );
 	NWSEnableFunctionKey (	K_F6 , MF_NutInfo );
 	NWSEnableFunctionKey (	K_F7 , MF_NutInfo );
-	NWSEnableFunctionKey (	K_F8 , MF_NutInfo );
-	NWSEnableFunctionKey (  K_F9 , MF_NutInfo );
+	//
+	NWSEnableFunctionKey (	K_F9 , MF_NutInfo );
+	NWSEnableFunctionKey (	K_F10 , MF_NutInfo );
 
-	NWSEnableInterruptKey (	K_F4 , *MF_NutHandlerKeyF4, MF_NutInfo );
-	NWSEnableInterruptKey (	K_F5 , *MF_NutHandlerKeyF5, MF_NutInfo );
 	NWSEnableInterruptKey (	K_F6 , *MF_NutHandlerKeyF6, MF_NutInfo );
 	NWSEnableInterruptKey (	K_F7 , *MF_NutHandlerKeyF7, MF_NutInfo );
-	NWSEnableInterruptKey (	K_F8 , *MF_NutHandlerKeyF8, MF_NutInfo );
-	NWSEnableInterruptKey ( K_F9 , *MF_NutHandlerKeyF9, MF_NutInfo );
+	//
+	NWSEnableInterruptKey (	K_F9 , *MF_NutHandlerKeyF9, MF_NutInfo );
+	NWSEnableInterruptKey (	K_F10 , *MF_NutHandlerKeyF10, MF_NutInfo );
+
+	// debug key
+	NWSEnableFunctionKey (  K_F2 , MF_NutInfo );
+	NWSEnableInterruptKey (	K_F2 , *MF_NutHandlerKeyF2, MF_NutInfo );
 
 	return true;
 }
@@ -515,8 +448,6 @@ void MF_StatusUI_UpdateLog(const char* newText)
 
 	// Update Status (History) Window
 
-//	if (statusPortalPCB == NULL)	return;
-
 	for (int i=0;i<81;i++) szTemp[i]=' ';
 	szTemp[80]=0;
 
@@ -530,14 +461,14 @@ void MF_StatusUI_UpdateLog(const char* newText)
 	NWSScrollPortalZone (
 			0L,			//LONG Line
 			0L,			//LONG Columns
-			20L,		//Height
+			22L,		//Height
 			78,			//Width
 			VNORMAL,	//LONG   attribute, 
 			1L,			//LONG   count, 
 			V_UP,		//LONG   direction,
 			statusPortalPCB);
 
-	NWSShowPortalLine(15, 0, (_MF_NUTCHAR) szTemp, strlen(szTemp), statusPortalPCB);
+	NWSShowPortalLine(17, 0, (_MF_NUTCHAR) szTemp, strlen(szTemp), statusPortalPCB);
 	
 	NWSUpdatePortal(statusPortalPCB);
 }
@@ -579,30 +510,14 @@ void MF_StatusUI_Update(const char* newText)
 
 	}
 
-//	if ( (newText != NULL) && (newText[0] != 0) )
-//	{
-//		MFD_Out("%s\n",newText);
-
-/*
-		// Update Status Line
-		for (i=0;i<81;i++)
-		{
-			szTemp[i]=' ';
-		}
-		strncpy(szTemp,newText,80);
-		szTemp[80]=0;
-		NWSShowLineAttribute ( 24, 0, (unsigned char*)szTemp, VREVERSE, 80, (struct ScreenStruct*)MF_NutInfo->screenID);
-*/	
-	
-//	}
-
-	// Update Info Portal
-
-// 
+	// Update Statistics in top of NUT screen
 	if (!MFT_NLM_Exiting)
 	{
 		static unsigned long lastClck;
 		static int iStatusChar;
+		std::string szDynamic;
+		unsigned int chk;
+		bool bHaveFeatures = false;
 		
 		unsigned long clck = clock() / CLOCKS_PER_SEC;
 		
@@ -620,81 +535,154 @@ void MF_StatusUI_Update(const char* newText)
 		unsigned long hours = (clck - (days * 24 * 60)) / 60;
 		unsigned long minutes = clck - (days * 24 * 60) - (hours * 60);
 		
-		sprintf(szTemp,MF_Msg(INFOPORTAL_LINE1),MFC_MAILSCAN_Enabled == 0 ? "Off" : "On ",days,hours,minutes);
-		NWSShowPortalLine(0, 0, (_MF_NUTCHAR) szTemp, strlen(szTemp), infoPortalPCB);
-		
+		sprintf(szTemp,MF_Msg(MSG_INFOPORTAL_LINE1), days,hours,minutes);
+		chk = MF_GlobalConfiguration.DomainHostname.length(); if (chk>55) chk=55;
+		memcpy(szTemp+2,MF_GlobalConfiguration.DomainHostname.c_str(),chk);
+		NWSShowLineAttribute( 1, 0, (_MF_NUTCHAR) szTemp, VNORMAL, strlen(szTemp), (struct ScreenStruct*)MF_NutInfo->screenID);
 
-		sprintf(szTemp,MF_Msg(INFOPORTAL_LINE2),MFBW_CheckCurrentScheduleState() == false ? "On " : "Off",MFS_MF_MailsInputTotal,MFS_MF_MailsInputFailed);
-		NWSShowPortalLine(1, 0, (_MF_NUTCHAR) szTemp, strlen(szTemp), infoPortalPCB);
 
-		sprintf(szTemp,MF_Msg(INFOPORTAL_LINE3),(1500+MFT_SleepTimer)/1000,MFS_MF_MailsOutputTotal,MFS_MF_MailsOutputFailed);
-		szTemp[1] = cStatus[iStatusChar];
-		NWSShowPortalLine(2, 0, (_MF_NUTCHAR) szTemp, strlen(szTemp), infoPortalPCB);
 
-		NWSUpdatePortal(infoPortalPCB);
+		sprintf(szTemp,MF_Msg(MSG_INFOPORTAL_LINE2),MFS_MF_MailsInputTotal,MFS_MF_MailsInputFailed);
+		szDynamic = "Running ";
+		szDynamic += cStatus[iStatusChar];
+		memcpy(szTemp+2,szDynamic.c_str(),szDynamic.length());
+		NWSShowLineAttribute( 2, 0, (_MF_NUTCHAR) szTemp, VNORMAL, strlen(szTemp), (struct ScreenStruct*)MF_NutInfo->screenID);
+
+
+
+		sprintf(szTemp,MF_Msg(MSG_INFOPORTAL_LINE3),MFS_MF_MailsOutputTotal,MFS_MF_MailsOutputFailed);
+		szDynamic = "Modules: ";
+#ifdef MF_WITH_ZIP
+		bHaveFeatures = true;
+		szDynamic += "ZIP ";
+#endif
+
+		if (MFC_MAILSCAN_Enabled)
+		{
+			szDynamic += "Decode ";
+			bHaveFeatures = true;
+		}
+		if (MFBW_CheckCurrentScheduleState() == false)
+		{
+			szDynamic += "Schedule ";
+			bHaveFeatures = true;
+		}
+		if (!bHaveFeatures)
+			szDynamic += "None";
+			
+		memcpy(szTemp+2,szDynamic.c_str(),szDynamic.length());
+		NWSShowLineAttribute( 3, 0, (_MF_NUTCHAR) szTemp, VNORMAL, strlen(szTemp), (struct ScreenStruct*)MF_NutInfo->screenID);
 	}	
 	
 	return;
 }
 
+extern "C" {
 
+	void MF_DisplayCriticalError(const char* format, ...)
+	{
+		//MF_DisplayCriticalError(
+		va_list	argList;
+		va_start(argList, format);
+
+	#ifndef __NOVELL_LIBC__
+
+		vfprintf(stderr,format,argList);
+
+	#else
+
+		OutputToScreenWithPointer( getnetwareconsole(), format, argList );
+		
+	#endif
+
+		va_end (argList);
+	}
+
+}
 
 #ifndef _MF_CLEANBUILD
 void MFD_UseMainScreen()
 {
-	if (MFD_ScreenID)	CloseScreen ( MFD_ScreenID );
+	if (MFD_ScreenID)
+#ifdef __NOVELL_LIBC__	
+		CloseScreen ( MFD_ScreenID );
+#else
+		DestroyScreen ( MFD_ScreenID );
+#endif
 	MFD_ScreenID = NULL;
 }
 
-void MFD_Out_func(int attr, const char* format, ...) {
+#ifndef COLOR_ATTR_NONE
+extern "C" {
+	int      vsnprintf( char * restrict, size_t n, const char * restrict, va_list );
+}
+
+// borrowed from LibC's screen.h
+/* attributes for OutputToScreenWithAttributes(); cf. HTML color names */
+#define COLOR_ATTR_NONE       0           /* (black, no color at all)        */
+#define COLOR_ATTR_NAVY       1           /* (dim blue)                      */
+#define COLOR_ATTR_BLUE       (0x01|8)
+#define COLOR_ATTR_GREEN      2
+#define COLOR_ATTR_LIME       (0x02|8)    /* (bright green)                  */
+#define COLOR_ATTR_TEAL       3           /* (dim cyan)                      */
+#define COLOR_ATTR_CYAN       (0x03|8)
+#define COLOR_ATTR_MAROON     4           /* (dim red)                       */
+#define COLOR_ATTR_RED        (0x04|8)
+#define COLOR_ATTR_PURPLE     5
+#define COLOR_ATTR_MAGENTA    (0x05|8)    /* (bright purple)                 */
+#define COLOR_ATTR_OLIVE      6           /* (brown, dim yellow)             */
+#define COLOR_ATTR_YELLOW     (0x06|8)
+#define COLOR_ATTR_SILVER     7           /* normal white, dim/unhighlighted */
+#define COLOR_ATTR_GREY       8           /* (dimmed white)                  */
+#define COLOR_ATTR_WHITE      15          /* bright, highlighted white       */
+#endif
+
+void MFD_Out_func(int source, const char* fmt, ...) {
 
 	va_list	argList;
-	bool show = ( chkFlag(MFT_Debug,attr) == 1 );
+	unsigned char attr = 0;
 
 	if (!MFT_Verbose)
 		return;
 
-	if (MFT_NLM_Exiting)
+	if (!chkFlag(MFT_Debug,source))
 		return;
 
-	switch (attr)
+	switch (source)
 	{
-		case MFD_SOURCE_GENERIC:	{	attr = COLOR_SILVER;	break;	}
-		case MFD_SOURCE_WORKER:		{	attr = COLOR_CYAN;		break;	}
-		case MFD_SOURCE_CONFIG:		{	attr = COLOR_GREEN;		break;	}
-		case MFD_SOURCE_VSCAN:		{	attr = COLOR_BLUE;		break;  }
-		case MFD_SOURCE_ZIP:		{	attr = COLOR_TEAL;		break;  }
-		case MFD_SOURCE_ERROR:		{	attr = COLOR_RED;		break;  }
-		case MFD_SOURCE_RULE:		{	attr = COLOR_YELLOW;	break;	}
-		case MFD_SOURCE_MAIL:		{	attr = COLOR_PURPLE;	break;	}
-		case MFD_SOURCE_SMTP:		{	attr = COLOR_WHITE;		break;	}
-		default:					{	attr = COLOR_GREY;		break;  }
+		case MFD_SOURCE_GENERIC:	{	attr = COLOR_ATTR_SILVER;	break;	}
+		case MFD_SOURCE_WORKER:		{	attr = COLOR_ATTR_CYAN;		break;	}
+		case MFD_SOURCE_CONFIG:		{	attr = COLOR_ATTR_GREEN;	break;	}
+		case MFD_SOURCE_VSCAN:		{	attr = COLOR_ATTR_LIME;		break;  }
+		case MFD_SOURCE_ZIP:		{	attr = COLOR_ATTR_TEAL;		break;  }
+		case MFD_SOURCE_ERROR:		{	attr = COLOR_ATTR_RED;		break;  }
+		case MFD_SOURCE_RULE:		{	attr = COLOR_ATTR_YELLOW;	break;	}
+		case MFD_SOURCE_MAIL:		{	attr = COLOR_ATTR_PURPLE;	break;	}
+		case MFD_SOURCE_SMTP:		{	attr = COLOR_ATTR_WHITE;	break;	}
+		default:					{	attr = COLOR_ATTR_GREY;		break;  }
 	}
 
-	if (!show)
-		return;
-
-	va_start(argList, format);
+	va_start(argList, fmt);
 
 #ifndef __NOVELL_LIBC__
 
 	int oldScreen = 0;
-	if (MFD_ScreenID)	oldScreen=SetCurrentScreen(MFD_ScreenID);   
+	if (MFD_ScreenID)	oldScreen=SetCurrentScreen((int)MFD_ScreenID);   
 	
-	vprintf(format, argList);
+	vprintf(fmt, argList);
 	if (oldScreen)		SetCurrentScreen(oldScreen);
 
-#else
-
+#else 
 	char buffer[5000];
-	vsnprintf(buffer,4999,format,argList);
+	vsnprintf(buffer,4999,fmt,argList);
 	buffer[4999] = 0;
+
 	
 	// MF_UseMainScreen() support
 	if (MFD_ScreenID)
-		OutputToScreenWithAttribute(MFD_ScreenID,(unsigned char)attr,buffer);
+		OutputToScreenWithAttribute(MFD_ScreenID,attr,buffer);
 		else
-		OutputToScreenWithAttribute(MF_ScreenID,(unsigned char)attr,buffer);
+		OutputToScreenWithAttribute(MF_ScreenID,attr,buffer);
 	
 #endif
 
@@ -758,22 +746,18 @@ void NLM_SignalHandler(int sig)
 
 				handlerThreadGroupID = GetThreadGroupID();
 				SetThreadGroupID(mainThread_ThreadGroupID);
-#else
-				if (MF_Thread_Work > 0)
-					NXThreadContinue (MF_Thread_Work);
-
-				if (MF_Thread_SMTP > 0)
-					NXThreadContinue (MF_Thread_SMTP);
 #endif
 				// NLM SDK functions may be called here
-				MF_StatusText(MF_Msg(MSG_UNLOADWAIT));
 
+				// We need this to wake the UI thread up ...
+#ifndef __NOVELL_LIBC__
 				if (MF_NutInfo != NULL)
 				{
-					// We need this to wake the UI thread up ...
 					NWSUngetKey ( K_ESCAPE , 0 , MF_NutInfo );
 				}
-				
+#else
+				ungetcharacter(27);
+#endif
 				if ( (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::NRM) || (MF_GlobalConfiguration.NRMInitialized == true) )
 				{
 					MailFilter_NRM_sigterm();
@@ -781,14 +765,11 @@ void NLM_SignalHandler(int sig)
 
 #ifndef __NOVELL_LIBC__
 				SetThreadGroupID(handlerThreadGroupID);
-#else
-				ungetcharacter(27);
 #endif
 
 				while (MFT_NLM_ThreadCount > 0)
 				{
-//					gotorowcol(49,1);
-//					printf("%d",MFT_NLM_ThreadCount);
+					// wait for MailFilter threads to terminate
 					NXThreadYield();
 				}
 
@@ -815,7 +796,7 @@ static bool MF_NLM_InitDS()
 /*	ccode = NWCallsInit(NULL, NULL);
 	if(ccode)
 	{
-		fprintf(stderr,"MailFilter: NWCallsInit returned %X\n", ccode);
+		MF_DisplayCriticalError("MailFilter: NWCallsInit returned %X\n", ccode);
 	 	return false;
 	}
 */
@@ -823,7 +804,7 @@ static bool MF_NLM_InitDS()
 	dsccode = NWCLXInit(NULL, NULL);
 	if(dsccode)
 	{
-		fprintf(stderr,"MailFilter: NWCLXInit returned %X\n", dsccode);
+		MF_DisplayCriticalError("MailFilter: NWCLXInit returned %X\n", dsccode);
 	 	return false;
 	}
 
@@ -832,7 +813,7 @@ static bool MF_NLM_InitDS()
 	dsccode = NWInitUnicodeTables( lConvInfo.country_id, lConvInfo.code_page );
 	if(dsccode)
 	{
-		fprintf(stderr,"MailFilter: NWInitUnicodeTables error %X \n", dsccode);
+		MF_DisplayCriticalError("MailFilter: NWInitUnicodeTables error %X \n", dsccode);
 		return false;
 	}
 
@@ -840,7 +821,7 @@ static bool MF_NLM_InitDS()
 	dsccode = NWNetInit(NULL,NULL);
 	if(dsccode)
 	{
-		fprintf(stderr,"MailFilter: NWNetInit returned %X\n",dsccode);
+		MF_DisplayCriticalError("MailFilter: NWNetInit returned %X\n",dsccode);
 	 	return false;
 	}
 
@@ -865,7 +846,7 @@ static bool MF_NLM_InitDS()
 					break;
 				default:
 					MF_StatusText("Login: Generic Error. Please check Console.");
-					fprintf(stderr,"MailFilter: Login Error: NWDSLogin failed (%d)!\n",ccode);
+					MF_DisplayCriticalError("MailFilter: Login Error: NWDSLogin failed (%d)!\n",ccode);
 			}
 			return false;
 		}
@@ -873,7 +854,7 @@ static bool MF_NLM_InitDS()
 		SetCurrentFileServerID(0);
 //		SetCurrentConnection(-1);
 		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		fprintf(stderr,"CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
+		MF_DisplayCriticalError("CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
 //		NWGetConnectionNumber( (NWCONN_HANDLE)MFT_NLM_Connection_HandleCLIB, &connnum );
 
 /*		// Create authenticated Connection.
@@ -882,14 +863,14 @@ static bool MF_NLM_InitDS()
 		if (dsccode != 0)
 		{
 			MF_StatusText("Login: Authentication to server failed.");
-			fprintf(stderr,"MailFilter: Login Error: NWDSAuthenticate returned %d!\n",ccode);
+			MF_DisplayCriticalError("MailFilter: Login Error: NWDSAuthenticate returned %d!\n",ccode);
 		}
 
 *//*		LONG oldTask = SetCurrentTask(-1);
 		LONG myTask = GetCurrentTask();
 *//*		SetCurrentConnection(-1);
 		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		fprintf(stderr,"CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
+		MF_DisplayCriticalError("CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
 *//*
 
 		// Login as the Server object ...
@@ -902,7 +883,7 @@ static bool MF_NLM_InitDS()
 			0x0004,
 			"");
 		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		fprintf(stderr,"CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
+		MF_DisplayCriticalError("CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
 
 		if(dsccode){
 			switch (dsccode) {
@@ -916,7 +897,7 @@ static bool MF_NLM_InitDS()
 					break;
 				default:
 					MF_StatusText("Login: Generic Error. Please check Console.");
-					fprintf(stderr,"MailFilter: Login Error: NWDSLogin failed (%d)!\n",dsccode);
+					MF_DisplayCriticalError("MailFilter: Login Error: NWDSLogin failed (%d)!\n",dsccode);
 			}
 			ReturnBlockOfTasks(myTask,1);
 			Logout();
@@ -924,7 +905,7 @@ static bool MF_NLM_InitDS()
 		}
 
 		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		fprintf(stderr,"CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
+		MF_DisplayCriticalError("CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
 		SetCurrentTask(oldTask);
 */
 		SetCurrentConnection(0);
@@ -935,14 +916,14 @@ static bool MF_NLM_InitDS()
 		*/
 /*		dsccode = NWDSCreateContextHandle (&MFT_NLM_DS_Context);
 		if(dsccode) {
-			 fprintf(stderr,"MailFilter: Error creating context. %d.\n",dsccode);
+			 MF_DisplayCriticalError("MailFilter: Error creating context. %d.\n",dsccode);
 			 MFT_NLM_DS_Context = NULL;
 			 return false;
 		}
 
 		dsccode = NWDSSetContext(MFT_NLM_DS_Context, DCK_NAME_CONTEXT, (void*)"[Root]");
 		if(dsccode){
-			 fprintf(stderr,"MailFilter: Error: NWDSSetContext() returned: %d\n",dsccode);
+			 MF_DisplayCriticalError("MailFilter: Error: NWDSSetContext() returned: %d\n",dsccode);
 			 return false;
 		}
 
@@ -953,7 +934,7 @@ static bool MF_NLM_InitDS()
 		char* szServerName = (char*)_mfd_malloc(MAX_PATH,"MFNLM: szServerName");
 		MF_GetServerName ( szServerName );
 
-		fprintf(stderr, "MailFilter: Opening Connection to %s ...\n", szServerName );
+		MF_DisplayCriticalError( "MailFilter: Opening Connection to %s ...\n", szServerName );
 		
 		dsccode = NWCCOpenConnByName(
 	             /* Handle to resolve name */  (nuint)0, 
@@ -968,7 +949,7 @@ static bool MF_NLM_InitDS()
 		if (dsccode)
 		{
 			MF_StatusText("Error connecting to target server!");
-			fprintf(stderr,"MailFilter: NWCCOpenConnByName returned %d.\n",dsccode);
+			MF_DisplayCriticalError("MailFilter: NWCCOpenConnByName returned %d.\n",dsccode);
 			MFT_NLM_Connection_Handle = NULL;
 			return false;
 		}
@@ -977,13 +958,13 @@ static bool MF_NLM_InitDS()
 		NWCCSetCurrentConnection ( MFT_NLM_Connection_Handle );
 		
 		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		fprintf(stderr,"Connection: %d\n",MFT_NLM_Connection_HandleCLIB);
+		MF_DisplayCriticalError("Connection: %d\n",MFT_NLM_Connection_HandleCLIB);
 
 
 
 		NWCCSetCurrentConnection ( MFT_NLM_Connection_Handle );
 		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		fprintf(stderr,"CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
+		MF_DisplayCriticalError("CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
 
 
 
@@ -1008,7 +989,7 @@ static bool MF_NLM_InitDS()
 					break;
 				default:
 					MF_StatusText("Login: Generic Error. Please check Console.");
-					fprintf(stderr,"MailFilter: Login Error: NWDSLogin failed (%d)!\n",ccode);
+					MF_DisplayCriticalError("MailFilter: Login Error: NWDSLogin failed (%d)!\n",ccode);
 			}
 			return false;
 		}
@@ -1019,7 +1000,7 @@ static bool MF_NLM_InitDS()
 		if (dsccode != 0)
 		{
 			MF_StatusText("Login: Authentication to server failed.");
-			fprintf(stderr,"MailFilter: Login Error: NWDSAuthenticate returned %d!\n",ccode);
+			MF_DisplayCriticalError("MailFilter: Login Error: NWDSAuthenticate returned %d!\n",ccode);
 		}
 */
 
@@ -1037,10 +1018,10 @@ static bool MF_NLM_InitDS()
 					MF_StatusText("Login Failed.");
 					break;
 				case 150:
-					fprintf(stderr,"MailFilter: Out of memory!\n");
+					MF_DisplayCriticalError("MailFilter: Out of memory!\n");
 					break;
 				default:
-					fprintf(stderr,"MailFilter: Login Failed with error %d.\n",ccode);
+					MF_DisplayCriticalError("MailFilter: Login Failed with error %d.\n",ccode);
 					break;
 			}
 			return false;
@@ -1048,7 +1029,7 @@ static bool MF_NLM_InitDS()
 		
 		NWCCSetCurrentConnection ( MFT_NLM_Connection_Handle );
 		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		fprintf(stderr,"CLIB Connection (probably remote): %d\n",MFT_NLM_Connection_HandleCLIB);
+		MF_DisplayCriticalError("CLIB Connection (probably remote): %d\n",MFT_NLM_Connection_HandleCLIB);
 	*/}
 #endif
 	return true;
@@ -1057,10 +1038,43 @@ static bool MF_NLM_InitDS()
 #ifdef _MF_MEMTRACE
 static void _mfd_tellallocccountonexit()
 {
-	fprintf(stderr,"MAILFILTER: AllocCount: %d\n",MFD_AllocCounts);
+	MF_DisplayCriticalError("MAILFILTER: AllocCount: %d\n",MFD_AllocCounts);
 }
 #endif //_MF_MEMTRACE
 
+
+static void MF_Cleanup_Startup(void *dummy)
+{
+#pragma unused(dummy)
+
+	// Rename this Thread
+#if defined( N_PLAT_NLM ) && (defined(__NOVELL_LIBC__))
+	NXContextSetName(NXContextGet(),"MailFilterCleaner");
+#endif
+
+	MFT_NLM_ThreadCount++;
+	unsigned long counter = 0;
+	
+	MF_CheckProblemDirAgeSize();
+
+	while (MFT_NLM_Exiting == 0)
+	{
+		++counter;
+		
+		if (counter>3600)
+		{
+			counter = 0;
+			
+			MF_CheckProblemDirAgeSize();
+		}
+		
+		delay(1000);
+		NXThreadYield();
+
+	}
+
+	MFT_NLM_ThreadCount--;
+}
 
 
 static void LoadNRMThreadStartup(void *dummy)
@@ -1133,15 +1147,16 @@ MF_MAIN_RUNLOOP:
 	    }
 
 		MF_StatusUI_Update(MSG_BOOT_LOADING);
+		
+		MFWorker_SetupPaths();
 	    
 		// Start Thread: ** WORK **
 	#ifdef __NOVELL_LIBC__
-		NXContext_t ctx;
+		NXContext_t ctxWorker;
 
 		if (NXThreadCreateSx( MF_Work_Startup , 
-			NULL,
-			NX_THR_JOINABLE|NX_THR_BIND_CONTEXT,
-			&ctx, 
+			NULL, NX_THR_JOINABLE|NX_THR_BIND_CONTEXT ,
+			&ctxWorker , 
 			&MF_Thread_Work
 			))
 	#else
@@ -1149,10 +1164,30 @@ MF_MAIN_RUNLOOP:
 		if( MF_Thread_Work == EFAILURE )
 	#endif
 		{
-			fprintf(stderr,MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
+			MF_DisplayCriticalError(MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
 			MF_Thread_Work = 0;
 			goto MF_MAIN_TERMINATE;
 		}
+
+		// Start Thread: ** Cleanup **
+	#ifdef __NOVELL_LIBC__
+		NXContext_t ctxCleanup;
+
+		if (NXThreadCreateSx( MF_Cleanup_Startup , 
+			NULL, NX_THR_JOINABLE|NX_THR_BIND_CONTEXT ,
+			&ctxCleanup , 
+			&MF_Thread_Cleanup
+			))
+	#else
+		MF_Thread_Cleanup = BeginThread(MF_Cleanup_Startup,NULL,2*65536,NULL);						// Set 64k Stack for new thread
+		if( MF_Thread_Cleanup == EFAILURE )
+	#endif
+		{
+			MF_DisplayCriticalError(MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
+			MF_Thread_Cleanup = 0;
+			goto MF_MAIN_TERMINATE;
+		}
+
 		
 		if (MF_GlobalConfiguration.EnableNRMThread == true)
 		{
@@ -1162,12 +1197,11 @@ MF_MAIN_RUNLOOP:
 			
 				// Start Thread: ** NRM **
 				#ifdef __NOVELL_LIBC__
-				NXContext_t ctx;
+				NXContext_t ctxNrm;
 
 				if (NXThreadCreateSx( LoadNRMThreadStartup , 
-					NULL,
-					NX_THR_JOINABLE|NX_THR_BIND_CONTEXT,
-					&ctx, 
+					NULL, NX_THR_JOINABLE|NX_THR_BIND_CONTEXT,
+					&ctxNrm, 
 					&MF_Thread_NRM
 					))
 				#else
@@ -1175,7 +1209,7 @@ MF_MAIN_RUNLOOP:
 				if( MF_Thread_NRM == EFAILURE )
 				#endif
 				{
-					//fprintf(stderr,MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
+					//MF_DisplayCriticalError(MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
 					MF_StatusText("ERROR: NRM Thread Startup Error. NRM NOT loaded.");
 					MF_Thread_NRM = 0;
 		//			goto MF_MAIN_TERMINATE;
@@ -1198,7 +1232,7 @@ MF_MAIN_RUNLOOP:
 			MF_Thread_SMTP = BeginThread(MF_SMTP_Startup,NULL,65536,NULL);			// Set 64k Stack for new thread
 			if( MF_Thread_SMTP == EFAILURE )
 			{
-				fprintf(stderr,MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
+				MF_DisplayCriticalError(MF_Msg(CONMSG_MAIN_ERRTHREADSTART));
 				MF_Thread_SMTP = 0;
 				goto MF_MAIN_TERMINATE;
 			}
@@ -1242,7 +1276,7 @@ MF_MAIN_RUNLOOP:
 			bool bDoConfig = false;
 			if (MFT_NLM_Exiting == 253) bDoConfig = true;
 		
-			MF_StatusText("  Terminating modules for restart...");
+			MF_StatusText("  Please wait ...");
 
 #ifndef __NOVELL_LIBC__
 			if (MF_Thread_Work > 0)
@@ -1284,8 +1318,8 @@ MF_MAIN_RUNLOOP:
 			// Read Configuration from File
 			if (!MF_GlobalConfiguration.ReadFromFile(""))
 			{
-				fprintf(stderr,"MAILFILTER: Restart failed\n");
-				fprintf(stderr,"\tConfiguration Module reported an unrecoverable error.\n");
+				MF_DisplayCriticalError("MAILFILTER: Restart failed\n");
+				MF_DisplayCriticalError("\tConfiguration Module reported an unrecoverable error.\n");
 				goto MF_MAIN_TERMINATE;
 			}
 			
@@ -1298,16 +1332,16 @@ MF_MAIN_RUNLOOP:
 				// Read Configuration from File
 				if (!MF_GlobalConfiguration.ReadFromFile(""))
 				{
-					fprintf(stderr,"MAILFILTER: Restart failed\n");
-					fprintf(stderr,"\tConfiguration Module reported an unrecoverable error.\n");
+					MF_DisplayCriticalError("MAILFILTER: Restart failed\n");
+					MF_DisplayCriticalError("\tConfiguration Module reported an unrecoverable error.\n");
 					goto MF_MAIN_TERMINATE;
 				}
 			}
 							
 			if (!MailFilterApp_Server_InitNut())
 			{
-				fprintf(stderr,"MAILFILTER: Restart failed\n");
-				fprintf(stderr,"\tUI Module reported an unrecoverable error.\n");
+				MF_DisplayCriticalError("MAILFILTER: Restart failed\n");
+				MF_DisplayCriticalError("\tUI Module reported an unrecoverable error.\n");
 				goto MF_MAIN_TERMINATE;
 			}
 
@@ -1343,11 +1377,11 @@ int main( int argc, char *argv[ ])
 #ifdef MF_WITH_I18N
 	if (LoadLanguageMessageTable(&programMesgTable, &MFT_I18N_MessageCount, &MFT_I18N_LanguageID))
 	{
-		fprintf(stderr,"MAILFILTER: CRITICAL ERROR:\n\tCan't load Message Tables.\n");
+		MF_DisplayCriticalError("MAILFILTER: CRITICAL ERROR:\n\tCan't load Message Tables.\n");
 		exit(0); 
 	}
 #ifndef _MF_CLEANBUILD
-	fprintf(stderr,"MAILFILTER: Language ID: %l, Messages Loaded: %l\n",MFT_I18N_LanguageID,MFT_I18N_MessageCount);
+	MF_DisplayCriticalError("MAILFILTER: Language ID: %l, Messages Loaded: %l\n",MFT_I18N_LanguageID,MFT_I18N_MessageCount);
 #endif
 #endif
 
@@ -1359,9 +1393,9 @@ int main( int argc, char *argv[ ])
 	mainThread_ThreadGroupID = GetThreadGroupID();
 
 	// Rename UI Thread
-	RenameThread( GetThreadID() , MF_Msg(THREADNAME_MAIN) );
+	RenameThread( GetThreadID() , MF_Msg(MSG_THREADNAME_MAIN) );
 	
-	fprintf(stderr,"MAILFILTER: Info: This is the Legacy version of MailFilter!\n\tUse only on NetWare 5.0, NetWare 5.1 prior SP6 or NetWare 6.0 prior SP3.\n");
+	MF_DisplayCriticalError("MAILFILTER: Info: This is the Legacy version of MailFilter!\n\tUse only on NetWare 5.0, NetWare 5.1 prior SP6 or NetWare 6.0 prior SP3.\n");
 #else
 	{
 		struct utsname u;
@@ -1373,7 +1407,7 @@ int main( int argc, char *argv[ ])
 			(u.servicepack < 2)
 			)
 			{
-				fprintf(stderr,"MAILFILTER: Detected NetWare 6.0 prior to SP3.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
+				MF_DisplayCriticalError("MAILFILTER: Detected NetWare 6.0 prior to SP3.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
 				return 0;
 			}
 		if ( 
@@ -1382,7 +1416,7 @@ int main( int argc, char *argv[ ])
 			(u.servicepack < 6)
 			)
 			{
-				fprintf(stderr,"MAILFILTER: Detected NetWare 5.1 prior to SP6.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
+				MF_DisplayCriticalError("MAILFILTER: Detected NetWare 5.1 prior to SP6.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
 				return 0;
 			}
 		if ( 
@@ -1390,7 +1424,7 @@ int main( int argc, char *argv[ ])
 			(u.netware_minor == 0)
 			)
 			{
-				fprintf(stderr,"MAILFILTER: Detected NetWare 5.0.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
+				MF_DisplayCriticalError("MAILFILTER: Detected NetWare 5.0.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
 				return 0;
 			}
 		
@@ -1412,36 +1446,24 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 	MF_NLMHandle = GetNLMHandle();
 	MF_ScreenID = GetCurrentScreen();
 	SetCtrlCharCheckMode(false);
+	SetAutoScreenDestructionMode(true);
 #endif
 
-	// init Namespaces and so on... **** DONT DO THIS **** ON NW411 THIS WONT WORK ****
-//	SetCurrentNameSpace (NW_NS_LONG);
-//	SetTargetNameSpace(LONGNameSpace);
-
+	// debug screen
 	if (MFT_Verbose)
 	{
+          
 #ifdef __NOVELL_LIBC__
-		MFD_ScreenTag = AllocateResourceTag( MF_NLMHandle, "MailFilter Debug Screen", ScreenSignature);
-		if (OpenScreen ( "MailFilter Debug", MFD_ScreenTag, &MFD_ScreenID))
+		MFD_ScreenTag = AllocateResourceTag( (void*)MF_NLMHandle, "MailFilter Debug Screen", ScreenSignature);
+		if (OpenScreen ( "MailFilter Debug", MFD_ScreenTag, &MFD_ScreenID ))
 		{
-			fprintf(stderr,"MAILFILTER: Unable to create debug screen!\n");
+			MF_DisplayCriticalError("MAILFILTER: Unable to create debug screen!\n");
 			goto MF_MAIN_TERMINATE;
 		}
 #else
-		MFD_ScreenID = CreateScreen ( "MailFilter Debug", DONT_AUTO_ACTIVATE | DONT_CHECK_CTRL_CHARS ); 	// | AUTO_DESTROY_SCREEN
+		MFD_ScreenID = CreateScreen ( "MailFilter Debug", DONT_AUTO_ACTIVATE | DONT_CHECK_CTRL_CHARS | AUTO_DESTROY_SCREEN );
 #endif
 	}
-
-#ifndef __NOVELL_LIBC__
-	// Register Event Handle for Shutdown
-	eventHandleShutDown = RegisterForEvent(EVENT_DOWN_SERVER,	eventShutDownReport,	eventShutDownWarn);
-	if(eventHandleShutDown == -1)
-	{
-		fprintf(stderr,MF_Msg(CONMSG_MAIN_ERRREGSHUTDOWNHANDLER));
-		goto MF_MAIN_TERMINATE;
-	}
-	SetAutoScreenDestructionMode(true);
-#endif
 
 	// Register Exit Proc ...
 #ifndef __NOVELL_LIBC__
@@ -1525,7 +1547,7 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		
 	default:
 
-		fprintf(stderr,"MAILFILTER: Could not run your selected application.\n\tMaybe it is not compiled-in.\n");
+		MF_DisplayCriticalError("MAILFILTER: Could not run your selected application.\n\tMaybe it is not compiled-in.\n");
 	
 		rc = -1;
 		break;

@@ -6,7 +6,6 @@
  +		Copyright 2001-2003 Christian Hofstädtler
  +		
  +		
- +		- Oct/2003 ; ch   ; Moved from MFConfig.h++
  +		
  +		
 +*/
