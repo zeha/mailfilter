@@ -253,11 +253,13 @@ bool MF_NutInit(void)
 
 	if (!_mf_nutinit2(tagID))
 	{
+	#ifdef __NOVELL_LIBC__
 		// load threads.nlm for nwsnut
 		MF_DisplayCriticalError("MAILFILTER: Loading THREADS.NLM for NWSNUT.\n");
 		LoadModule(0, "THREADS.NLM", 0);
 
 		if (!_mf_nutinit2(tagID))
+	#endif
 		{
 			MF_DisplayCriticalError("MAILFILTER: Error initializing NWSNUT!\n");
 			return false;	
@@ -704,16 +706,15 @@ void NLM_SignalHandler(int sig)
 				{
 					NWSUngetKey ( K_ESCAPE , 0 , MF_NutInfo );
 				}
+
+				SetThreadGroupID(handlerThreadGroupID);
 #else
 				ungetcharacter(27);
-#endif
+
 				if ( (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::NRM) || (MF_GlobalConfiguration.NRMInitialized == true) )
 				{
 					MailFilter_NRM_sigterm();
 				}
-
-#ifndef __NOVELL_LIBC__
-				SetThreadGroupID(handlerThreadGroupID);
 #endif
 
 				while (MFT_NLM_ThreadCount > 0)
@@ -1020,13 +1021,13 @@ MF_MAIN_RUNLOOP:
 
 			if (MF_Thread_SMTP > 0)
 				NXThreadContinue (MF_Thread_SMTP);
-#endif
 
 			if ( MF_GlobalConfiguration.NRMInitialized == true )
 			{
 				MFD_Out(MFD_SOURCE_CONFIG,"shutting down NRM thread\n");
 				MailFilter_NRM_sigterm();
 			}
+#endif
 
 
 			// wait for other threads to exit
