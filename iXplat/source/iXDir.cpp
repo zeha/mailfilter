@@ -6,6 +6,7 @@
 #include "iX.h"
 #include "iXDir.h"
 #include <sys/stat.h>
+#include <nwconio.h>
 
 #ifdef IXPLAT_NETWARE_LIBC
 #include <screen.h>
@@ -17,19 +18,24 @@ iXDir::iXDir(const char* DirectoryName)
 #ifdef IXPLAT_NETWARE_CLIB
 	char* szFull = (char*)malloc(IX_PATH_MAX);
 	strcpy(szFull,DirectoryName);
-	strcat(szFull,"\\*.*");
+	
+	if ((szFull[strlen(szFull)-1] == '\\') || (szFull[strlen(szFull)-1] == '/'))
+		strcat(szFull,"*.*");
+	else
+		strcat(szFull,"\\*.*");
+		
+	m_DirectoryName = szFull;
 	m_Directory = opendir(szFull);
-	free(szFull);
+//	free(szFull);
 #else
+	m_DirectoryName = strdup(DirectoryName);
 	m_Directory = opendir(DirectoryName);
 #endif
 
 	m_Entry = NULL;
 	SkipDotFiles = false;
 	
-	m_DirectoryName = strdup(DirectoryName);
 }
-
 
 iXDir::~iXDir()
 {
@@ -92,6 +98,16 @@ const char* iXDir::GetCurrentEntryName()
  	} else{
  		return "";
  	}
+}
+
+const char* iXDir::GetOSDirectoryName()
+{
+	if (m_DirectoryName != NULL)
+	{
+		return m_DirectoryName;
+	} else {
+		return "";
+	}
 }
 
 long long iXDir::GetCurrentEntrySize()

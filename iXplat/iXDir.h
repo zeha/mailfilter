@@ -9,11 +9,12 @@ class iXDir
 public:
 	iXDir(const char* DirectoryName);
 	virtual ~iXDir();
-	
+
 	bool ReadNextEntry();
 	const char* GetCurrentEntryName();
 	long long GetCurrentEntrySize();
 	time_t GetCurrentEntryModificationTime();
+	const char* GetOSDirectoryName();
 	
 	bool SkipDotFiles;
 	
