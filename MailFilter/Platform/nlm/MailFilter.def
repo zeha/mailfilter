@@ -16,8 +16,7 @@ MODULE dsapi.nlm Clib.nlm netdb.nlm clxnlm32.nlm locnlm32.nlm calnlm32.nlm nwsnu
 #
 
 #
-# No special imports ...
-# IMPORT UnloadModule
+IMPORT NWSSetFormRepaintFlag ReturnFileServerName
 #
 
 #

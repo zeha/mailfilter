@@ -44,6 +44,7 @@
 // NUT: Local Prototypes
 static int MF_NutVerifyExit(void);
 //static bool MF_NutInit();
+static void MF_NutHandlerKeyF4 (void *handle);
 static void MF_NutHandlerKeyF5 (void *handle);
 static void MF_NutHandlerKeyF6 (void *handle);
 static void MF_NutHandlerKeyF7 (void *handle);
@@ -159,6 +160,18 @@ void MF_ExitProc(void)
 
 }
 
+void MF_NutHandlerKeyF4 (void *handle)		// Handler F5 = ShowConfig()
+{
+	int rc = 0;
+	handle = handle;			// Keep compiler quiet.
+
+	MFT_NLM_Exiting = 253;
+	
+	// We need this to wake the UI thread up ...
+	NWSUngetKey ( K_ESCAPE , 0 , MF_NutInfo );
+
+	return;
+}
 void MF_NutHandlerKeyF5 (void *handle)		// Handler F5 = ShowConfig()
 {
 	handle = handle;			// Keep compiler quiet.
@@ -176,7 +189,7 @@ void MF_NutHandlerKeyF6 (void *handle)		// Handler for configuration reread
 	// We need this to wake the UI thread up ...
 	NWSUngetKey ( K_ESCAPE , 0 , MF_NutInfo );
 
-	return;	// *** TODO ***
+	return;
 }
 void MF_NutHandlerKeyF7 (void *handle)		// Handler F7 = Exit!()
 {
@@ -278,9 +291,6 @@ void MF_NutHandlerKeyF9 (void *handle)		// Handler F6 = ShowDetails()
 }
 
 
-
-
-
 void MFL_VerInfo()
 {
 	MF_StatusText(MF_Msg(MSG_EVAL_LINE1));
@@ -339,7 +349,15 @@ bool MF_NutInit(void)
 	return true;
 }
 
-bool MailFilterApp_Server_InitNut()
+bool MF_NutDeinit(void)
+{
+	if (MF_NutInfo != NULL)
+		NWSRestoreNut(MF_NutInfo);
+	MF_NutInfo = NULL;
+	return true;
+}
+
+static bool MailFilterApp_Server_InitNut()
 {
 
 	if (!MF_NutInit())
@@ -392,16 +410,18 @@ bool MailFilterApp_Server_InitNut()
 	
 	char* szTemp = "Initializing...";
 	
-	NWSShowPortalLine(0, 0, _MF_NUTCHAR szTemp, strlen(szTemp), infoPortalPCB);
+	NWSShowPortalLine(0, 0, (_MF_NUTCHAR) szTemp, strlen(szTemp), infoPortalPCB);
 	NWSUpdatePortal(infoPortalPCB);
 	NWSDeselectPortal(MF_NutInfo);
 
+	NWSEnableFunctionKey (	K_F4 , MF_NutInfo );
 	NWSEnableFunctionKey (	K_F5 , MF_NutInfo );
 	NWSEnableFunctionKey (	K_F6 , MF_NutInfo );
 	NWSEnableFunctionKey (	K_F7 , MF_NutInfo );
 	NWSEnableFunctionKey (	K_F8 , MF_NutInfo );
 	NWSEnableFunctionKey (  K_F9 , MF_NutInfo );
 
+	NWSEnableInterruptKey (	K_F4 , *MF_NutHandlerKeyF4, MF_NutInfo );
 	NWSEnableInterruptKey (	K_F5 , *MF_NutHandlerKeyF5, MF_NutInfo );
 	NWSEnableInterruptKey (	K_F6 , *MF_NutHandlerKeyF6, MF_NutInfo );
 	NWSEnableInterruptKey (	K_F7 , *MF_NutHandlerKeyF7, MF_NutInfo );
@@ -414,7 +434,7 @@ bool MailFilterApp_Server_InitNut()
 //
 //  NUT: Prompt User To Unload NLM
 //
-int MF_NutVerifyExit(void)
+static int MF_NutVerifyExit(void)
 {
 	signed int cCode = 0;
 	BYTE kKey;
@@ -430,7 +450,7 @@ int MF_NutVerifyExit(void)
 	for (int i=0;i<81;i++) szTemp[i]=' ';
 	szTemp[80]=0;
 	strncpy(szTemp,MF_Msg(MENU_MAIN_EXIT),75);
-	NWSShowLineAttribute ( 24, 0, _MF_NUTCHAR szTemp, VREVERSE /*VINTENSE*/, 80, (struct ScreenStruct*)MF_NutInfo->screenID);
+	NWSShowLineAttribute ( 24, 0, (_MF_NUTCHAR) szTemp, VREVERSE /*VINTENSE*/, 80, (struct ScreenStruct*)MF_NutInfo->screenID);
 
 	while (cCode == 0)
 	{
@@ -501,7 +521,7 @@ void MF_StatusUI_UpdateLog(const char* newText)
 			V_UP,		//LONG   direction,
 			statusPortalPCB);
 
-	NWSShowPortalLine(15, 0, _MF_NUTCHAR szTemp, strlen(szTemp), statusPortalPCB);
+	NWSShowPortalLine(15, 0, (_MF_NUTCHAR) szTemp, strlen(szTemp), statusPortalPCB);
 	
 	NWSUpdatePortal(statusPortalPCB);
 }
@@ -538,7 +558,7 @@ void MF_StatusUI_Update(const char* newText)
 		if (MFT_NLM_Exiting == 0)
 		{
 			strncpy(szTemp,MF_Msg(STATUS_STATISTICS),79);
-			NWSShowLineAttribute ( 24, 0, _MF_NUTCHAR szTemp, VREVERSE /*VINTENSE*/, 80, (struct ScreenStruct*)MF_NutInfo->screenID);
+			NWSShowLineAttribute ( 24, 0, (_MF_NUTCHAR) szTemp, VREVERSE /*VINTENSE*/, 80, (struct ScreenStruct*)MF_NutInfo->screenID);
 		}
 
 	}
@@ -585,15 +605,15 @@ void MF_StatusUI_Update(const char* newText)
 		unsigned long minutes = clck - (days * 24 * 60) - (hours * 60);
 		
 		sprintf(szTemp,MF_Msg(INFOPORTAL_LINE1),MFC_MAILSCAN_Enabled == 0 ? "Off" : "On ",days,hours,minutes);
-		NWSShowPortalLine(0, 0, _MF_NUTCHAR szTemp, strlen(szTemp), infoPortalPCB);
+		NWSShowPortalLine(0, 0, (_MF_NUTCHAR) szTemp, strlen(szTemp), infoPortalPCB);
 		
 
 		sprintf(szTemp,MF_Msg(INFOPORTAL_LINE2),MFBW_CheckCurrentScheduleState() == false ? "On " : "Off",MFS_MF_MailsInputTotal,MFS_MF_MailsInputFailed);
-		NWSShowPortalLine(1, 0, _MF_NUTCHAR szTemp, strlen(szTemp), infoPortalPCB);
+		NWSShowPortalLine(1, 0, (_MF_NUTCHAR) szTemp, strlen(szTemp), infoPortalPCB);
 
 		sprintf(szTemp,MF_Msg(INFOPORTAL_LINE3),(1500+MFT_SleepTimer)/1000,MFS_MF_MailsOutputTotal,MFS_MF_MailsOutputFailed);
 		szTemp[1] = cStatus[iStatusChar];
-		NWSShowPortalLine(2, 0, _MF_NUTCHAR szTemp, strlen(szTemp), infoPortalPCB);
+		NWSShowPortalLine(2, 0, (_MF_NUTCHAR) szTemp, strlen(szTemp), infoPortalPCB);
 
 		NWSUpdatePortal(infoPortalPCB);
 	}	
@@ -754,7 +774,7 @@ void NLM_SignalHandler(int sig)
 	return;
 }
 
-bool MF_NLM_InitDS()
+static bool MF_NLM_InitDS()
 {
 #if 0 //ndef __NOVELL_LIBC__
 //	NWCCODE				ccode;
@@ -1021,7 +1041,7 @@ static void _mfd_tellallocccountonexit()
 //   * Start Thread(s) ...
 //   * Run NUT in foreground thread.
 //
-int MailFilter_Main_RunAppServer()
+static int MailFilter_Main_RunAppServer()
 {	
 	// Init NWSNut
 	printf(MF_Msg(MSG_BOOT_USERINTERFACE));
@@ -1044,35 +1064,22 @@ MF_MAIN_RUNLOOP:
 		if (!MF_StatusInit())
 			goto MF_MAIN_TERMINATE;
 
-	//	MFD_Out(MFD_SOURCE_GENERIC,"Starting Worker Thread...\n");
-
-
+		// Run loop
 		{
 			char szStatusMsg[82];
 	#ifndef __NOVELL_LIBC__
 			struct utsname un;
-			//NETWARE_PRODUCT_VERSION version;
-	//		NWCONN connnum;
 			
 			MF_StatusLog("MailFilter CLIB Version "MAILFILTERVERNUM);
-			MF_StatusText("MailFilter for NetWare 5.0, 5.1 SP5, 6.0 SP2");
+			MF_StatusText("MailFilter for NetWare 5.0, 5.1 - 5.1 SP5, 6.0 - 6.0 SP2");
 
-	//		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-	//		NWGetConnectionNumber( (NWCONN_HANDLE)MFT_NLM_Connection_HandleCLIB, &connnum );
-			
-			
 			uname(&un);
 			
 			sprintf(szStatusMsg,"Operating System: Novell NetWare %s.%s",un.release,un.version);
 
-	/*		MFD_Out(MFD_SOURCE_GENERIC,"nwgetnetwareproductversion returned: %d,errno is: %d\n",NWGetNetWareProductVersion(MFT_NLM_DS_Context,&version),errno);
-			sprintf(szStatusMsg,"Novell NetWare OS: %u.%u.%u", version.majorVersion,
-														version.minorVersion,
-														version.revision );			*/
 			MF_StatusText(szStatusMsg);
 			
 	#else
-//			MFD_Out(MFD_SOURCE_GENERIC,"This is LIBC MailFilter/ax!\n");
 			MF_StatusLog("MailFilter LIBC Version "MAILFILTERVERNUM);
 
 			struct utsname u;
@@ -1091,15 +1098,6 @@ MF_MAIN_RUNLOOP:
 		MF_StatusUI_Update(MSG_BOOT_LOADING);
 	#ifdef __NOVELL_LIBC__
 		NXContext_t ctx;
-	//	int threaderror = 0;
-
-	/*	NX_THREAD_CREATE ( MF_Work_Startup , 
-			NX_THR_JOINABLE|NX_THR_BIND_CONTEXT ,
-			NULL,
-			cntxt,
-			MF_Thread_Work,
-			threaderror);
-		if (threaderror) */
 
 		if (NXThreadCreateSx( MF_Work_Startup , 
 			NULL,
@@ -1136,9 +1134,6 @@ MF_MAIN_RUNLOOP:
 	#endif
 		*/
 		
-//		// Switch Back to System Console ...
-//		ActivateScreen (SystemConsole);
-
 		// Allow a Thread Switch to occour
 		ThreadSwitch();
 
@@ -1166,14 +1161,17 @@ MF_MAIN_RUNLOOP:
 					&tmp_Key_Value,
 					MF_NutInfo
 					);
-	//			SuspendThread(GetThreadID());		
 			
 			ThreadSwitch();
 		}
 		
-		if (MFT_NLM_Exiting == 254)
+		// 254 = restart
+		// 253 = config
+		if ((MFT_NLM_Exiting == 254) || (MFT_NLM_Exiting == 253))
 		{
-MFD_Out(MFD_SOURCE_GENERIC,"MFNLM: MF Restart detected");
+			bool bDoConfig = false;
+			if (MFT_NLM_Exiting == 253) bDoConfig = true;
+		
 			MF_StatusText("  Terminating modules for restart...");
 
 #ifndef __NOVELL_LIBC__
@@ -1198,7 +1196,11 @@ MFD_Out(MFD_SOURCE_GENERIC,"MFNLM: MF Restart detected");
 			MFT_NLM_Exiting = 0;
 			
 			MF_StatusFree();
+
+
+			MF_NutDeinit();
 			
+
 			// ok... here we go:
 			
 			// * reinit config
@@ -1209,7 +1211,29 @@ MFD_Out(MFD_SOURCE_GENERIC,"MFNLM: MF Restart detected");
 				consoleprintf("\tConfiguration Module reported an unrecoverable error.\n");
 				goto MF_MAIN_TERMINATE;
 			}
-				
+			
+			if (bDoConfig == true)
+			{
+				// reconfigure mf
+				MailFilter_Main_RunAppConfig(false);
+
+				// * reinit config
+				// Read Configuration from File
+				if (!MF_GlobalConfiguration.ReadFromFile(""))
+				{
+					consoleprintf("MAILFILTER: Restart failed\n");
+					consoleprintf("\tConfiguration Module reported an unrecoverable error.\n");
+					goto MF_MAIN_TERMINATE;
+				}
+			}
+							
+			if (!MailFilterApp_Server_InitNut())
+			{
+				consoleprintf("MAILFILTER: Restart failed\n");
+				consoleprintf("\tUI Module reported an unrecoverable error.\n");
+				goto MF_MAIN_TERMINATE;
+			}
+
 			// increase thread count so we can decrease it above again.
 			++MFT_NLM_ThreadCount;
 
@@ -1241,11 +1265,11 @@ int main( int argc, char *argv[ ])
 #ifdef MF_WITH_I18N
 	if (LoadLanguageMessageTable(&programMesgTable, &MFT_I18N_MessageCount, &MFT_I18N_LanguageID))
 	{
-		ConsolePrintf("MailFilter: CRITICAL ERROR:\n\tCan't load Message Tables.\n");
+		ConsolePrintf("MAILFILTER: CRITICAL ERROR:\n\tCan't load Message Tables.\n");
 		exit(0); 
 	}
 #ifndef _MF_CLEANBUILD
-	ConsolePrintf("MailFilter: Language ID: %l, Messages Loaded: %l\n",MFT_I18N_LanguageID,MFT_I18N_MessageCount);
+	ConsolePrintf("MAILFILTER: Language ID: %l, Messages Loaded: %l\n",MFT_I18N_LanguageID,MFT_I18N_MessageCount);
 #endif
 #endif
 
@@ -1259,7 +1283,7 @@ int main( int argc, char *argv[ ])
 	// Rename UI Thread
 	RenameThread( GetThreadID() , MF_Msg(THREADNAME_MAIN) );
 	
-	consoleprintf("MAILFLT: Info: This is the Legacy version of MailFilter!\n  Use only on NetWare 5.0, NetWare 5.1 prior SP6 or NetWare 6.0 prior SP3.\n");
+	consoleprintf("MAILFILTER: Info: This is the Legacy version of MailFilter!\n\tUse only on NetWare 5.0, NetWare 5.1 prior SP6 or NetWare 6.0 prior SP3.\n");
 #else
 	{
 		struct utsname u;
@@ -1271,7 +1295,7 @@ int main( int argc, char *argv[ ])
 			(u.servicepack < 2)
 			)
 			{
-				consoleprintf("MAILFLT: Detected NetWare 6.0 prior to SP3.\n  Please upgrade to a newer version or use the legacy MAILFLT.NLM\n");
+				consoleprintf("MAILFILTER: Detected NetWare 6.0 prior to SP3.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
 				return 0;
 			}
 		if ( 
@@ -1280,7 +1304,7 @@ int main( int argc, char *argv[ ])
 			(u.servicepack < 6)
 			)
 			{
-				consoleprintf("MAILFLT: Detected NetWare 5.1 prior to SP6.\n  Please upgrade to a newer version or use the legacy MAILFLT.NLM\n");
+				consoleprintf("MAILFILTER: Detected NetWare 5.1 prior to SP6.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
 				return 0;
 			}
 		if ( 
@@ -1288,7 +1312,7 @@ int main( int argc, char *argv[ ])
 			(u.netware_minor == 0)
 			)
 			{
-				consoleprintf("MAILFLT: Detected NetWare 5.0.\n  Please upgrade to a newer version or use the legacy MAILFLT.NLM\n");
+				consoleprintf("MAILFILTER: Detected NetWare 5.0.\n\tPlease upgrade to a newer version or use the legacy MFLT50.NLM\n");
 				return 0;
 			}
 		
@@ -1330,7 +1354,7 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		MFD_ScreenTag = AllocateResourceTag( MF_NLMHandle, "MailFilter Debug Screen", ScreenSignature);
 		if (OpenScreen ( "MailFilter Debug", MFD_ScreenTag, &MFD_ScreenID))
 		{
-			consoleprintf("MailFilter: Unable to create debug screen!\n");
+			consoleprintf("MAILFILTER: Unable to create debug screen!\n");
 			goto MF_MAIN_TERMINATE;
 		}
 #else
@@ -1367,7 +1391,7 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 
 	if (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::SERVER)
 	{
-#ifndef __NOVELL_LIBC__
+#ifdef __NOVELL_LIBC__
 		NXContextSetName(NXContextGet(),"MailFilterServer");
 #endif
 		return MailFilter_Main_RunAppServer();
@@ -1375,11 +1399,17 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 	else
 	if (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::CONFIG)
 	{
-#ifndef __NOVELL_LIBC__
+#ifdef __NOVELL_LIBC__
 		NXContextSetName(NXContextGet(),"MailFilterConfig");
 #endif
 		--MFT_NLM_ThreadCount;
 		return MailFilter_Main_RunAppConfig(true);
+	}
+	else
+	if (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::RESTORE)
+	{
+		system("LOAD MFREST.NLM");
+		return 0;
 	}
 	else
 	{

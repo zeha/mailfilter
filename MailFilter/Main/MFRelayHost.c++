@@ -8,14 +8,6 @@
 #define _MFD_MODULE "MFRelayHost.c++"
 #include "MFRelayHost.h++"
 #include "MailFilter.h"
-/*#ifdef __NOVELL_LIBC__
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#endif
-  */
-//#ifdef NETDB_DEFINE_CONTEXT 
-//NETDB_DEFINE_CONTEXT 
-//#endif
 
 MFRelayHost::~MFRelayHost()
 {

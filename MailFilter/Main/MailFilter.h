@@ -123,12 +123,10 @@ extern "C" {
 }
 #endif // __cplusplus
 
-	#define NUTCHAR unsigned char*
 	typedef unsigned char BOOL;
 
 #else
 
-	#define NUTCHAR char*
 	typedef int BOOL;
 
 #include <netware.h>
@@ -432,13 +430,13 @@ int __cdecl ConsolePrintf(const char* format, ... );
 #ifdef __NOVELL_LIBC__
 #define ThreadSwitch	NXThreadYield
 #define ConsolePrintf	consoleprintf
-#define _MF_NUTCHAR		(const char*)
+#define _MF_NUTCHAR		char*
 #else
 #define NXThreadYield	ThreadSwitch
 #define consoleprintf	ConsolePrintf
 #define mkdir(a,b)		mkdir(a)
 #define CloseScreen		DestroyScreen
-#define _MF_NUTCHAR		(unsigned char*)
+#define _MF_NUTCHAR		unsigned char*
 #define ActivateScreen	DisplayScreen
 #endif
 #endif
@@ -491,12 +489,21 @@ void MFD_Out_func(int attr, const char* format, ...);
 #endif
 
 // MALLOC TRACEING MACROS
-static void *_mfd_nt_malloc(size_t size, const char* szFuncName)
-{	szFuncName=szFuncName; return malloc(size);	}
-static char *_mfd_nt_strdup(const char * str, const char* szFuncName)
-{	szFuncName=szFuncName; return strdup(str);	}
-static void _mfd_nt_free(void *ptr, const char* szFuncName)
-{	szFuncName=szFuncName; return free(ptr);	}
+static inline void *_mfd_nt_malloc(size_t size, const char* szFuncName)
+{
+#pragma unused(szFuncName)
+	return malloc(size);
+}
+static inline char *_mfd_nt_strdup(const char * str, const char* szFuncName)
+{
+#pragma unused(szFuncName)
+	return strdup(str);
+}
+static inline void _mfd_nt_free(void *ptr, const char* szFuncName)
+{	
+#pragma unused(szFuncName)
+	return free(ptr);	
+}
 
 #ifdef _MF_MEMTRACE
 static void _mfd_cpp_allocX( const char* szArea, size_t approxSize )
@@ -550,7 +557,7 @@ static char *_mfd_strdup( const char * str , const char* szFuncName )
 
 // Message Support Macro
 #define MF_Msg(id)						programMesgTable[id]
-#define MF_NMsg(id)						(NUTCHAR)programMesgTable[id]
+#define MF_NMsg(id)						(_MF_NUTCHAR)programMesgTable[id]
 #define MF_DisplayCriticalError(id)		consoleprintf(MF_Msg(id))
 #define MF_StatusNothing(void)			MF_StatusText("")
 
@@ -564,8 +571,6 @@ extern int MFL_Certified;
 // Prototypes
 void MF_ShutDown(void);
 int MF_ConfigReadString(char ConfigFile[MAX_PATH], int Entry, char Value[]);
-//bool MF_ConfigRead(void);
-//void MF_ConfigFree(void);
 void MF_ExitProc(void);
 void MF_StatusText( const char *newText );
 void MF_MakeValidPath(char* thePath);
@@ -585,9 +590,7 @@ bool MF_Util_MakeUniqueFileName(char* fileName, int addVal);
 bool MF_StatusCycleLog(void);
 int MF_CheckPathSameServer(char* thePath1 , char* thePath2);
 int MF_CheckPathSameVolume(char* thePath1 , char* thePath2);
-//bool MF_Filter_InitLists(void);
-//void MF_Filter_FreeLists(void);
-void MFL_VerInfo(void);
+void MFL_VerInfo();
 int MF_MailProblemReport(MailFilter_MailData* mMailInfo);
 int MF_Notification_Send2(const char messageType, const char* bounceRcpt, MailFilter_MailData* mMailInfo);
 void MF_OutOfMemoryHandler(void);
@@ -599,6 +602,7 @@ int MF_CountFilters(int action);
 int MF_CountAllFilters();
 void MF_CheckProblemDirAgeSize();
 bool MF_NutInit(void);
+bool MF_NutDeinit(void);
 
 int MailFilter_Main_RunAppConfig(bool bStandalone);
 

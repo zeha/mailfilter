@@ -93,7 +93,7 @@ static char* MF_GetRoot();
 
 //
 //
-int MF_CopyEmail_Send(const char* szAttachFileName, MailFilter_MailData* mMailInfo, const char* szDestinationEMail)
+static int MF_CopyEmail_Send(const char* szAttachFileName, MailFilter_MailData* mMailInfo, const char* szDestinationEMail)
 {
 	FILE *fMailFile	= NULL;
 	char* fileName[13];
@@ -971,7 +971,7 @@ MFD_Out(MFD_SOURCE_RULE,"\n");
 }
 
 
-void MF_SleepTimerIncrease(int howMuch)
+static void MF_SleepTimerIncrease(int howMuch)
 {
 	// Increase the Sleep Timer
 	MFT_SleepTimer = MFT_SleepTimer + howMuch;
@@ -981,7 +981,7 @@ void MF_SleepTimerIncrease(int howMuch)
 		MFT_SleepTimer = 15250;
 }
 
-void MF_SleepTimerDecrease(int howMuch)
+static void MF_SleepTimerDecrease(int howMuch)
 {
 	// Increase the Sleep Timer
 	MFT_SleepTimer = MFT_SleepTimer - howMuch;
@@ -1195,7 +1195,7 @@ MFD_Out(MFD_SOURCE_WORKER,"Made %s\n",szTemp);
 //
 // Examines Mail Files ...
 //
-int MF_ExamineFile(MailFilter_MailData* m)
+static int MF_ExamineFile(MailFilter_MailData* m)
 {
 
 	FILE *mailFile				= NULL;
@@ -2082,7 +2082,7 @@ MFD_Out(MFD_SOURCE_MAIL,"-=> TYPE '%s'\n",szThisAttachment);
 }
 
 
-int MF_ReadAddressFromDomain(const char* szDomain,const char* szAddresses,char* szAddress, int iSize)
+static int MF_ReadAddressFromDomain(const char* szDomain,const char* szAddresses,char* szAddress, int iSize)
 {
 	char* addrBegin;
 	unsigned int pos;
@@ -2139,7 +2139,7 @@ int MF_ReadAddressFromDomain(const char* szDomain,const char* szAddresses,char* 
 
 }
 
-int MF_Notification_Send(MailFilter_MailData* m)	//const int notify, const int mailSource, const char* fileIn, const char* szErrorMessage, char* szMailFrom, char* szMailRcpt, const char* szMailSubject)
+static int MF_Notification_Send(MailFilter_MailData* m)	//const int notify, const int mailSource, const char* fileIn, const char* szErrorMessage, char* szMailFrom, char* szMailRcpt, const char* szMailSubject)
 {
 
 	char szInternalAddress[100];
@@ -2853,7 +2853,7 @@ MFD_Out(MFD_SOURCE_GENERIC,"MailAtt: %s -> %s\n",szAttachFileName,szB64File);
 	}
 }
 
-int MF_PostScan_Modify( MailFilter_MailData* m )
+static int MF_PostScan_Modify( MailFilter_MailData* m )
 {
 	FILE* mailFile;
 	FILE* fOutput;
@@ -3226,7 +3226,7 @@ int MF_PostScan_Modify( MailFilter_MailData* m )
 	
 }
 
-int MF_PostScan_HandleFile( MailFilter_MailData* m )
+static int MF_PostScan_HandleFile( MailFilter_MailData* m )
 {
 	/*
 	 * finishes handling of a mail file.
@@ -3822,7 +3822,7 @@ MFD_Out(MFD_SOURCE_GENERIC,"prb: %s\n",probDir);
 	}
 }
 
-void MFBW_CheckQueue(char* szFile,char* szIn,char* szOut)
+static void MFBW_CheckQueue(char* szFile,char* szIn,char* szOut)
 {
 #pragma unused(szFile)
 	if (MFBW_CheckCurrentScheduleState())
@@ -3836,7 +3836,7 @@ void MFBW_CheckQueue(char* szFile,char* szIn,char* szOut)
  * Create the directory szDirectoryName if it doesnt exist.
  * If bCleanup, delete old files from the directory.
  */
-bool CheckDirectory(const char* szDirectoryName, bool bCleanUp)
+static bool CheckDirectory(const char* szDirectoryName, bool bCleanUp)
 {
 	// Create directory if not existant
 	if (chdir(szDirectoryName))
@@ -3875,7 +3875,7 @@ bool CheckDirectory(const char* szDirectoryName, bool bCleanUp)
  * Loop through the directory szDirectoryName 
  * and call MF_ProcessFile for all files in it.
  */
-bool HandleGwiaDirectory(const char* szDirectoryName, const char* szDirectoryName2, int passOn, int tlc)
+static bool HandleGwiaDirectory(const char* szDirectoryName, const char* szDirectoryName2, int passOn, int tlc)
 {
 	char fileIn[MAX_PATH];
 	char fileOut[MAX_PATH];

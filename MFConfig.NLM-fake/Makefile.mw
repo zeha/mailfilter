@@ -1,0 +1,12 @@
+
+../MailFilter/out/mfconfig.nlm: MFConfig.o MFConfig.def
+	mwldnlm -sym off -nozerobss -o ../MailFilter/out/mfconfig.nlm MFConfig.def MFConfig.o o:/ndk/clib/imports/clib.imp o:/ndk/clib/imports/clibpre.o o:/ndk/nwsnut/nwsdk/imports/nwsnut.imp
+	ls -lah ../MailFilter/out/mfconfig.nlm
+
+
+MFConfig.o: MFConfig.c
+	mwccnlm -c -O2 -sym off MFConfig.c
+
+clean:
+	rm -f MFConfig.o core err.txt ../MailFilter/out/mfconfig.nlm
+

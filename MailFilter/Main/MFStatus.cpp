@@ -125,7 +125,7 @@ void MF_StatusSendDailyReport(const char* szLogFile)
 	}
 }
 
-bool MF_StatusCycleLog2()
+static bool MF_StatusCycleLog2()
 {
 	bool	failed = false;
 

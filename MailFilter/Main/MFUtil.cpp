@@ -136,17 +136,29 @@ int MF_ParseCommandLine( int argc, char **argv )
 				bTArgOkay = false;
 				if (argc>ix_optind)
 				{
+#if defined(N_PLAT_NLM) && !defined(__NOVELL_LIBC__)				
+					if (strcmp(argv[ix_optind],"server") == 0)
+#else
 					if (strcasecmp(argv[ix_optind],"server") == 0)
+#endif
 					{
 						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::SERVER;
 						bTArgOkay = true;
 					}
+#if defined(N_PLAT_NLM) && !defined(__NOVELL_LIBC__)				
+					if (strcmp(argv[ix_optind],"config") == 0)
+#else
 					if (strcasecmp(argv[ix_optind],"config") == 0)
+#endif
 					{
 						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::CONFIG;
 						bTArgOkay = true;
 					}
+#if defined(N_PLAT_NLM) && !defined(__NOVELL_LIBC__)				
+					if (strcmp(argv[ix_optind],"restore") == 0)
+#else
 					if (strcasecmp(argv[ix_optind],"restore") == 0)
+#endif
 					{
 						MF_GlobalConfiguration.ApplicationMode = MailFilter_Configuration::RESTORE;
 						bTArgOkay = true;
