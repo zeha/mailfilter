@@ -293,6 +293,7 @@ static void MFConfig_AddFilterItem(MailFilter_Configuration::Filter flt, int cur
 	
 static void MFConfig_UpdateFilterList()
 {
+	// delete old stuff
 	{
 		LIST* start = NWSGetListHead(MF_NutInfo);
 		while (start)
@@ -300,15 +301,18 @@ static void MFConfig_UpdateFilterList()
 			start = NWSDeleteFromList(start,MF_NutInfo);
 		}
 	}
-	
-	MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator first = MF_GlobalConfiguration.filterList.begin();
-	MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator last = MF_GlobalConfiguration.filterList.end();
-
-	int curItem = 0;
-	for (; first != last; ++first)
+	// insert new stuff
 	{
-		MFConfig_AddFilterItem(*first,curItem);
-		++curItem;
+	
+		MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator first = MF_GlobalConfiguration.filterList.begin();
+		MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator last = MF_GlobalConfiguration.filterList.end();
+
+		int curItem = 0;
+		for (; first != last; ++first)
+		{
+			MFConfig_AddFilterItem(*first,curItem);
+			++curItem;
+		}
 	}
 }
 
@@ -706,42 +710,6 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 				MF_GlobalConfiguration.filterList.push_back(*flt);
 				
 				fgetc(fImp);
-
-/*				szTemp[0] = ' '; szTemp[1] = ' ';
-				switch (flt->matchfield)
-				{
-				case MAILFILTER_MATCHFIELD_ALWAYS:
-					szTemp[0] = '*';	break;
-				case MAILFILTER_MATCHFIELD_ATTACHMENT:
-					szTemp[0] = 'A';	break;
-				case MAILFILTER_MATCHFIELD_EMAIL:
-				case MAILFILTER_MATCHFIELD_EMAIL_BOTHANDCC:
-					szTemp[0] = 'E';	break;
-				case MAILFILTER_MATCHFIELD_SUBJECT:
-					szTemp[0] = 'S';	break;
-				case MAILFILTER_MATCHFIELD_SIZE:
-					szTemp[0] = 's';	break;
-				case MAILFILTER_MATCHFIELD_EMAIL_FROM:
-					szTemp[0] = 'F';	break;
-				case MAILFILTER_MATCHFIELD_EMAIL_TO:
-				case MAILFILTER_MATCHFIELD_EMAIL_TOANDCC:
-					szTemp[0] = 'T';	break;
-				case MAILFILTER_MATCHFIELD_BLACKLIST:
-					szTemp[0] = 'B';	break;
-				case MAILFILTER_MATCHFIELD_IPUNRESOLVABLE:
-					szTemp[0] = 'U';	break;
-				default:
-					szTemp[0] = '?';	break;
-				}
-				
-				if (flt->type == MAILFILTER_MATCHTYPE_NOMATCH)
-				{
-					szTemp[1] = '!';
-				}
-				
-				strncpy(szTemp+2,flt->expression.c_str(),70);
-				NWSAppendToList((_MF_NUTCHAR)szTemp, flt, MF_NutInfo); */
-
 			}
 			
 			fclose(fImp);
@@ -749,7 +717,7 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 			NWSEndWait(MF_NutInfo);
 			
 			MFConfig_UpdateFilterList();
-//			NWSUngetKey(UGK_SPECIAL_KEY,UGK_REFRESH_KEY,MF_NutInfo);
+			NWSUngetKey(UGK_SPECIAL_KEY,UGK_REFRESH_KEY,MF_NutInfo);
 		}
 		
 	
@@ -797,12 +765,7 @@ static void MFConfig_Util_ExportListToFile(void* nutHandle)
 
 			fLst = fopen(szTemp,"wb");
 
-/*			for (curItem = 0; curItem<(MailFilter_MaxFilters+1); curItem++)
-			{
-				if (0==MFC_Filters[curItem].expression[0])	break;
-				fprintf(fLst,"%s\n",MFC_Filters[curItem].expression);
-			}
-*/
+
 			fprintf(fLst,"MAILFILTER_FILTER_EXCHANGEFILE");
 			fputc(0,fLst);
 			fprintf(fLst,MAILFILTER_CONFIGURATION_SIGNATURE);
@@ -827,13 +790,7 @@ static void MFConfig_Util_ExportListToFile(void* nutHandle)
 				fputc(0,fLst);
 				fprintf(fLst,"%s",(*first).name.c_str());
 				fputc(0,fLst);
-				
-/*				if (
-					((*first).expression[0]==0)
-					&&
-					((*first).name[0]==0)
-				   )
-				  	break; */
+
 			}
 				
 		
@@ -1105,37 +1062,19 @@ static int MFConfig_EditFilters_Act(LONG keyPressed, LIST **elementSelected,
 			return rc;
 
 		case M_DELETE:
-//			myItem = *(unsigned int *)((*elementSelected)->otherInfo);
-//			myItem = *(MailFilter_Configuration::Filter*)((*elementSelected)->otherInfo);
+			int ci = *(int *)((*elementSelected)->otherInfo);
+			MFD_Out(MFD_SOURCE_GENERIC,"debug: %d\n",ci);
 
-//			for (curItem = 0; curItem<(MailFilter_MaxFilters+1); curItem++)
-//			{
-//				if (MFC_Filters[curItem].expression[0] == 0)
-//					break;
-//				if (curItem >= myItem)
-//					MFC_Filters[curItem] = MFC_Filters[curItem+1];
-//			}
-//			MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator first = MF_GlobalConfiguration.filterList.begin();
-//			MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator last = MF_GlobalConfiguration.filterList.end();
-//			
-//	for (; first != last; ++first)
-//			{
-//				if (first == myItem)
-//					
-//			}
+			MAILFILTER_CONFIGURATION_FILTERLISTTYPE::iterator first = MF_GlobalConfiguration.filterList.begin();
+			first += ci;
 
-// FOO
-//			MF_GlobalConfiguration.filterList.erase(find(MF_GlobalConfiguration.filterList.begin(),MF_GlobalConfiguration.filterList.end(),myItem));
-//			MF_GlobalConfiguration.filterList.erase(MF_GlobalConfiguration.filterList[*(unsigned int *)((*elementSelected)->otherInfo)]);
-//			MF_GlobalConfiguration.filterList.erase(find(MF_GlobalConfiguration.filterList.begin(),MF_GlobalConfiguration.filterList.end(),&MF_GlobalConfiguration.filterList[*(unsigned int *)((*elementSelected)->otherInfo)]));
-			
-//			MF_Filter_Sort();
-			return(-2);
+			MF_GlobalConfiguration.filterList.erase(first);
+
+			return -2;
 
 
 		case M_SELECT:
 			rc = MFConfig_EditFilterDialog(&MF_GlobalConfiguration.filterList[*(unsigned int *)((*elementSelected)->otherInfo)]);
-//			MF_Filter_Sort();
 			return rc;
 		}
 
@@ -1150,11 +1089,7 @@ static int MFConfig_EditFilters_Act(LONG keyPressed, LIST **elementSelected,
 */
 static void MFConfig_EditFilters()
 	{
-	
-//	int							curItem = 0;
 	long						rc = 0;
-//	int*						cI = NULL;
-	
 
 	/*------------------------------------------------------------------------
 	**	At this point, the current list is the Main Menu.  If we begin adding

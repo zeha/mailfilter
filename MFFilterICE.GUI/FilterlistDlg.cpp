@@ -246,6 +246,14 @@ void CFilterlistDlg::OnNMDblclkConfiglist(NMHDR *pNMHDR, LRESULT *pResult)
 	*pResult = 0;
 }
 
+static void DeleteEntry(int nItem)
+{
+	std::vector<MailFilter_Configuration::Filter>::iterator first = MFC_FilterList.begin();
+	first += nItem;
+	MFC_FilterList.erase(first);
+
+}
+
 void CFilterlistDlg::OnLvnKeydownConfiglist(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMLVKEYDOWN pLVKeyDown = reinterpret_cast<LPNMLVKEYDOWN>(pNMHDR);
@@ -255,19 +263,13 @@ void CFilterlistDlg::OnLvnKeydownConfiglist(NMHDR *pNMHDR, LRESULT *pResult)
 	WORD key = pLVKeyDown->wVKey;
 	if ( key == VK_DELETE )
 	{
-/*		int nItem = -1;
+		int nItem = -1;
 		nItem = cv->GetNextItem(nItem, LVNI_SELECTED);
 		if (nItem != -1)
 		{
-			int data = cv->GetItemData(nItem);
-			for (int i = data ; i < MailFilter_MaxFilters ; i++)
-			{
-				MFC_Filters[i] = MFC_Filters[i+1];
-				if (MFC_Filters[i].expression[0] == 0)
-					break;
-			}
+			DeleteEntry(nItem);
 			this->FillIn();
-		}*/
+		}
 		this->OnEntryDelete();
 	}
 
@@ -300,13 +302,8 @@ void CFilterlistDlg::OnEntryDelete()
 	nItem = cv->GetNextItem(nItem, LVNI_SELECTED);
 	if (nItem != -1)
 	{
-		int data = (int)cv->GetItemData(nItem);
-/*		for (int i = data ; i < MailFilter_MaxFilters ; i++)
-		{
-			MFC_Filters[i] = MFC_Filters[i+1];
-			if (MFC_Filters[i].expression[0] == 0)
-				break;
-		}*/
+		//int data = (int)cv->GetItemData(nItem);
+		DeleteEntry(nItem);
 		this->FillIn();
 	}
 }

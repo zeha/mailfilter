@@ -9,7 +9,7 @@
 ; *** UPDATE BUILD NUMBERS *HERE* ***
   !define PROD_VERSION_MAJOR 1
   !define PROD_VERSION_MINOR 5
-  !define PROD_VERSION_BUILD 1130plus
+  !define PROD_VERSION_BUILD 1131plus
 ;
 ;
 
@@ -106,7 +106,7 @@ Section $(NAME_Section_Base) Section_Base
   File ".\src\relnotes.html"
   File ".\src\cluster.html"
 
-  File "..\MFFilterICE.GUI\Release\FilterICE.exe"
+  File "..\MailFilter\out\FilterICE.exe"
   File "..\MailFilter\out\MFFilterICE.exe"
   File ".\src\MFFilterICE.txt"
 
@@ -130,11 +130,10 @@ Section $(NAME_Section_Base) Section_Base
 ;
 
   SetOutPath "$INSTDIR\NLM"
-  File "..\MailFilter\out\MailFlt.nlm"
-;  File "..\MailFilter\out\libc\MFConfig.nlm"
 
   SetOutPath "$INSTDIR\NLM\SYSTEM"
-  File "..\MailFilter\out\MFLT50.nlm"
+  File "..\MailFilter\out\MailFlt.nlm"	; LibC version
+  File "..\MailFilter\out\MFLT50.nlm"	; CLib version
   File "..\MailFilter\out\MFNRM.nlm"
   File "..\MailFilter\out\MFConfig.nlm"
   File "..\MailFilter\out\MFUpgr.nlm"
