@@ -75,10 +75,15 @@ static int MF_NutMutexQueryUser = 0;
 
 extern void MFWorker_SetupPaths();
 
+#ifdef __NOVELL_LIBC__
 extern "C" {
 	int __init_malloc();
 	int __deinit_malloc();
 }
+#else
+	inline int __init_malloc() { return 0; };
+	inline int __deinit_malloc() { return 0; };
+#endif
 
 
 //
