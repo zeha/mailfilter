@@ -101,8 +101,8 @@ public:
 	bool WriteToFile(std::string alternateFilename);
 
 	// don't use ReadFilterList -- use ReadFilterListFromConfig or ReadFilterListFromRulePackage
-	bool ReadFilterListFromConfig();
-	bool ReadFilterListFromRulePackage(std::string filterFile);
+	inline bool ReadFilterListFromConfig();
+	inline bool ReadFilterListFromRulePackage(std::string filterFile);
 	bool WriteFilterList(std::string filterList);
 
 	bool CreateFromInstallFile(std::string installFile);

@@ -197,7 +197,7 @@ Configuration::~Configuration()
 {
 }
 
-bool Configuration::ReadFilterListFromConfig()
+inline bool Configuration::ReadFilterListFromConfig()
 {
 	long startAt;
 	std::string myFilterFile;
@@ -217,7 +217,7 @@ bool Configuration::ReadFilterListFromConfig()
 	return this->ReadFilterList(myFilterFile,startAt);
 }
 
-bool Configuration::ReadFilterListFromRulePackage(std::string filterFile)
+inline bool Configuration::ReadFilterListFromRulePackage(std::string filterFile)
 {
 	return this->ReadFilterList(filterFile,(long)52);
 }
