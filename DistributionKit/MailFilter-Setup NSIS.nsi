@@ -8,14 +8,14 @@
 
 ; *** UPDATE BUILD NUMBERS *HERE* ***
   !define PROD_VERSION_MAJOR 1
-  !define PROD_VERSION_MINOR 5
-  !define PROD_VERSION_BUILD 1131plus
+  !define PROD_VERSION_MINOR 6
+  !define PROD_VERSION_REVISION 0-rc1
 ;
 ;
 
 ; Product description
   !define PROD_NAME "MailFilter professional"
-  !define PROD_VERSION ${PROD_VERSION_MAJOR}.${PROD_VERSION_MINOR}-${PROD_VERSION_BUILD}
+  !define PROD_VERSION ${PROD_VERSION_MAJOR}.${PROD_VERSION_MINOR}.${PROD_VERSION_REVISION}
 
   Name "${PROD_NAME}"
   BrandingText "MailFilter Local Installation"
@@ -48,7 +48,7 @@
   !define MUI_FINISHPAGE_NOAUTOCLOSE
 ;  !define MUI_FINISHPAGE_RUN "$INSTDIR\MFInstallWizard.exe"
 ;  !define MUI_FINISHPAGE_RUN_NOTCHECKED
-  !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\relnotes.html"
+  !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\docs\notes\ReleaseNotes.en.html"
 
 ;  !insertmacro MUI_RESERVEFILE_WELCOMEFINISHPAGE
   !insertmacro MUI_PAGE_WELCOME
@@ -104,14 +104,9 @@ Section All
   ; try again :/
   SetOutPath "$INSTDIR"
 
-
-  File "..\Graphics\mailfilter-notes.png"
-  File ".\src\relnotes.html"
-  File ".\src\cluster.html"
-
   File "..\MailFilter\out\FilterEdit.exe"
   File "..\MailFilter\out\MFFilterICE.exe"
-  File ".\src\MFFilterICE.txt"
+;  File ".\src\MFFilterICE.txt"
 
   SetOutPath "$INSTDIR\SERVER"
 
@@ -139,10 +134,8 @@ Section All
   SetOutPath "$INSTDIR\SERVER\BIN"
   File "..\MailFilter\out\MailFlt.nlm"	; LibC version
   File "..\MailFilter\out\MFLT50.nlm"	; CLib version
-  File "..\MailFilter\out\MFNRM.nlm"
+  File "..\MailFilter\out\MFAVA.nlm"
   File "..\MailFilter\out\MFConfig.nlm"
-  File "..\MailFilter\out\MFUpgr.nlm"
-  File "..\MailFilter\out\MFRest.nlm"
 
 ;  File "..\MailFilter\out\MFBUG.NLM"
 ;  File "..\MailFilter\out\MFPACK.NLM"
@@ -150,8 +143,6 @@ Section All
 
   SetOutPath "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}"
   SetOutPath "$INSTDIR"
-  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Release Notes.lnk" '"$INSTDIR\relnotes.html"'
-  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Cluster Installation Notes.lnk" '"$INSTDIR\cluster.html"'
   CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Tools.lnk" %windir%\explorer.exe "$INSTDIR\" %windir%\explorer.exe 1
   CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Filter Editor.lnk" '"$INSTDIR\FilterEdit.exe"'
 
@@ -163,10 +154,10 @@ Section All
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "Publisher" "Christian Hofstaedtler"
 
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "UninstallString" '"$INSTDIR\uninstall.exe"'
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "URLInfoAbout" "http://www.mailfilter.cc/en/"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "URLInfoAbout" "http://www.mailfilter.cc/"
 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "HelpLink" "http://www.mailfilter.cc/en/"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "Readme" "file://$INSTDIR\relnotes.html"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "HelpLink" "http://www.mailfilter.cc/"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "Readme" "file://$INSTDIR\docs\notes\ReleaseNotes.en.html"
 
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "NoRepair" 1
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "NoModify" 1
@@ -190,13 +181,17 @@ Section All
 ;  SectionIn 1
   SetOutPath "$INSTDIR"
 
-  File ".\src\Administrators Guide EN.pdf"
-  File ".\src\Administrators Guide DE.pdf"
+;  File ".\src\Administrators Guide EN.pdf"
+;  File ".\src\Administrators Guide DE.pdf"
+  File /r "..\MailFilter\out\docs"
 
   SetOutPath "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}"
   SetOutPath "$INSTDIR"
-  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Administrators Guide (PDF - English).lnk" '"$INSTDIR\Administrators Guide EN.pdf"'
-  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Administrators Guide (PDF - German).lnk"  '"$INSTDIR\Administrators Guide DE.pdf"'
+  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Documentation (English).lnk" '"$INSTDIR\docs\index.en.html"'
+;  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Administrators Guide (PDF - German).lnk"  '"$INSTDIR\Administrators Guide DE.pdf"'
+
+  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Release Notes.lnk" '"$INSTDIR\docs\notes\ReleaseNotes.de.html"'
+  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Cluster Installation Note.lnk" '"$INSTDIR\docs\notes\ClusterNotes.de.html"'
 SectionEnd
 
 
@@ -236,7 +231,7 @@ Section "Uninstall"
 
   Delete $INSTDIR\uninstall.exe
 
-  ; only if empty
+  RMDir /r "$INSTDIR\docs"
   RMDir /r "$INSTDIR"
 
 SectionEnd

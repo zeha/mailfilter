@@ -1,13 +1,13 @@
 ##
-## MFSTART.NCF
+##    ***  E X A M P L E  ***
+##
+##          MFSTART.NCF
 ##
 #
 MFSTOP
 #######
-load mailflt
-# load address space = MailFilter mailflt
+load mailflt sys:\etc\mailflt
+# load address space = MailFilter mailflt sys:\etc\mailflt
 #######
 #
-##
-## - end of file -
 ##

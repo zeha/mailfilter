@@ -275,12 +275,12 @@ BOOL CInstApp::InitInstance()
 					{	WriteLog(" Server 6.0 SP3 or newer");
 						this->mf_InstallLegacyVersion = false;
 					}
-					if ((server_majorVersion == 6) && (server_minorVersion == 50) && (server_revision < 2))
-					{	WriteLog(" Server 6.5 SP2 or earlier");
+					if ((server_majorVersion == 6) && (server_minorVersion == 50) && (server_revision == 0))
+					{	WriteLog(" Server 6.5 with no service pack");
 						this->mf_InstallLegacyVersion = true;
 					}
-					if ((server_majorVersion == 6) && (server_minorVersion == 50) && (server_revision >= 2))
-					{	WriteLog(" Server 6.5 SP3 or newer");
+					if ((server_majorVersion == 6) && (server_minorVersion == 50) && (server_revision >= 1))
+					{	WriteLog(" Server 6.5 SP1 or newer");
 						this->mf_InstallLegacyVersion = true;
 					}
 					if ((server_majorVersion == 6) && (server_minorVersion > 50))

@@ -4,14 +4,13 @@
 #
 #######
 ## Unload MailFilter Server
-unload mailflt.nlm
 unload address space = mailfilter
-unload address space = mailflt
+unload address space = mfstart.ncf
+unload mailflt.nlm
+unload mflt50.nlm
 #######
 ## Unload AV Integration
 unload mfava
 #######
 #
-##
-## - end of file -
 ##

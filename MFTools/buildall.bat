@@ -37,9 +37,6 @@ REM %CMDIDE% mailfilter\libs\src\zlib-libc\contrib\minizip\nw minizip.mcp /t "Mi
 REM %CMDIDE% mailfilter\platform\nlm\mfnrm MFNRM.mcp
 REM %CMDIDE% mailfilter\platform\nlm\mfzap MFZAP.mcp
 
-%CMDIDE% mailfilter\platform\nlm mailfilter-clib.mcp /t "MailFilter CLib"
-%CMDIDE% mailfilter\platform\nlm-libc mailfilter-libc.mcp /t "MailFilter LibC"
-
 REM %CMDIDE% mfconfig.nlm mfconfig.mcp /t "MFConfig / CLIB"
 REM %CMDIDE% mfconfig.nlm mfconfig.mcp /t "MFUpgrade / CLIB"
 
@@ -47,5 +44,14 @@ REM %CMDIDE% mfmmx mfmmx.mcp
 
 REM %CMDIDE% mfrestore mfrestore.mcp
 
+
 %CMDIDE% mfxor mfxor.mcp
+
+%CMDIDE% mfconfig.nlm-fake MFConfig-fake.mcp /t "MFConfig FAKE"
+
+%CMDIDE% MFAVA MFAVA.mcp /t "AntiVirusAgent"
+
+
+%CMDIDE% mailfilter\platform\nlm mailfilter-clib.mcp /t "MailFilter CLib"
+%CMDIDE% mailfilter\platform\nlm-libc mailfilter-libc.mcp /t "MailFilter LibC"
 
