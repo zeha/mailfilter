@@ -511,7 +511,7 @@ Dim szServerName As String
         
         new_GWIASmtpHome = new_GWIARoot & "\MF"
         If MsgBox("The Wizard did not find a configured SMTP home for the selected GWIA." & vbCrLf & _
-            "The SMPT Home will be assumed as """ & new_GWIASmtpHome & """." & vbCrLf & _
+            "The SMTP Home will be set to """ & new_GWIASmtpHome & """." & vbCrLf & _
             "Please update your GWIA Configuration to reflect this." & vbCrLf & _
             vbCrLf & _
             "MailFilter will load, but will not scan E-Mails until the GWIA Configuration is updated and GWIA is restarted." & vbCrLf & _
@@ -836,11 +836,17 @@ Private Sub Form_Load()
     NWCCGetConnInfo modServer.myConnection, NWCC_INFO_SERVER_VERSION, Len(serverVersion), serverVersion
     Print #logNum, "  -- Server Version: " & serverVersion.major & "." & serverVersion.minor & "." & serverVersion.revision
     chkInstallLibC.Value = vbUnchecked
-    If ((serverVersion.major > 4) And (serverVersion.minor > 1)) Then
-        If (serverVersion.revision > 2) Then
+    If ((serverVersion.major > 4) And (serverVersion.minor = 1) And (serverVersion.revision > 2)) Then
             chkInstallLibC.Value = vbChecked
-            Print #logNum, "  -- Selecting LibC Version"
-        End If
+            Print #logNum, "  -- Selecting LibC Version for 5.1 SP3"
+    End If
+    If ((serverVersion.major = 5) And (serverVersion.minor = 6) And (serverVersion.revision > 2)) Then
+            chkInstallLibC.Value = vbChecked
+            Print #logNum, "  -- Selecting LibC Version for 6.0 SP3"
+    End If
+    If ((serverVersion.major = 5) And (serverVersion.minor > 6)) Then
+            chkInstallLibC.Value = vbChecked
+            Print #logNum, "  -- Selecting LibC Version for 6.5 and newer"
     End If
 
     Print #logNum, " --- QuickStart waiting for User Input. Closing Log: " & Now
