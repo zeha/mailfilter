@@ -1,0 +1,35 @@
+# Sample .DEF file
+
+MODULE clib.nlm
+# Specifies the modules that must be loaded before this NLM is loaded.
+# These modules will be loaded automatically when this NLM is loaded.
+# In addition to this list, with CodeWarrior for NetWare any NLM modules
+# added to the project are also added to the autoload list.
+# Example: MODULE clib.nlm dsapi.nlm
+
+# IMPORT symbol list
+# IMPORT @symbol list file
+# Specifies a list, or a file containing a list (import file) of symbols 
+# which will be externally resolved at runtime.
+# In addition to this list, with CodeWarrior for NetWare there are two
+# other methods for specifying import symbols:
+#  1 - Add unpacked NLM modules to the project.  All its symbols 
+#      will be added to this list.
+#  2 - Add Import files to the project
+# Example: IMPORT ConsolePrintf scanf 
+# Example: IMPORT @C:\nwsdk\imports\clib.imp
+
+# EXPORT symbol list
+# EXPORT @symbol list file
+# Specifies a list, or a file containing a list of symbols 
+# which will be exported at runtime.
+# Example: EXPORT MyConsolePrintf MyScanf
+# Example: EXPORT @C:\myexp.exp
+
+# DATE month, day, year
+# Allows the Date in the NLM header to be manually specified.  
+# By default this date is the date the NLM was built.
+# Example: DATE 7, 23,  1998
+
+
+
