@@ -1,6 +1,6 @@
 # MFConfig.DEF
-DESCRIPTION "MailFilter/ax Configuration"
-COPYRIGHT "Copyright 2001-2004 Christian Hofstaedtler, www.mailfilter.cc"
+#DESCRIPTION "MailFilter Configuration"
+#COPYRIGHT "Copyright 2001-2004 Christian Hofstaedtler, www.mailfilter.cc"
 # VERSION 0 0 2
 
 MODULE clib.nlm libc.nlm nwsnut.nlm 

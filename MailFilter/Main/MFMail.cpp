@@ -100,7 +100,7 @@ MailFilter_MailData* MailFilter_MailRead(char* szInFile) {
 		return NULL;
 	}
 
-#define _MFMW_READ_STRING(szString,iSize)	m->szString[0]=0; if(fgets(m->szString,iSize-2,fp) != NULL) { ilen=strlen(m->szString)-1; if (m->szString[ilen] == '\n') { m->szString[ilen]=0; ilen--; } if (m->szString[ilen] == '\r') m->szString[ilen]=0; }
+#define _MFMW_READ_STRING(szString,iSize)	m->szString[0]=0; if(fgets(m->szString,iSize-2,fp) != NULL) { ilen=strlen(m->szString); if ((ilen>0)&&(m->szString[ilen-1] == '\n')) { ilen--; m->szString[ilen]=0; } if ((ilen>0)&&(m->szString[ilen-1] == '\r')) m->szString[ilen-1]=0; }
 #define _MFMW_READ_INT(iInt)				szTemp[0]=0; szTemp[1]=0; fgets(szTemp,80,fp); m->iInt=atol(szTemp);
 #define _MFMW_READ_UL(ulULong)				szTemp[0]=0; szTemp[1]=0; fgets(szTemp,80,fp); m->ulULong=(unsigned long)atol(szTemp);
 #define _MFMW_READ_BOOL(bBool)				szTemp[0]=0; szTemp[1]=0; fgets(szTemp,10,fp); atoi(szTemp) == 0 ? m->bBool = false : m->bBool = true;
@@ -146,9 +146,9 @@ MFD_Out(MFD_SOURCE_MAIL,"mfmail: will read %d items\n",iListCount);
 	for (i = 0; i < iListCount; i++)
 	{
 MFD_Out(MFD_SOURCE_MAIL,"%d ",i);
-		fgets(szTemp,4000-2,fp);	szTemp[4000-1]=0; ilen=strlen(szTemp)-1; if (szTemp[ilen] == '\n') { szTemp[ilen]=0; ilen--; } if (szTemp[ilen] == '\r') szTemp[ilen]=0;
+		fgets(szTemp,4000-2,fp);	szTemp[4000-1]=0; ilen=strlen(szTemp); if ((ilen>0)&&(szTemp[ilen-1] == '\n')) { ilen--; szTemp[ilen]=0; } if ((ilen>0)&&(szTemp[ilen-1] == '\r')) szTemp[ilen-1]=0;
 MFD_Out(MFD_SOURCE_MAIL,".");
-		fgets(szTemp2,4000-2,fp);	szTemp2[4000-1]=0; ilen=strlen(szTemp2)-1; if (szTemp2[ilen] == '\n') { szTemp2[ilen]=0; ilen--; } if (szTemp2[ilen] == '\r') szTemp2[ilen]=0;
+		fgets(szTemp2,4000-2,fp);	szTemp2[4000-1]=0; ilen=strlen(szTemp2); if ((ilen>0)&&(szTemp2[ilen-1] == '\n')) { ilen--; szTemp2[ilen]=0; } if ((ilen>0)&&(szTemp2[ilen] == '\r')) szTemp2[ilen-1]=0;
 MFD_Out(MFD_SOURCE_MAIL,".");
 		m->lstCopies->AddValueChar(szTemp,szTemp2);
 MFD_Out(MFD_SOURCE_MAIL,".\n");

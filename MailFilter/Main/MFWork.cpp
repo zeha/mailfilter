@@ -1400,9 +1400,14 @@ int MF_ExamineFile(MailFilter_MailData* m)
 #endif
 			}
 			
-			curPos--;
+			if (curPos>0)
+				curPos--;
+				else
+				curPos=0;
+
 			szScanBuffer[curPos]=0;
 			szScanBuffer[2000]=0;
+
 			
 			do
 			{
@@ -1770,7 +1775,7 @@ MFD_Out(MFD_SOURCE_MAIL,"UU Attachment: '%s'\n",szCmpBuffer);
 									if (curPos > 2000)
 									{
 										// Abbruch wenn Attachment Name > Buffer
-										strcpy(m->szErrorMessage,"Attechment Name was too long to fit into buffer.");
+										strcpy(m->szErrorMessage,"Attachment Name was too long to fit into buffer.");
 										m->iFilterNotify = MAILFILTER_NOTIFICATION_ADMIN_INCOMING | MAILFILTER_NOTIFICATION_ADMIN_OUTGOING;
 										m->iFilterAction = MAILFILTER_MATCHACTION_DROP_MAIL;
 										m->bFilterMatched = true;
@@ -1789,41 +1794,48 @@ MFD_Out(MFD_SOURCE_MAIL,"UU Attachment: '%s'\n",szCmpBuffer);
 								}
 								while ((szCmpBuffer[curCmpPos] != '\n') && (szCmpBuffer[curCmpPos] != '\r') && (szCmpBuffer[curCmpPos] != '=') && (curPos < 2000) && (szCmpBuffer[curCmpPos] != '\0'));
 
-								curCmpPos--;
-								curPos--;
-
-								// Now we have a full attachment name.
-								szCmpBuffer[curCmpPos+1]=0;
-								if ( szCmpBuffer[curCmpPos] == '"' )	  //"
-									szCmpBuffer[curCmpPos]=0;
-
-MFD_Out(MFD_SOURCE_MAIL,"--> ATT '%s'\n",szCmpBuffer);
-								strncpy(szThisAttachment,szCmpBuffer,250);
-								szThisAttachment[250] = 0;
-//DEBUG
-
-								m->lstAttachments->AddValueChar("Base64", szCmpBuffer);
-								//_EXAMINEFILE_DOFILTERCHECK(szCmpBuffer,"Attachment Name",MAILFILTER_MATCHFIELD_ATTACHMENT);
-
-/*
-	MFVS_WriteOutAttachment
-	(int (*output_fn) (const char *buf,  int size,  void *closure),
-									void *closure);	
-*/								
-								bInMimeAttachment = true;
-/*								if (MFC_EnableAttachmentDecoder)
+								if (curCmpPos > 0)
 								{
-									// Extract Attachment
-									iThisAttSize = 0;
-									m->iNumOfAttachments++;
-									char szAttFile[MAX_PATH]; sprintf(szAttFile,"%s%i.att",m->szScanDirectory,m->iNumOfAttachments);
-									iThisAttSize = MFVS_DecodeAttachment(szAttFile,mailFile,mimeEncodingBase64);
-									if (iThisAttSize > 0)
+								
+									curCmpPos--;
+									curPos--;
+
+									// Now we have a full attachment name.
+									szCmpBuffer[curCmpPos+1]=0;
+									if ( szCmpBuffer[curCmpPos] == '"' )	  //"
+										szCmpBuffer[curCmpPos]=0;
+
+	MFD_Out(MFD_SOURCE_MAIL,"--> ATT '%s'\n",szCmpBuffer);
+									strncpy(szThisAttachment,szCmpBuffer,250);
+									szThisAttachment[250] = 0;
+	//DEBUG
+
+									m->lstAttachments->AddValueChar("Base64", szCmpBuffer);
+									//_EXAMINEFILE_DOFILTERCHECK(szCmpBuffer,"Attachment Name",MAILFILTER_MATCHFIELD_ATTACHMENT);
+
+	/*
+		MFVS_WriteOutAttachment
+		(int (*output_fn) (const char *buf,  int size,  void *closure),
+										void *closure);	
+	*/								
+									bInMimeAttachment = true;
+	/*								if (MFC_EnableAttachmentDecoder)
 									{
-										m->iTotalAttachmentSize += iThisAttSize;
-										MF_CheckWinmailDat(szAttFile,szThisAttachment,m);
-									}
-								}*/
+										// Extract Attachment
+										iThisAttSize = 0;
+										m->iNumOfAttachments++;
+										char szAttFile[MAX_PATH]; sprintf(szAttFile,"%s%i.att",m->szScanDirectory,m->iNumOfAttachments);
+										iThisAttSize = MFVS_DecodeAttachment(szAttFile,mailFile,mimeEncodingBase64);
+										if (iThisAttSize > 0)
+										{
+											m->iTotalAttachmentSize += iThisAttSize;
+											MF_CheckWinmailDat(szAttFile,szThisAttachment,m);
+										}
+									}*/
+								} else {
+									MFD_Out(MFD_SOURCE_GENERIC,"WAH: could not decode c-d:a filename= filename correctly. maybe empty or something like that.\n");
+									MF_StatusText("  WARNING: could not decode attachment filename [A]");
+								}
 								
 							} // name= matching
 
@@ -1839,9 +1851,7 @@ MFD_Out(MFD_SOURCE_MAIL,"--> ATT '%s'\n",szCmpBuffer);
 								curChr = szScanBuffer[curPos];
 								curPos++;
 							}
-#ifdef N_PLAT_NLM
 							ThreadSwitch();
-#endif
 
 							// is this is a filename ?
 							if (memicmp(szScanBuffer+curPos-5,"name=",5) == 0)
@@ -1855,9 +1865,7 @@ MFD_Out(MFD_SOURCE_MAIL,"--> ATT '%s'\n",szCmpBuffer);
 								if ( szScanBuffer[curPos] == '"' )	// "
 									curPos++;
 
-#ifdef N_PLAT_NLM
 								ThreadSwitch();
-#endif
 								while ((szCmpBuffer[curCmpPos] != '\n') && (szCmpBuffer[curCmpPos] != '\r') && (szCmpBuffer[curCmpPos] != '"')  && (szCmpBuffer[curCmpPos] != '=') && (curPos < 2000)) //"
 								{
 									szCmpBuffer[curCmpPos] = szScanBuffer[curPos];
@@ -1882,12 +1890,15 @@ MFD_Out(MFD_SOURCE_MAIL,"--> ATT '%s'\n",szCmpBuffer);
 								// Now we have a full attachment name.
 								szCmpBuffer[curCmpPos]=0;
 MFD_Out(MFD_SOURCE_MAIL,"--> TYPE '%s'\n",szCmpBuffer);
-//CHANGE
+
 								strncpy(szThisAttachment,szCmpBuffer,250);
 								szThisAttachment[250] = 0;
+								_EXAMINEFILE_DOMIMEHDRDECODE(szThisAttachment,249);
+MFD_Out(MFD_SOURCE_MAIL,"-=> TYPE '%s'\n",szThisAttachment);
 								m->lstAttachments->AddValueChar("Base64", szCmpBuffer);
-								//_EXAMINEFILE_DOFILTERCHECK(szCmpBuffer,"Attachment Name",MAILFILTER_MATCHFIELD_ATTACHMENT);
+
 								bInMimeAttachment = true;
+								
 /*								if (MFC_EnableAttachmentDecoder)
 								{
 									// Extract Attachment
@@ -1904,11 +1915,8 @@ MFD_Out(MFD_SOURCE_MAIL,"--> TYPE '%s'\n",szCmpBuffer);
 							}	// name=
 						}
 
-#ifdef N_PLAT_NLM
 						ThreadSwitch();
-#endif
 					}
- 
 				}
 
 				// 'c' 'C'
@@ -3561,18 +3569,19 @@ static void MFVS_CheckQueue()
 						iTotalAttSize = 0;
 						if (m->iNumOfAttachments > 0)
 						{
+							int myrc = 0;
 							for (i = 1; i < ( m->iNumOfAttachments +1 ); i++)
 							{
 								sprintf(szAttachmentFile,"%s%i.att",szScanDir,i);
 								if (access(m->szFileWork,F_OK) != 0)
 								{
-									rc = 5;
+									myrc = 5;
 									MF_StatusText(" Infected Attachment detected.");
 								} else {
 									statBuf.st_size = 0;
 									if (stat ( szAttachmentFile , &statBuf ) != 0)
 									{
-										rc = 5;
+										myrc = 5;
 										MF_StatusText(" Infected Attachment detected. (File size changed.)");
 									} else {
 										iTotalAttSize += (long)statBuf.st_size;
@@ -3584,13 +3593,15 @@ static void MFVS_CheckQueue()
 								sprintf(szAttachmentFile,"%s%i.mfn",szScanDir,i);
 								unlink(szAttachmentFile);
 								
-								if (rc != 0)
+								if (myrc != 0)
 									break;
 							}
+							if ( (rc == 0) && (myrc != 0) )
+								rc = myrc;
 						}
 
 MFD_Out(MFD_SOURCE_VSCAN," totals: detected size %d, should be %d; result: %d \n",iTotalAttSize,m->iTotalAttachmentSize,(iTotalAttSize != m->iTotalAttachmentSize));
-						if (iTotalAttSize != m->iTotalAttachmentSize)
+						if ((rc==0) && (iTotalAttSize != m->iTotalAttachmentSize))
 						{
 							rc = 5;
 							MF_StatusText(" Infected Attachment detected.");
