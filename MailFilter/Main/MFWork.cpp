@@ -2938,6 +2938,7 @@ MFD_Out(MFD_SOURCE_GENERIC,"prb: %s\n",probDir);
 	}
 	if (mailDir != NULL) closedir(mailDir);
 
+	MFD_Out(MFD_SOURCE_GENERIC,"deleted %d OLD files (%lld kB)\n",cntKilledNumber,cntKilledSize/1024);
 	MFD_Out(MFD_SOURCE_GENERIC,"size compare says: %lld vs %d\n", ((cntTotalSize - cntKilledSize)/1024), MF_GlobalConfiguration.ProblemDirMaxSize);
 
 	if (( ((cntTotalSize - cntKilledSize)/1024) > 
@@ -2987,6 +2988,15 @@ MFD_Out(MFD_SOURCE_GENERIC,"prb: %s\n",probDir);
 				
 				unlink(thisFile);
 			}
+			
+			if ( ((cntTotalSize - cntKilledSize)/1024) < 
+		#ifdef __NOVELL_LIBC__
+				(long long)MF_GlobalConfiguration.ProblemDirMaxSize
+		#else
+				MF_GlobalConfiguration.ProblemDirMaxSize
+		#endif
+				)
+				break;
 			
 		}
 		closedir(mailDir);
@@ -3177,6 +3187,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 	int shallTerminate = 0;
 
 	MFT_NLM_ThreadCount++;
+	MFT_bTriedAVInit = false;
 	
 	// Rename this Thread
 #if defined( N_PLAT_NLM ) && (!defined(__NOVELL_LIBC__))
