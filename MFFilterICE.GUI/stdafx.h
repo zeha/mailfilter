@@ -4,13 +4,6 @@
 
 #pragma once
 
-#include <stdio.h>
-#include <string>
-#include <string.h>
-#include <iostream>
-#include <vector>
-#include <algorithm>
-
 
 #ifndef VC_EXTRALEAN
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
@@ -50,3 +43,11 @@
 
 #include <afxsock.h>		// MFC socket extensions
 #include <afxdlgs.h>
+
+#include <stdio.h>
+#include <string>
+#include <string.h>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+

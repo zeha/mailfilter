@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include <stdio.h>
 #include <string>
@@ -5,7 +6,6 @@
 #include <string.h>
 #include <algorithm>
 
-#include "stdafx.h"
 
 #include <cstddef>
 #include "../MailFilter/Config/MFConfig-Filter.h++"

@@ -1,24 +1,24 @@
 ;
 ;  (c) Copyright 2001-2003 Christian Hofstaedtler
 ;
-;  This is the MailFilter/ax professional Installation
+;  This is the MailFilter professional Installation
 ;  Script. 
 ;
-;  Use this script with NSIS v2.0b4.
+;  Use this script with NSIS v2.0.
 
 ; *** UPDATE BUILD NUMBERS *HERE* ***
   !define PROD_VERSION_MAJOR 1
   !define PROD_VERSION_MINOR 5
-  !define PROD_VERSION_BUILD 1125plus
+  !define PROD_VERSION_BUILD 1130plus
 ;
 ;
 
 ; Product description
-  !define PROD_NAME "MailFilter/ax professional"
+  !define PROD_NAME "MailFilter professional"
   !define PROD_VERSION ${PROD_VERSION_MAJOR}.${PROD_VERSION_MINOR}-${PROD_VERSION_BUILD}
 
   Name "${PROD_NAME}"
-  BrandingText "MailFilter/ax Local Installation"
+  BrandingText "MailFilter Local Installation"
 
   !include "MUI.nsh"
 
@@ -29,9 +29,9 @@
   SetDatablockOptimize on
   ShowInstDetails hide
   InstType "${PROD_NAME} ${PROD_VERSION}"
-  OutFile "MailFilterAX-Setup-${PROD_VERSION}.exe"
-  InstallDir "$PROGRAMFILES\MailFilterAX professional ${PROD_VERSION}"
-  InstallDirRegKey HKLM "SOFTWARE\MailFilterAX\${PROD_VERSION}" "AdminInstallDir"
+  OutFile "MailFilter-Setup-${PROD_VERSION}.exe"
+  InstallDir "$PROGRAMFILES\MailFilter professional ${PROD_VERSION}"
+;  InstallDirRegKey HKLM "SOFTWARE\MailFilter\${PROD_VERSION}" "AdminInstallDir"
 
   !define MUI_ICON "nsis-src\install.ico"
   !define MUI_UNICON "nsis-src\uninst.ico"
@@ -67,12 +67,12 @@
   LangString NAME_Section_Docs ${LANG_English} "Documentation"
   LangString NAME_Section_ConfigW32 ${LANG_English} "Configuration Editor for Windows"
 
-  !insertmacro MUI_LANGUAGE "German"
-
-  LangString NAME_Section_Base ${LANG_German} "Server-Module (NLMs)"
-  LangString NAME_Section_Installer ${LANG_German} "Installationsassistent"
-  LangString NAME_Section_Docs ${LANG_German} "Dokumentation"
-  LangString NAME_Section_ConfigW32 ${LANG_German} "Konfigurationseditor für Windows"
+;  !insertmacro MUI_LANGUAGE "German"
+;
+;  LangString NAME_Section_Base ${LANG_German} "Server-Module (NLMs)"
+;  LangString NAME_Section_Installer ${LANG_German} "Installationsassistent"
+;  LangString NAME_Section_Docs ${LANG_German} "Dokumentation"
+;  LangString NAME_Section_ConfigW32 ${LANG_German} "Konfigurationseditor für Windows"
 
 Function .onInit
 
@@ -95,7 +95,7 @@ Section $(NAME_Section_Base) Section_Base
   ;; Done
 
   ;; cleanup previous installation (-> same version only)
-  RMDir /r "$SMPROGRAMS\MailFilterAX professional ${PROD_VERSION}"
+  RMDir /r "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}"
   RMDir /r "$INSTDIR"
 
 
@@ -106,15 +106,14 @@ Section $(NAME_Section_Base) Section_Base
   File ".\src\relnotes.html"
   File ".\src\cluster.html"
 
-  Delete "MFFilter2CSV.exe"
-  Delete "MFFilter2CSV.txt"
+  File "..\MFFilterICE.GUI\Release\FilterICE.exe"
   File "..\MailFilter\out\MFFilterICE.exe"
   File ".\src\MFFilterICE.txt"
 
   SetOutPath "$INSTDIR\NLM"
 
 ;
-; Copy MailFilter/ax Default Configuration
+; Copy MailFilter Default Configuration
 ;
   SetOutPath "$INSTDIR\NLM\ETC"
   File ".\src\NLM\ETC\MailFlt\CONFIG.NUL"
@@ -130,28 +129,30 @@ Section $(NAME_Section_Base) Section_Base
 ; Copy NLM Files
 ;
 
-  SetOutPath "$INSTDIR\NLM\LibC"
-  File "..\MailFilter\out\libc\MailFlt.nlm"
-  File "..\MailFilter\out\libc\MFConfig.nlm"
+  SetOutPath "$INSTDIR\NLM"
+  File "..\MailFilter\out\MailFlt.nlm"
+;  File "..\MailFilter\out\libc\MFConfig.nlm"
 
   SetOutPath "$INSTDIR\NLM\SYSTEM"
-  File "..\MailFilter\out\MailFlt.nlm"
+  File "..\MailFilter\out\MFLT50.nlm"
   File "..\MailFilter\out\MFNRM.nlm"
   File "..\MailFilter\out\MFConfig.nlm"
   File "..\MailFilter\out\MFUpgr.nlm"
   File "..\MailFilter\out\MFRest.nlm"
 
-  File "..\MailFilter\out\libc\MFBUG.NLM"
-  File "..\MailFilter\out\libc\MFPACK.NLM"
+;  File "..\MailFilter\out\MFBUG.NLM"
+;  File "..\MailFilter\out\MFPACK.NLM"
 
   File ".\src\NLM\SYSTEM\mfstart.ncf"
   File ".\src\NLM\SYSTEM\mfstop.ncf"
 
 
-  SetOutPath "$SMPROGRAMS\MailFilterAX professional ${PROD_VERSION}"
+  SetOutPath "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}"
   SetOutPath "$INSTDIR"
-  CreateShortCut "$SMPROGRAMS\MailFilterAX professional ${PROD_VERSION}\Release Notes.lnk" '"$INSTDIR\relnotes.html"'
-  CreateShortCut "$SMPROGRAMS\MailFilterAX professional ${PROD_VERSION}\Tools.lnk" %windir%\explorer.exe "$INSTDIR\" %windir%\explorer.exe 1
+  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Release Notes.lnk" '"$INSTDIR\relnotes.html"'
+  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Cluster Installation Notes.lnk" '"$INSTDIR\cluster.html"'
+  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Tools.lnk" %windir%\explorer.exe "$INSTDIR\" %windir%\explorer.exe 1
+  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Filter Editor.lnk" '"$INSTDIR\FilterICE.exe"'
 
 
 
@@ -161,16 +162,16 @@ Section $(NAME_Section_Base) Section_Base
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "Publisher" "Christian Hofstaedtler"
 
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "UninstallString" '"$INSTDIR\uninstall.exe"'
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "URLInfoAbout" "http://www.mailfilter.cc/"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "URLInfoAbout" "http://www.mailfilter.cc/en/"
 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "HelpLink" "http://www.mailfilter.cc/"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "HelpLink" "http://www.mailfilter.cc/en/"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "Readme" "file://$INSTDIR\relnotes.html"
 
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "NoRepair" 1
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROD_NAME} ${PROD_VERSION}" "NoModify" 1
 
 
-  WriteRegStr HKLM "SOFTWARE\MailFilterAX\${PROD_VERSION}" "AdminInstallDir" $INSTDIR
+;  WriteRegStr HKLM "SOFTWARE\MailFilter\${PROD_VERSION}" "AdminInstallDir" $INSTDIR
   WriteUninstaller "uninstall.exe"
 SectionEnd
 
@@ -181,9 +182,9 @@ Section $(NAME_Section_Installer) Section_Installer
 
   File "..\MFInstall.W32\out\MailFilter.exe"
 
-  SetOutPath "$SMPROGRAMS\MailFilterAX professional ${PROD_VERSION}"
+  SetOutPath "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}"
   SetOutPath "$INSTDIR"
-  CreateShortCut "$SMPROGRAMS\MailFilterAX professional ${PROD_VERSION}\ Installation Wizard.lnk" '"$INSTDIR\MailFilter.exe"'
+  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\ Installation Wizard.lnk" '"$INSTDIR\MailFilter.exe"'
 SectionEnd
 
 
@@ -194,10 +195,10 @@ Section $(NAME_Section_Docs) Section_Docs
   File ".\src\Administrators Guide EN.pdf"
   File ".\src\Administrators Guide DE.pdf"
 
-  SetOutPath "$SMPROGRAMS\MailFilterAX professional ${PROD_VERSION}"
+  SetOutPath "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}"
   SetOutPath "$INSTDIR"
-  CreateShortCut "$SMPROGRAMS\MailFilterAX professional ${PROD_VERSION}\Administrators Guide (PDF - English).lnk" '"$INSTDIR\Administrators Guide EN.pdf"'
-  CreateShortCut "$SMPROGRAMS\MailFilterAX professional ${PROD_VERSION}\Administrators Guide (PDF - German).lnk"  '"$INSTDIR\Administrators Guide DE.pdf"'
+  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Administrators Guide (PDF - English).lnk" '"$INSTDIR\Administrators Guide EN.pdf"'
+  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Administrators Guide (PDF - German).lnk"  '"$INSTDIR\Administrators Guide DE.pdf"'
 SectionEnd
 
 
@@ -211,9 +212,9 @@ SectionEnd
 ;  File ".\src\mfc70.dll"
 ;  File ".\src\mfc70u.dll"
 
-;  SetOutPath "$SMPROGRAMS\MailFilterAX professional ${PROD_VERSION}"
+;  SetOutPath "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}"
 ;  SetOutPath "$INSTDIR"
-;  CreateShortCut "$SMPROGRAMS\MailFilterAX professional ${PROD_VERSION}\Configuration Editor.lnk" '"$INSTDIR\MFConfig.exe"'
+;  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Configuration Editor.lnk" '"$INSTDIR\MFConfig.exe"'
 ;SectionEnd
 
 
@@ -230,10 +231,10 @@ Section "Uninstall"
   DeleteRegKey /ifempty HKLM "SOFTWARE\Hofstaedtler IE GmbH"
   DeleteRegKey /ifempty HKLM "SOFTWARE\Hofstaedtler IE GmbH"
 
-  DeleteRegKey HKLM "SOFTWARE\MailFilterAX\${PROD_VERSION}"
-  DeleteRegKey /ifempty HKLM "SOFTWARE\MailFilterAX"
+  DeleteRegKey HKLM "SOFTWARE\MailFilter\${PROD_VERSION}"
+  DeleteRegKey /ifempty HKLM "SOFTWARE\MailFilter"
 
-  RMDir /r "$SMPROGRAMS\MailFilterAX professional ${PROD_VERSION}"
+  RMDir /r "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}"
 
   Delete $INSTDIR\uninstall.exe
 
