@@ -51,7 +51,7 @@ bool iXDir::ReadNextEntry()
 			return false;
 		else
 		{
-			const char* e = GetCurrentEntryName();
+			const char* e = this->GetCurrentEntryName();
 			if (e[0] == '.')
 			{
 				if (e[1] == '\0')
@@ -106,10 +106,10 @@ long long iXDir::GetCurrentEntrySize()
 
 bool iXDir::UnlinkCurrentEntry()
 {
+	bool rc = false;
 	if (m_Entry != NULL)
 	{
-		const char* e = GetCurrentEntryName();
-		
+		const char* e = this->GetCurrentEntryName();
 		char* fullE = (char*)malloc(strlen(e) + strlen(m_DirectoryName) + strlen(IX_DIRECTORY_SEPARATOR_STR)*2 + 1);
 		
 		strcpy(fullE,m_DirectoryName);
@@ -117,9 +117,13 @@ bool iXDir::UnlinkCurrentEntry()
 		strcat(fullE,e);
 		
 		if (unlink(fullE))
-			return false;
+			rc = false;
 		else
-			return true;
+			rc = true;
+		
+		free(fullE);
+		return rc;
+		
 	} else
 		return false;
 }
@@ -129,20 +133,24 @@ time_t iXDir::GetCurrentEntryModificationTime()
 	if (m_Entry != NULL)
 	{
 		struct stat st;
-		const char* e = GetCurrentEntryName();
+		const char* e = this->GetCurrentEntryName();
+		char* fullE = (char*)malloc(strlen(e) + strlen(m_DirectoryName) + strlen(IX_DIRECTORY_SEPARATOR_STR)*2 + 1);
 		
-		stat(e,&st);
+		strcpy(fullE,m_DirectoryName);
+		strcat(fullE,IX_DIRECTORY_SEPARATOR_STR);
+		strcat(fullE,e);
+		
+		stat(fullE,&st);
+		free(fullE);
 		
 #ifdef IXPLAT_NETWARE_CLIB
-		ConsolePrintf("mt:%d ",st.st_mtime);
 		return st.st_mtime;
 #else
-		consoleprintf("mt:%d ",st.st_mtime);
 		return st.st_mtime.tv_sec;
 #endif
 		// just in case.
 		return -2;
 	
 	} else
-		return (-1);
+		return 0;
 }

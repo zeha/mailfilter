@@ -418,7 +418,7 @@ void NLM_Main(void)
 	chdir(scanPath);
 	
 	struct tm* time;
-	long lTime;
+	time_t lTime;
 	
 	iXDir dir(scanPath);
 	const char* e;
@@ -437,7 +437,7 @@ void NLM_Main(void)
 		szFile[13] = 0;
 		
 //		strftime (szDate, 60, "%04d/%02d/%02d %02d:%02d",  );   
-		MFD_Out(MFD_SOURCE_GENERIC,"lTime: %d\n",(long)lTime);
+
 		if (lTime == -1)
 		{
 			sprintf ( szDate, "% 12s","- no datetime -");
@@ -531,7 +531,7 @@ int MailFilter_Main_RunAppRestore(bool bStandalone)
 		0,
 		ERROR_PALETTE,
 		VREVERSE,
-		(_MF_NUTCHAR)"WARNING: This Program is a potential security risk!\n\nREFRAIN FROM USING THIS TOOL IF YOU DO NOT KNOW WHAT YOU ARE DOING!\n\nYou can use this tool to bypass MailFilter Checks! This can lead to viruses in the system!\n\n",
+		(_MF_NUTCHAR)"WARNING: This Utility Program is a potential security risk!\n\nREFRAIN FROM USING THIS TOOL IF YOU DO NOT KNOW EXACTLY WHAT YOU ARE DOING!\n\nYou can use this tool to bypass MailFilter Checks! This can lead to viruses in the GroupWise system!\n\n",
 		MF_NutInfo
 		);
 
