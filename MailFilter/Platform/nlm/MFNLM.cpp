@@ -3,11 +3,8 @@
  +		MFNLM.cpp
  +		
  +		NetWare Platform Specific Functions
+ +      for CLib AND LibC
  +
- +      CLib AND LibC
- +
- +		This is MailFilter!
- +		www.mailfilter.cc
  +		
  +		Copyright 2001-2004 Christian Hofstädtler.
  +		
@@ -15,8 +12,6 @@
  +
  +
  +
- +
- +		Welcome to this code monster.
  +		
  */
 
@@ -29,12 +24,15 @@
 
 // Include MailFilter.h
 #include "..\..\Main\MailFilter.h"
+#include "MFConfig-defines.h"
+
+// And undef it ... ;)
+#undef _MAILFILTER_MAIN_
+
+#include "MFVersion.h"
 #include "MFZip.h"
 #include "MFRelayHost.h++"
-// Include Version Header
-#include "..\..\Main\MFVersion.h"
-#include "MFConfig-defines.h"
-#include "MFVersion.h"
+#include "MFConfig.h++"
 
 
 #include <sys/utsname.h>
@@ -43,10 +41,7 @@
 	#include <nks/netware.h>
 #endif
 
-// And undef it ... ;)
-#undef _MAILFILTER_MAIN_
 
-#include "MFConfig.h++"
 
 
 extern void MailFilter_NRM_sigterm();
@@ -80,17 +75,10 @@ extern void MFWorker_SetupPaths();
 //
 
 
-void MF_ShutDown(void)
-{
-	MFT_NLM_Exiting = 255;
-//	raise(SIGTERM);
-}
-
 #ifdef __NOVELL_LIBC__
 void _NonAppStop ( void )
 {
 	MF_StatusFree();
-//	MF_ConfigFree();
 	MF_ExitProc();
 }
 #endif
@@ -122,7 +110,6 @@ void MF_ExitProc(void)
 		MF_NutInfo = NULL;
 		
 		statusPortalPCB = NULL;
-//		infoPortalPCB = NULL;
 	}
 #ifndef __NOVELL_LIBC__
 	
@@ -153,24 +140,10 @@ void MF_ExitProc(void)
 
 	}
 
-	// Shutdown Unicode
-	NWFreeUnicodeTables();
-
-	// Disable NWNET
-	NWNetTerm(NULL);
-
-	// Disable NWCLX
-	NWCLXTerm(NULL);
-
-	// Disable NWCAL
-//	NWCallsTerm(NULL);
 #endif
 	
 	// Destroy Screen ...
 //	if (MFD_ScreenID)	CloseScreen ( MFD_ScreenID );
-//#ifndef __NOVELL_LIBC__
-//	if (MF_ScreenID )	CloseScreen ( MF_ScreenID  );
-//#endif
 
 }
 
@@ -240,18 +213,8 @@ void MF_NutHandlerKeyF2 (void *handle)		// debug stuff
 	MF_StatusUI_UpdateLog(buf);
 #endif
 
-	sprintf(buf,"I have %d rules in memory.",MF_CountAllFilters());
-	MF_StatusUI_UpdateLog(buf);
-
 	sprintf(buf,"StackAvail: %d, DebugLevel: %d",stackavail(),MFT_Debug);
 	MF_StatusUI_UpdateLog(buf);
-
-	MF_StatusUI_UpdateLog("Note: DNBL-Test always uses bl.spamcop.net.");
-	MFRelayHost bl("127.0.0.2"); //("bl.spamcop.net","127.0.0.2");
-	if (bl.LookupRBL_DNS("bl.spamcop.net","127.0.0.1"))
-		MF_StatusUI_UpdateLog("Test: 127.0.0.2 is blacklisted.");
-		else
-		MF_StatusUI_UpdateLog("Test: 127.0.0.2 is _not_ blacklisted.");
 
 }
 
@@ -787,257 +750,6 @@ void NLM_SignalHandler(int sig)
 	return;
 }
 
-static bool MF_NLM_InitDS()
-{
-#if 0 //ndef __NOVELL_LIBC__
-//	NWCCODE				ccode;
-	NWDSCCODE			dsccode;
-	LCONV				lConvInfo;
-
-
-	/* Initialize NWCalls */
-/*	ccode = NWCallsInit(NULL, NULL);
-	if(ccode)
-	{
-		MF_DisplayCriticalError("MailFilter: NWCallsInit returned %X\n", ccode);
-	 	return false;
-	}
-*/
-	/* Initialize NWClx */
-	dsccode = NWCLXInit(NULL, NULL);
-	if(dsccode)
-	{
-		MF_DisplayCriticalError("MailFilter: NWCLXInit returned %X\n", dsccode);
-	 	return false;
-	}
-
-	/* Initialize the unicode tables */
-	NWLlocaleconv(&lConvInfo);
-	dsccode = NWInitUnicodeTables( lConvInfo.country_id, lConvInfo.code_page );
-	if(dsccode)
-	{
-		MF_DisplayCriticalError("MailFilter: NWInitUnicodeTables error %X \n", dsccode);
-		return false;
-	}
-
-	/* Initialize NWNet */
-	dsccode = NWNetInit(NULL,NULL);
-	if(dsccode)
-	{
-		MF_DisplayCriticalError("MailFilter: NWNetInit returned %X\n",dsccode);
-	 	return false;
-	}
-
-
-
-	if (!MFT_RemoteDirectories)
-	{
-		
-/*		NWDSCreateContextHandle(&MFT_NLM_DS_Context);
-		
-		// Login as the Server object ...
-		ccode = NWDSLoginAsServer ( MFT_NLM_DS_Context );
-		if(ccode){
-			switch (ccode) {
-				case -601:
-					// user object not found
-					MF_StatusText("Login: User object not found!");
-					break;
-				case -669:
-					// auth failed
-					MF_StatusText("Login: Failed authentication. Check Password.");
-					break;
-				default:
-					MF_StatusText("Login: Generic Error. Please check Console.");
-					MF_DisplayCriticalError("MailFilter: Login Error: NWDSLogin failed (%d)!\n",ccode);
-			}
-			return false;
-		}
-
-		SetCurrentFileServerID(0);
-//		SetCurrentConnection(-1);
-		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		MF_DisplayCriticalError("CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
-//		NWGetConnectionNumber( (NWCONN_HANDLE)MFT_NLM_Connection_HandleCLIB, &connnum );
-
-/*		// Create authenticated Connection.
-	//	dsccode = NWDSAuthenticate ( (NWCONN_HANDLE)MFT_NLM_Connection_HandleCLIB , 0 , NULL );
-		dsccode = NWDSAuthenticateConnEx ( MFT_NLM_DS_Context , MFT_NLM_Connection_Handle );
-		if (dsccode != 0)
-		{
-			MF_StatusText("Login: Authentication to server failed.");
-			MF_DisplayCriticalError("MailFilter: Login Error: NWDSAuthenticate returned %d!\n",ccode);
-		}
-
-*//*		LONG oldTask = SetCurrentTask(-1);
-		LONG myTask = GetCurrentTask();
-*//*		SetCurrentConnection(-1);
-		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		MF_DisplayCriticalError("CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
-*//*
-
-		// Login as the Server object ...
-	//	dsccode = LoginObject  ( MFT_NLM_Connection_Handle ,
-	//					MFT_Local_ServerName,
-	//					0x0004,
-	//					""); 
-		dsccode = LoginToFileServer (
-			MFT_Local_ServerName,
-			0x0004,
-			"");
-		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		MF_DisplayCriticalError("CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
-
-		if(dsccode){
-			switch (dsccode) {
-				case -601:
-					// user object not found
-					MF_StatusText("Login: User object not found!");
-					break;
-				case -669:
-					// auth failed
-					MF_StatusText("Login: Failed authentication. Check Password.");
-					break;
-				default:
-					MF_StatusText("Login: Generic Error. Please check Console.");
-					MF_DisplayCriticalError("MailFilter: Login Error: NWDSLogin failed (%d)!\n",dsccode);
-			}
-			ReturnBlockOfTasks(myTask,1);
-			Logout();
-			return false;
-		}
-
-		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		MF_DisplayCriticalError("CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
-		SetCurrentTask(oldTask);
-*/
-		SetCurrentConnection(0);
-	} else {
-	
-		/*******************************************************************
-		NDS: create context and set current context to Root
-		*/
-/*		dsccode = NWDSCreateContextHandle (&MFT_NLM_DS_Context);
-		if(dsccode) {
-			 MF_DisplayCriticalError("MailFilter: Error creating context. %d.\n",dsccode);
-			 MFT_NLM_DS_Context = NULL;
-			 return false;
-		}
-
-		dsccode = NWDSSetContext(MFT_NLM_DS_Context, DCK_NAME_CONTEXT, (void*)"[Root]");
-		if(dsccode){
-			 MF_DisplayCriticalError("MailFilter: Error: NWDSSetContext() returned: %d\n",dsccode);
-			 return false;
-		}
-
-*/
-		/*******************************************************************
-		Server: Open Connection
-		*/
-		char* szServerName = (char*)_mfd_malloc(MAX_PATH,"MFNLM: szServerName");
-		MF_GetServerName ( szServerName );
-
-		MF_DisplayCriticalError( "MailFilter: Opening Connection to %s ...\n", szServerName );
-		
-		dsccode = NWCCOpenConnByName(
-	             /* Handle to resolve name */  (nuint)0, 
-	             /* Server name            */  strupr(szServerName),
-	             /* Server name format     */  NWCC_NAME_FORMAT_BIND, 
-	             /* Connection open state  */  NWCC_OPEN_LICENSED, 
-	             /* Transport Type         */  NWCC_TRAN_TYPE_WILD,
-	             /* Connection Handle      */  &MFT_NLM_Connection_Handle);
-
-		_mfd_free(szServerName,"MFNLM: szServerName");
-
-		if (dsccode)
-		{
-			MF_StatusText("Error connecting to target server!");
-			MF_DisplayCriticalError("MailFilter: NWCCOpenConnByName returned %d.\n",dsccode);
-			MFT_NLM_Connection_Handle = NULL;
-			return false;
-		}
-		
-
-		NWCCSetCurrentConnection ( MFT_NLM_Connection_Handle );
-		
-		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		MF_DisplayCriticalError("Connection: %d\n",MFT_NLM_Connection_HandleCLIB);
-
-
-
-		NWCCSetCurrentConnection ( MFT_NLM_Connection_Handle );
-		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		MF_DisplayCriticalError("CLIB Connection (Local): %d\n",MFT_NLM_Connection_HandleCLIB);
-
-
-
-		/*******************************************************************
-		Now Login into NDS
-		*/
-/*
-		// login
-	//	ccode = NWDSLogin(MFT_NLM_DS_Context, 0, ".admin.system", "dakava", 0);
-
-		// Login as the Server object ...
-		ccode = NWDSLoginAsServer ( MFT_NLM_DS_Context );
-		if(ccode){
-			switch (ccode) {
-				case -601:
-					// user object not found
-					MF_StatusText("Login: User object not found!");
-					break;
-				case -669:
-					// auth failed
-					MF_StatusText("Login: Failed authentication. Check Password.");
-					break;
-				default:
-					MF_StatusText("Login: Generic Error. Please check Console.");
-					MF_DisplayCriticalError("MailFilter: Login Error: NWDSLogin failed (%d)!\n",ccode);
-			}
-			return false;
-		}
-
-		// Create authenticated Connection.
-		dsccode = NWDSAuthenticate ( MFT_NLM_Connection_Handle , 0 , NULL );
-	//	dsccode = NWDSAuthenticateConnEx ( MFT_NLM_DS_Context , MFT_NLM_Connection_Handle );
-		if (dsccode != 0)
-		{
-			MF_StatusText("Login: Authentication to server failed.");
-			MF_DisplayCriticalError("MailFilter: Login Error: NWDSAuthenticate returned %d!\n",ccode);
-		}
-*/
-
-	// this should work:
-/*		ccode = NWLoginToFileServer  ( MFT_NLM_Connection_Handle,
-						MFT_Local_ServerName,
-						OT_WILD,
-						0);  
-						
-		if (ccode)
-		{
-			switch (ccode)
-			{
-				case -1:
-					MF_StatusText("Login Failed.");
-					break;
-				case 150:
-					MF_DisplayCriticalError("MailFilter: Out of memory!\n");
-					break;
-				default:
-					MF_DisplayCriticalError("MailFilter: Login Failed with error %d.\n",ccode);
-					break;
-			}
-			return false;
-		}
-		
-		NWCCSetCurrentConnection ( MFT_NLM_Connection_Handle );
-		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
-		MF_DisplayCriticalError("CLIB Connection (probably remote): %d\n",MFT_NLM_Connection_HandleCLIB);
-	*/}
-#endif
-	return true;
-}
-
 #ifdef _MF_MEMTRACE
 static void _mfd_tellallocccountonexit()
 {
@@ -1102,10 +814,6 @@ static int MailFilter_Main_RunAppServer()
 	printf(MF_Msg(MSG_BOOT_USERINTERFACE));
 
 	if (!MailFilterApp_Server_InitNut())
-		goto MF_MAIN_TERMINATE;
-	
-	// DS and Server Connections ...
-	if (!MF_NLM_InitDS())
 		goto MF_MAIN_TERMINATE;
 	
 MF_MAIN_RUNLOOP:
@@ -1372,6 +1080,8 @@ int main( int argc, char *argv[ ])
 
 	++MFT_NLM_ThreadCount;
 	MF_NutInfo = NULL;
+	MFD_ScreenTag = NULL;
+	MF_ScreenID = NULL;
 
 #ifdef _MF_MEMTRACE
 	atexit(_mfd_tellallocccountonexit);
@@ -1379,18 +1089,8 @@ int main( int argc, char *argv[ ])
 
 	MF_ProductName = "MailFilter professional "MAILFILTERVERNUM" ["MAILFILTERPLATFORM"]";
 
-#ifdef MF_WITH_I18N
-	if (LoadLanguageMessageTable(&programMesgTable, &MFT_I18N_MessageCount, &MFT_I18N_LanguageID))
-	{
-		MF_DisplayCriticalError("MAILFILTER: CRITICAL ERROR:\n\tCan't load Message Tables.\n");
-		exit(0); 
-	}
-#ifndef _MF_CLEANBUILD
-	MF_DisplayCriticalError("MAILFILTER: Language ID: %l, Messages Loaded: %l\n",MFT_I18N_LanguageID,MFT_I18N_MessageCount);
-#endif
-#endif
 
-	printf("%s\n",MF_Msg(MSG_BOOT_LOADING));
+	printf("%s: %s\n",MF_ProductName,MF_Msg(MSG_BOOT_LOADING));
 	
 	
 #ifndef __NOVELL_LIBC__
@@ -1573,10 +1273,5 @@ MF_MAIN_TERMINATE:
 #endif // N_PLAT_NLM
 
 /*
- *
- *
  *  --- eof ---
- *
- *
  */
-

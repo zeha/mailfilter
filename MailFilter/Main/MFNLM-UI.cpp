@@ -57,13 +57,10 @@ void MF_UI_ShowConfiguration(void)
 	sprintf(szTemp, " Prb Dir Clean: %d kBytes, %d Days, Notify: %s",MF_GlobalConfiguration.ProblemDirMaxSize,MF_GlobalConfiguration.ProblemDirMaxAge,MF_GlobalConfiguration.NotificationAdminMailsKilled==true?"On":"Off");
 	MF_StatusUI_UpdateLog(szTemp);
 
-/*	sprintf(szTemp, " Notification.: Internal: Sender: %s, Recipient: %s",MFC_Notification_EnableInternalSndr==1?"On":"Off",MFC_Notification_EnableInternalRcpt==1?"On":"Off"); 
+	sprintf(szTemp, " Virus Scan...: %s, Delay: %d, Decode: %s",MFC_MAILSCAN_Enabled == 0 ? "Off" : "On",MF_GlobalConfiguration.MailscanTimeout,MF_GlobalConfiguration.EnableAttachmentDecoder == 0 ? "Off" : "On");
 	MF_StatusUI_UpdateLog(szTemp);
 
-	sprintf(szTemp, " Notification.: External: Sender: %s, Recipient: %s",MFC_Notification_EnableExternalSndr==1?"On":"Off",MFC_Notification_EnableExternalRcpt==1?"On":"Off"); 
-	MF_StatusUI_UpdateLog(szTemp);
-*/
-	sprintf(szTemp, " Virus Scan...: %s, Delay: %d, Decode: %s",MFC_MAILSCAN_Enabled == 0 ? "Off" : "On",MF_GlobalConfiguration.MailscanTimeout,MF_GlobalConfiguration.EnableAttachmentDecoder == 0 ? "Off" : "On");
+	sprintf(szTemp, " Loaded Rules.: %d present in memory",MF_CountAllFilters());
 	MF_StatusUI_UpdateLog(szTemp);
 
 	/* this is inverse */

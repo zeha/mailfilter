@@ -3922,8 +3922,8 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 			}
 		}
 
+#if defined(N_PLAT_NLM) && !defined(__NOVELL_LIBC__)
 		// Defragment Memory.
-#ifdef N_PLAT_NLM
 		NWGarbageCollect ( MF_NLMHandle );
 		NWGarbageCollect ( MF_NLMHandle );
 #endif
@@ -4008,7 +4008,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 		
 		// Do the next two things to hide code.
 		MF_StatusCycleLog();
-#ifdef N_PLAT_NLM
+#if defined(N_PLAT_NLM) && !defined(__NOVELL_LIBC__)
 		NWGarbageCollect ( MF_NLMHandle );
 #endif
 
