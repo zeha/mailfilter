@@ -3,9 +3,9 @@
  +		
  +		Status/Logging Functions
  +		
- +		Copyright 2001-2003 Christian Hofstädtler.
+ +		Copyright 2001-2004 Christian Hofstädtler.
  +		
- +		- Aug/2001 ; ch   ; Initial Code
+ +
  +		
  +		
 +*/

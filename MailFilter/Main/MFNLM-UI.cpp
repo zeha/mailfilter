@@ -1,4 +1,14 @@
-
+/*
+ +
+ +		MFNLM-UI.cpp
+ +		
+ +		NetWare Platform Specific Functions
+ +		User Interface stuff
+ +
+ +		Copyright 2001-2004 Christian Hofstädtler.
+ +
+ */
+ 
 #define _MFD_MODULE			"MFNLM-UI.CPP"
 #include "MailFilter.h"
 

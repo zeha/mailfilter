@@ -3,10 +3,10 @@
  +		
  +		MailFilter Export Functions
  +		
- +		Copyright 2001-2002 Christian Hofstädtler.
+ +		Copyright 2001-2004 Christian Hofstädtler.
  +		
  +		
- +		- Oct/2001 ; ch   ; Initial Code
+ +
  +		
  +		
 +*/

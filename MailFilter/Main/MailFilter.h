@@ -585,6 +585,8 @@ int MFAPI_FilterCheck( char *szScan , int mailSource , int matchfield );
 bool MFBW_CheckCurrentScheduleState();
 int MF_CountFilters(int action);
 
+
+
 // Thread Functions
 #ifndef WIN32
 void MF_Work_Startup(void *dummy);

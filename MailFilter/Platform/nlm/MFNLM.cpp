@@ -2,7 +2,7 @@
  +
  +		MFNLM.cpp
  +		
- +		NLM Platform Specific Functions
+ +		NetWare Platform Specific Functions
  +
  +      CLib AND LibC
  +
@@ -12,7 +12,11 @@
  +		Copyright 2001-2004 Christian Hofstädtler.
  +		
  +		
- +		
+ +
+ +
+ +
+ +
+ +		Welcome to this code monster.
  +		
  */
 
