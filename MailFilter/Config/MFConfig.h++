@@ -112,6 +112,7 @@ public:
 	bool isCurrentVersion() { return config_build == MAILFILTER_CONFIGURATION_THISBUILD; }
 	
 	bool ReadFromFile(std::string alternateFilename);
+	bool WriteToFile(std::string alternateFilename);
 
 	bool ReadFilterList();
 	
