@@ -314,8 +314,6 @@ long MFVS_DecodeAttachment(const char* szScanFile, FILE* mailFile, mimeEncodingT
 		if (curPos>0)	szScanBuffer[curPos-1]=0;
 			else		{ curPos=0; szScanBuffer[0]=0; }
 
-		MFD_Out(MFD_SOURCE_VSCAN," %d",curPos);
-			
 		if ( (encodingType == mimeEncodingBase64) && (curPos == 73) && (lastPos == 0) )
 			bDecodeExec = true;
 

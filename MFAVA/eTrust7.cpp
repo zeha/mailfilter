@@ -225,14 +225,14 @@ void callback(struct scanReturnData* data, VirusData_t* virus, int i3, int iErro
 		
 	}
 	
-	printf("MFAVADebug: virusnamelength = %d\n",virus->iVirusNameLength);
+//	printf("MFAVADebug: virusnamelength = %d\n",virus->iVirusNameLength);
 	
 	strncpy(virus->szVirusName, data->szVirusName,virus->iVirusNameLength);
 	virus->lVirusType = (long) data->lVirusType;
 	virus->lErrorCode = (long) data->lErrorCode;
 	virus->lExtErrorCode = (long) data->lWin32ErrorCode;
 	
-	printf("MFAVADebug: set virus name: %X '%s'\n",virus->szVirusName,virus->szVirusName);
+//	printf("MFAVADebug: set virus name: %X '%s'\n",virus->szVirusName,virus->szVirusName);
 }
 
 int eTrust7_ScanFile(MFAVA_HANDLE hAVA, const char* szFileName, char* szVirusName, size_t iVirusNameLength, int &iVirusType)
@@ -261,7 +261,7 @@ int eTrust7_ScanFile(MFAVA_HANDLE hAVA, const char* szFileName, char* szVirusNam
 	if ((virus = (VirusData_t*)malloc(sizeof(VirusData_t))) == NULL)
 		return ENOMEM;
 		
-	printf("MFAVADebug: %X VirusNameLength = %d\n",hAVA,iVirusNameLength);
+//	printf("MFAVADebug: %X VirusNameLength = %d\n",hAVA,iVirusNameLength);
 
 	virus->sig = 0xBA7F0000;
 	virus->Debug = app->Debug;
@@ -284,9 +284,12 @@ int eTrust7_ScanFile(MFAVA_HANDLE hAVA, const char* szFileName, char* szVirusNam
 		printf("MFAVADebug: %X calling InoScanScanIT [%X,%X,%X]\n",hAVA,app->eTrust_hInoScan, szFileName, virus);
 
 	rc = InoScanScanIT_sym(app->eTrust_hInoScan, szFileName, virus);
-	printf("MFAVADebug: %X InoScanScanIT rc = %X %i\n",hAVA,rc,rc);
-	printf("MFAVADebug: %X -> %X %X %X\n\t%s\n",hAVA,virus,virus->szVirusName,szVirusName,szVirusName);
-
+	if (app->Debug)
+	{
+		printf("MFAVADebug: %X InoScanScanIT rc = %X %i\n",hAVA,rc,rc);
+		printf("MFAVADebug: %X -> %X %X %X\n\t%s\n",hAVA,virus,virus->szVirusName,szVirusName,szVirusName);
+	}
+	
 	iVirusType = virus->lVirusType;
 	rc = (int)virus->lErrorCode;
 

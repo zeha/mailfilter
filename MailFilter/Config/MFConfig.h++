@@ -78,6 +78,7 @@ public:
 	bool EnableNRMRestore;
 	bool DropBrokenMessages;
 	bool DropPartialMessages;
+	bool RequireAVA;
 	std::string MessageFooter;
 	std::string BWLScheduleTime;
 	std::string Multi2One;

@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "MFInstWizard.h"
 #include "WelcomeDlg.h"
-
+#include "../MailFilter/Main/MFVersion.h"
 
 // WelcomeDlg-Dialogfeld
 
@@ -41,6 +41,9 @@ BOOL WelcomeDlg::OnSetActive(void)
 
 	CStatic* headerCtrl = ((CStatic*)this->GetDlgItem(IDC_TITLE));
 	headerCtrl->SetFont(headerFont);
+
+	CStatic* versionCtrl = ((CStatic*)this->GetDlgItem(IDC_VERSION));
+	versionCtrl->SetWindowText("Version "MAILFILTERVERNUM);
 
 	return CPropertyPage::OnSetActive();
 }

@@ -1019,6 +1019,7 @@ static void MFConfig_EditConfig()
   	BOOL	newEnableNRMRestore = (BOOL)MF_GlobalConfiguration.EnableNRMRestore;
 	BOOL	newDropBrokenMessages = (BOOL)MF_GlobalConfiguration.DropBrokenMessages;
 	BOOL	newDropPartialMessages = (BOOL)MF_GlobalConfiguration.DropPartialMessages;
+	BOOL	newRequireAVA = (BOOL)MF_GlobalConfiguration.RequireAVA;
 
 	NWSPushList(MF_NutInfo);
 	NWSInitForm(MF_NutInfo);
@@ -1139,6 +1140,10 @@ static void MFConfig_EditConfig()
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Virus Scanner Integration:", MF_NutInfo);
+	line++;
+
+	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"No Mail Transport without CA eTrust running:", MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newRequireAVA, NULL, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Unpack Mails for Virus Scanner:", MF_NutInfo);
@@ -1263,6 +1268,7 @@ static void MFConfig_EditConfig()
 		MF_GlobalConfiguration.EnableIncomingRcptCheck		=(bool)newEnableIncomingRcptCheck;
 		MF_GlobalConfiguration.DropBrokenMessages 			=(bool)newDropBrokenMessages;
 		MF_GlobalConfiguration.DropPartialMessages 			=(bool)newDropPartialMessages;
+		MF_GlobalConfiguration.RequireAVA					=(bool)newRequireAVA;
 
 		MF_GlobalConfiguration.GWIAVersion					=(unsigned int)newGwiaVersion;
 		

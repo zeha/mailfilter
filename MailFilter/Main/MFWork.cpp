@@ -2008,6 +2008,7 @@ int MF_EMailPostmasterGeneric(const char* Subject, const char* Text, const char*
 				}
 				fclose(fAttFile);
 			}
+			unlink (szB64File);
 		}
 		
 		fprintf(mail,"\r\n");
@@ -3174,7 +3175,6 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 	int tlc = 0;
 	int lc = 255;
 	int shallTerminate = 0;
-	bool bTriedAVInit = false;
 
 	MFT_NLM_ThreadCount++;
 	
@@ -3219,13 +3219,30 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 	while (MFT_NLM_Exiting == 0)
 	{
 
-		//* Send Directory ... *
-		HandleGwiaDirectory(MFT_GWIA_SendDirIn,MFT_GWIA_SendDirOut,0,tlc);
-		if (MFT_NLM_Exiting > 0)	break;
+		// wenn AV Geladen && RequireAVA -> process
+		// wenn !RequireAVA -> process 
+		if 
+		(
+			(
+				MF_GlobalConfiguration.RequireAVA &&
+				(MailFilter_AV_Check() == 0)
+			)
+			||
+			(
+				MF_GlobalConfiguration.RequireAVA != true
+			)
+		)
+		{
 
-		//* Receive Directory ... *
-		HandleGwiaDirectory(MFT_GWIA_RecvDirIn,MFT_GWIA_RecvDirOut,1,tlc);
-		if (MFT_NLM_Exiting > 0)	break;
+			//* Send Directory ... *
+			HandleGwiaDirectory(MFT_GWIA_SendDirIn,MFT_GWIA_SendDirOut,0,tlc);
+			if (MFT_NLM_Exiting > 0)	break;
+
+			//* Receive Directory ... *
+			HandleGwiaDirectory(MFT_GWIA_RecvDirIn,MFT_GWIA_RecvDirOut,1,tlc);
+			if (MFT_NLM_Exiting > 0)	break;
+			
+		}
 		
 		tlc++;
 		if (MFT_NLM_Exiting > 0)	break;
@@ -3370,9 +3387,9 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 					if (MF_GlobalConfiguration.MailscanDirNum != 0)
 					{
 						// config okay, now init AV NLMs ASAP.
-						if (MailFilter_AV_Check() && (!bTriedAVInit))
+						if (MailFilter_AV_Check() && (!MFT_bTriedAVInit))
 						{
-							bTriedAVInit = true;
+							MFT_bTriedAVInit = true;
 							MailFilter_AV_Init();
 						}
 					}
@@ -3452,7 +3469,9 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 	WinSockShutdown();
 
 	// Tell NLM that we've exited...
-	MFT_NLM_ThreadCount--;
+	--MFT_NLM_ThreadCount;
+
+	MF_DisplayCriticalError("%d %d %d\n",shallTerminate,tlc,lc);
 
 	if (shallTerminate > 200)
 		raise(SIGTERM);

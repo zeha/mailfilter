@@ -12,6 +12,7 @@
 #include "LicenseDlg.h"
 #include "InstallDlg.h"
 #include "netwareapi.h"
+#include "../MailFilter/Main/MFVersion.h"
 
 #include <ios>
 #include <iostream>
@@ -172,6 +173,7 @@ BOOL CInstApp::InitInstance()
 		wizard.m_psh.hInstance = AfxGetInstanceHandle();
 		wizard.m_psh.hIcon = hIcon;
 		
+		WriteLog("MailFilter Installation Wizard "MAILFILTERVERNUM);
 
 		WelcomeDlg welcomeDlg;
 		ServerDlg serverDlg;
@@ -253,28 +255,40 @@ BOOL CInstApp::InitInstance()
 				}
 				else
 				{
-					if ((server_minorVersion == 0) && (server_revision < 10))
+					if ((server_majorVersion == 5) && (server_minorVersion == 0))
 					{	WriteLog(" Server 5.0");
 						this->mf_InstallLegacyVersion = true;
 					}
-					if ((server_minorVersion == 0) && (server_revision == 10))
-					{	WriteLog(" Server 5.1");
+					if ((server_majorVersion == 5) && (server_minorVersion == 10) && (server_revision < 6))
+					{	WriteLog(" Server 5.1 SP5 or earlier");
 						this->mf_InstallLegacyVersion = true;
 					}
-					if ((server_minorVersion == 60) && (server_revision < 4))
-					{	WriteLog(" Server 6.0 SP3 or earlier");
-						this->mf_InstallLegacyVersion = true;
-					}
-					if ((server_minorVersion == 70) && (server_revision < 1))
-					{	WriteLog(" Server 6.5 SP0");
-						this->mf_InstallLegacyVersion = true;
-					}
-					if ((server_minorVersion == 70) && (server_revision > 0))
-					{	WriteLog(" Server 6.5 SP1 or newer");
+					if ((server_majorVersion == 5) && (server_minorVersion == 10) && (server_revision >= 6))
+					{	WriteLog(" Server 5.1 SP6 or newer");
 						this->mf_InstallLegacyVersion = false;
 					}
-					if (server_minorVersion >= 70)
-					{	WriteLog(" Server Version newer then 6.5");
+					if ((server_majorVersion == 6) && (server_minorVersion == 0) && (server_revision < 3))
+					{	WriteLog(" Server 6.0 SP2 or earlier");
+						this->mf_InstallLegacyVersion = true;
+					}
+					if ((server_majorVersion == 6) && (server_minorVersion == 0) && (server_revision >= 3))
+					{	WriteLog(" Server 6.0 SP3 or newer");
+						this->mf_InstallLegacyVersion = false;
+					}
+					if ((server_majorVersion == 6) && (server_minorVersion == 50) && (server_revision < 2))
+					{	WriteLog(" Server 6.5 SP2 or earlier");
+						this->mf_InstallLegacyVersion = true;
+					}
+					if ((server_majorVersion == 6) && (server_minorVersion == 50) && (server_revision >= 2))
+					{	WriteLog(" Server 6.5 SP3 or newer");
+						this->mf_InstallLegacyVersion = true;
+					}
+					if ((server_majorVersion == 6) && (server_minorVersion > 50))
+					{	WriteLog(" Server 6.x (x=newer than 50)");
+						this->mf_InstallLegacyVersion = false;
+					}
+					if (server_majorVersion > 6)
+					{	WriteLog(" Server 7 or newer (OES?)");
 						this->mf_InstallLegacyVersion = false;
 					}
 				}
@@ -283,7 +297,13 @@ BOOL CInstApp::InitInstance()
 			if (!bErrors)
 			{
 				if (this->mf_InstallLegacyVersion)
+				{
 					WriteLog("Installing LEGACY Version");
+					AfxMessageBox("Note: Your NetWare server does not meet all requirements for the full MailFilter Version.\n"
+						"Instead, a limited functionality version of MailFilter (MFLT50.NLM) will be installed.\n"
+						"If you want to use MailFilter's full power, please upgrade to a recent NetWare Support Pack and run this wizard again!",
+						MB_ICONEXCLAMATION, 0);
+				}
 				else
 					WriteLog("Installing LIBC Version");
 			}
@@ -381,21 +401,25 @@ BOOL CInstApp::InitInstance()
 					// binaries
 					if (!bErrors)
 						szError = "Could not copy NLM file.";
-					if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MAILFLT.NLM") == FALSE)		bErrors = true;
-					if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MFLT50.NLM") == FALSE)			bErrors = true;
+
 					DeleteFile(szAppBinaryDest + "\\MFCONFIG.NLM");
 					DeleteFile(szAppBinaryDest + "\\MFUPGR.NLM");
-					if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MFREST.NLM") == FALSE)			bErrors = true;
-					if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MFNRM.NLM") == FALSE)			bErrors = true;
+					DeleteFile(szAppBinaryDest + "\\MFREST.NLM");
+					DeleteFile(szAppBinaryDest + "\\MFNRM.NLM");
+
+					if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MAILFLT.NLM") == FALSE)			bErrors = true;
+					if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MFLT50.NLM") == FALSE)			bErrors = true;
+					if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MFAVA.NLM") == FALSE)			bErrors = true;
+					if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MFCONFIG.NLM") == FALSE)			bErrors = true;
 
 					// config
 					if (!bErrors)
 						szError = "Could not copy configuration file.";
-					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "FILTERS.BIN") == FALSE)		bErrors = true;
+					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "FILTERS.BIN") == FALSE)			bErrors = true;
 					if (!this->mf_IsUpgrade)
 					{
 						if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "MAILCOPY.TPL") == FALSE)		bErrors = true;
-						if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "REPORT.TPL") == FALSE)			bErrors = true;
+						if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "REPORT.TPL") == FALSE)		bErrors = true;
 						if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "RINSIDE.TPL") == FALSE)		bErrors = true;
 						if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "ROUTRCPT.TPL") == FALSE)		bErrors = true;
 						if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "ROUTSNDR.TPL") == FALSE)		bErrors = true;
@@ -430,9 +454,9 @@ BOOL CInstApp::InitInstance()
 					MF_CreateNCFFile(szAppBaseDest + "\\MFINST.NCF", line);
 
 					// mfconfig.ncf
-					line = "%if !loaded mailflt&mflt50 then cmd " + mfbinary;
-					line += "-t config " + szServerAppConfigDest;
-					MF_CreateNCFFile(szAppBaseDest + "\\MFCONFIG.NCF", line);
+//					line = "%if !loaded mailflt&mflt50 then cmd " + mfbinary;
+//					line += "-t config " + szServerAppConfigDest;
+//					MF_CreateNCFFile(szAppBaseDest + "\\MFCONFIG.NCF", line);
 				}
 			}
 
@@ -449,8 +473,6 @@ BOOL CInstApp::InitInstance()
 				if (!api.UnloadNLM("MAILFLT.NLM"))
 					bErrors = true;
 				if (!api.UnloadNLM("MFLT50.NLM"))
-					bErrors = true;
-				if (!api.UnloadNLM("MFNRM.NLM"))
 					bErrors = true;
 				bErrors = false;
 				if (!bErrors)

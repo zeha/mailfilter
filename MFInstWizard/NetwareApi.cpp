@@ -4,12 +4,14 @@
 #include "E:\Novell\NDK\nwsdk\include\ntypes.h"
 #include "E:\Novell\NDK\nwsdk\include\nwmisc.h"
 #include "E:\Novell\NDK\nwsdk\include\nwcalls.h"
+#include "E:\Novell\NDK\nwsdk\include\nwnet.h"
 #include "E:\Novell\NDK\nwsdk\include\nwclxcon.h"
   
 NetwareApi::NetwareApi(void)
 : m_ClientConnection(-1)
 {
 	NWCallsInit(NULL,NULL);
+	NWNetInit(NULL, NULL);
 }
 
 NetwareApi::~NetwareApi(void)
@@ -142,17 +144,24 @@ bool NetwareApi::GetServerVersion(unsigned int &majorVersion, unsigned int &mino
 	minorVersion = 0;
 	revision = 0;
 
-	NWCCVersion vInfo;
+	//NWCCVersion vInfo;
+	NETWARE_PRODUCT_VERSION product_version;
 
 	if (this->m_ClientConnection == -1)
 		return false;
 
-	if (NWCCGetConnInfo(this->m_ClientConnection,NWCC_INFO_SERVER_VERSION,sizeof(NWCCVersion),&vInfo) != 0)
+	if (NWGetNetWareProductVersion(this->m_ClientConnection, &product_version))
 		return false;
+//	if (NWCCGetConnInfo(this->m_ClientConnection,NWCC_INFO_SERVER_VERSION,sizeof(NWCCVersion),&vInfo) != 0)
+//		return false;
 
-	majorVersion = vInfo.major;
-	minorVersion = vInfo.minor;
-	revision = vInfo.revision;
+	majorVersion = product_version.majorVersion;
+	minorVersion = product_version.minorVersion; 
+	revision = product_version.revision;
+
+//	majorVersion = vInfo.major;
+//	minorVersion = vInfo.minor;
+//	revision = vInfo.revision;
 
 	return true;
 }

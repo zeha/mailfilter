@@ -18,6 +18,7 @@
 #define IDB_WIZHEADER                   129
 #define IDB_WIZBMP                      131
 #define IDB_MFTOP                       133
+#define IDD_MINISTATUS                  134
 #define IDC_SERVERNAME                  1000
 #define IDC_SELECTSERVER                1001
 #define IDC_REFRESHLIST                 1001
@@ -43,14 +44,15 @@
 #define IDC_SERVERVERSION               1021
 #define IDC_CHECK1                      1023
 #define IDC_SERVER                      1024
+#define IDC_VERSION                     1025
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        134
+#define _APS_NEXT_RESOURCE_VALUE        135
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1025
+#define _APS_NEXT_CONTROL_VALUE         1026
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

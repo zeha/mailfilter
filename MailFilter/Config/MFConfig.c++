@@ -177,6 +177,7 @@ int Configuration::setDefaults(std::string directory, std::string domainname)
 	this->EnableNRMRestore = true;
 	this->DropBrokenMessages = true;
 	this->DropPartialMessages = true;
+	this->RequireAVA = false;
 	
 	
 	this->MessageFooter = "";
@@ -879,6 +880,9 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 							if (param == "scan-attachments")
 								this->EnableAttachmentDecoder = mkBoolFromStr(value);
 								
+							if (param == "scan-requireava")
+								this->RequireAVA = mkBoolFromStr(value);
+							
 							if (param == "drop-broken-messages")
 								this->DropBrokenMessages = mkBoolFromStr(value);
 
@@ -893,6 +897,7 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 
 							if (param == "nrm-enablerestore")
 								this->EnableNRMRestore = mkBoolFromStr(value);
+								
 						}
 					}
 				}
@@ -976,6 +981,7 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 			
 			this->DropBrokenMessages = true;
 			this->DropPartialMessages = true;
+			this->RequireAVA = false;
 		}
 		
 
@@ -1165,6 +1171,7 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 
 	fprintf(cfgFile,"/check-incomingrecipients=%s\n",this->EnableIncomingRcptCheck == 0 ? "0" : "1");
 	fprintf(cfgFile,"/scan-attachments=%s\n",this->EnableAttachmentDecoder == 0 ? "0" : "1");
+	fprintf(cfgFile,"/scan-requireava=%s\n",this->RequireAVA == 0 ? "0" : "1");
 
 	fprintf(cfgFile,"/drop-broken-messages=%s\n",this->DropBrokenMessages == 0 ? "0" : "1");
 	fprintf(cfgFile,"/drop-partial-messages=%s\n",this->DropPartialMessages == 0 ? "0" : "1");

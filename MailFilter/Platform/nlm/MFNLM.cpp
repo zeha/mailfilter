@@ -486,72 +486,99 @@ void MF_StatusUI_Update(const char* newText)
 		std::string szDynamic;
 		unsigned int chk;
 		bool bHaveFeatures = false;
-		
-		unsigned long clck = clock() / CLOCKS_PER_SEC;
-		
-		if (lastClck != clck)
+	
+	
+#ifdef __NOVELL_LIBC__
+		if ( MF_GlobalConfiguration.RequireAVA && (MailFilter_AV_Check() != 0) && MFT_bTriedAVInit)
 		{
-			lastClck = clck;
-			++iStatusChar;
-			if (iStatusChar > 3)
-				iStatusChar = 0;
-		}
-		
-		clck = clck / 60;
-		
-		unsigned long days = clck / 24 / 60;
-		unsigned long hours = (clck - (days * 24 * 60)) / 60;
-		unsigned long minutes = clck - (days * 24 * 60) - (hours * 60);
-		
-		sprintf(szTemp,MF_Msg(MSG_INFOPORTAL_LINE1), days,hours,minutes);
-		chk = MF_GlobalConfiguration.DomainHostname.length(); if (chk>55) chk=55;
-		memcpy(szTemp+2,MF_GlobalConfiguration.DomainHostname.c_str(),chk);
-		NWSShowLineAttribute( 1, 0, (_MF_NUTCHAR) szTemp, VNORMAL, strlen(szTemp), (struct ScreenStruct*)MF_NutInfo->screenID);
-
-
-
-		sprintf(szTemp,MF_Msg(MSG_INFOPORTAL_LINE2),MFS_MF_MailsInputTotal,MFS_MF_MailsInputFailed);
-		szDynamic = "Running ";
-		szDynamic += cStatus[iStatusChar];
-		memcpy(szTemp+2,szDynamic.c_str(),szDynamic.length());
-		NWSShowLineAttribute( 2, 0, (_MF_NUTCHAR) szTemp, VNORMAL, strlen(szTemp), (struct ScreenStruct*)MF_NutInfo->screenID);
-
-
-
-		sprintf(szTemp,MF_Msg(MSG_INFOPORTAL_LINE3),MFS_MF_MailsOutputTotal,MFS_MF_MailsOutputFailed);
-		szDynamic = "Modules: ";
-#ifdef MF_WITH_ZIP
-		bHaveFeatures = true;
-		szDynamic += "ZIP ";
-#endif
-
-		if (MFC_MAILSCAN_Enabled)
-		{
-			szDynamic += "Decode ";
-			bHaveFeatures = true;
-		}
-		if (MFBW_CheckCurrentScheduleState() == false)
-		{
-			szDynamic += "Schedule ";
-			bHaveFeatures = true;
-		}
-		if (MailFilter_AV_Check() == 0)
-		{
-			szDynamic += "AV ";
-			bHaveFeatures = true;
-		}
-		if (MF_GlobalConfiguration.NRMInitialized == true)
-		{
-			szDynamic += "NRM ";
-			bHaveFeatures = true;
-		}
-		
-		if (!bHaveFeatures)
-			szDynamic += "None";
+//
+//			for (i=0;i<81;i++)
+//				szTemp[i]=' ';
+//			szTemp[80]=0;
 			
-		memcpy(szTemp+2,szDynamic.c_str(),szDynamic.length());
-		NWSShowLineAttribute( 3, 0, (_MF_NUTCHAR) szTemp, VNORMAL, strlen(szTemp), (struct ScreenStruct*)MF_NutInfo->screenID);
-	}	
+//			NWSShowLineAttribute( 1, 0, (_MF_NUTCHAR) szTemp, VBLINK, strlen(szTemp), (struct ScreenStruct*)MF_NutInfo->screenID);
+//			NWSShowLineAttribute( 2, 0, (_MF_NUTCHAR) szTemp, VBLINK, strlen(szTemp), (struct ScreenStruct*)MF_NutInfo->screenID);
+//			NWSShowLineAttribute( 3, 0, (_MF_NUTCHAR) szTemp, VBLINK, strlen(szTemp), (struct ScreenStruct*)MF_NutInfo->screenID);
+
+			strcpy(szTemp,"NO AntiVirus NLM DETECTED - NO E-MAIL TRANSPORT");
+			
+			FillScreenArea(getscreenhandle(),1,0,3,80,' ',COLOR_ATTR_YELLOW);
+			DisplayScreenTextWithAttribute(getscreenhandle(),2,((80-strlen(szTemp))/2)-1,strlen(szTemp),COLOR_ATTR_YELLOW,szTemp);
+
+		} else {
+#endif
+		
+			unsigned long clck = clock() / CLOCKS_PER_SEC;
+			
+			if (lastClck != clck)
+			{
+				lastClck = clck;
+				++iStatusChar;
+				if (iStatusChar > 3)
+					iStatusChar = 0;
+			}
+			
+			clck = clck / 60;
+			
+			unsigned long days = clck / 24 / 60;
+			unsigned long hours = (clck - (days * 24 * 60)) / 60;
+			unsigned long minutes = clck - (days * 24 * 60) - (hours * 60);
+			
+			sprintf(szTemp,MF_Msg(MSG_INFOPORTAL_LINE1), days,hours,minutes);
+			chk = MF_GlobalConfiguration.DomainHostname.length(); if (chk>55) chk=55;
+			memcpy(szTemp+2,MF_GlobalConfiguration.DomainHostname.c_str(),chk);
+			NWSShowLineAttribute( 1, 0, (_MF_NUTCHAR) szTemp, VNORMAL, strlen(szTemp), (struct ScreenStruct*)MF_NutInfo->screenID);
+
+
+
+			sprintf(szTemp,MF_Msg(MSG_INFOPORTAL_LINE2),MFS_MF_MailsInputTotal,MFS_MF_MailsInputFailed);
+			szDynamic = "Running ";
+			szDynamic += cStatus[iStatusChar];
+			memcpy(szTemp+2,szDynamic.c_str(),szDynamic.length());
+			NWSShowLineAttribute( 2, 0, (_MF_NUTCHAR) szTemp, VNORMAL, strlen(szTemp), (struct ScreenStruct*)MF_NutInfo->screenID);
+
+
+
+			sprintf(szTemp,MF_Msg(MSG_INFOPORTAL_LINE3),MFS_MF_MailsOutputTotal,MFS_MF_MailsOutputFailed);
+			
+			
+			szDynamic = "Modules: ";
+	#ifdef MF_WITH_ZIP
+			bHaveFeatures = true;
+			szDynamic += "ZIP ";
+	#endif
+
+			if (MFC_MAILSCAN_Enabled)
+			{
+				szDynamic += "Decode ";
+				bHaveFeatures = true;
+			}
+			if (MFBW_CheckCurrentScheduleState() == false)
+			{
+				szDynamic += "Schedule ";
+				bHaveFeatures = true;
+			}
+			if (MailFilter_AV_Check() == 0)
+			{
+				szDynamic += "AV ";
+				bHaveFeatures = true;
+			}
+			if (MF_GlobalConfiguration.NRMInitialized == true)
+			{
+				szDynamic += "NRM ";
+				bHaveFeatures = true;
+			}
+			
+			if (!bHaveFeatures)
+				szDynamic += "None";
+				
+			memcpy(szTemp+2,szDynamic.c_str(),szDynamic.length());
+			NWSShowLineAttribute( 3, 0, (_MF_NUTCHAR) szTemp, VNORMAL, strlen(szTemp), (struct ScreenStruct*)MF_NutInfo->screenID);
+
+#ifdef __NOVELL_LIBC__
+		}
+#endif
+	}
 	
 	return;
 }
@@ -995,18 +1022,16 @@ MF_MAIN_RUNLOOP:
 			if (MFT_NLM_Exiting > 0)
 				break;
 
+			ThreadSwitch();
+
 			if (MFT_NUT_GetKey)
 				NWSGetKey (
 					&tmp_Key_Type,
 					&tmp_Key_Value,
 					MF_NutInfo
 					);
-			
-			ThreadSwitch();
 		}
 		
-		MF_DisplayCriticalError("MAILFILTER: Changing run state.\n");
-
 		// 254 = restart
 		// 253 = config
 		// 252 = restore
@@ -1019,6 +1044,7 @@ MF_MAIN_RUNLOOP:
 			if (MFT_NLM_Exiting == 252)		bDoRestore = true;
 		
 			MF_StatusText("  Please wait ... (may take a few minutes)");
+			NXThreadYield();
 
 #ifndef __NOVELL_LIBC__
 			if (MF_Thread_Work > 0)
@@ -1040,12 +1066,13 @@ MF_MAIN_RUNLOOP:
 			}
 #endif
 
+			MFT_NLM_Exiting = 255;
 
 			// wait for other threads to exit
 			// we lied above, anyway.
 			while (MFT_NLM_ThreadCount > 0)
 				NXThreadYield();
-			
+
 			MFT_NLM_Exiting = 0;
 			
 			MF_StatusFree();
@@ -1102,7 +1129,6 @@ MF_MAIN_RUNLOOP:
 
 MF_MAIN_TERMINATE:
 	MailFilterApp_Server_LogoutFromServer();
-	MF_DisplayCriticalError("MAILFILTER: Exiting: %d\n",MFT_NLM_Exiting);
 	return 0;
 }
 

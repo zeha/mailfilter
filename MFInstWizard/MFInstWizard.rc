@@ -64,7 +64,7 @@ BEGIN
     LTEXT           "Copyright © 2000-2004 Christian Hofstädtler.\nAll Rights Reserved.",
                     IDC_STATIC,18,114,246,24
     CONTROL         133,IDC_STATIC,"Static",SS_BITMAP,0,0,300,62
-    LTEXT           "Version 1.5.8",IDC_STATIC,18,90,246,12
+    LTEXT           "Version 1.6",IDC_STATIC,18,90,246,12
     DEFPUSHBUTTON   "OK",IDOK,246,192,50,14
     LTEXT           "Please see http://www.mailfilter.cc/ for updates and support.",
                     IDC_STATIC,18,150,246,24
@@ -163,6 +163,8 @@ BEGIN
     LTEXT           "This wizard will:",IDC_STATIC,120,60,168,18
     LTEXT           " • Install MailFilter on a NetWare server\n\n • Set up interaction with GroupWise\n\n • Load MailFilter NLMs on the Server",
                     IDC_STATIC,120,78,168,60
+    LTEXT           "Please click Next to continue.",IDC_VERSION,120,180,168,
+                    12
 END
 
 IDD_LICENSEDLG DIALOGEX 0, 0, 307, 171
@@ -174,7 +176,7 @@ BEGIN
     LTEXT           "MailFilter License Key:",-1,24,12,197,9
     LTEXT           "If you do not enter a License Key, MailFilter will run in evaluation mode for 30 days.",
                     -1,24,150,270,18
-    PUSHBUTTON      "Import License &File",IDC_READLICFILE,222,42,72,18
+    PUSHBUTTON      "Load License &File",IDC_READLICFILE,222,42,72,18
 END
 
 IDD_INSTALL DIALOGEX 0, 0, 308, 215
@@ -281,8 +283,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,50,0,0
- PRODUCTVERSION 1,5,8,0
+ FILEVERSION 1,60,0,0
+ PRODUCTVERSION 1,6,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -300,11 +302,11 @@ BEGIN
             VALUE "CompanyName", "Christian Hofstädtler"
             VALUE "Copyright", "Copyright © 2000-2004 Christian Hofstädtler. All Rights Reserved."
             VALUE "FileDescription", "MailFilter Server Installation Wizard"
-            VALUE "FileVersion", "1.50"
+            VALUE "FileVersion", "1.60"
             VALUE "InternalName", "MFInstallWizard.exe"
             VALUE "OriginalFilename", "MFInstallWizard.exe"
             VALUE "ProductName", "MailFilter professional -- www.mailfilter.cc"
-            VALUE "ProductVersion", "1.5.8"
+            VALUE "ProductVersion", "1.6.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -350,6 +352,39 @@ END
 LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
 #pragma code_page(1252)
 #endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MINISTATUS DIALOGEX 0, 0, 232, 34
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_BORDER | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Querying server list. Please wait.",IDC_STATIC,12,12,
+                    180,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_MINISTATUS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 225
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 27
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

@@ -8,7 +8,7 @@
 	  
 
 // Enable this one for debugging
-// #define _TRACE
+//#define _TRACE
 
 //#define N_PLAT_NLM
 
@@ -32,6 +32,11 @@ extern "C" { void  delay( unsigned milliseconds ); }
 #else
 /* Win32 */
 #include <io.h>
+#endif
+
+#ifdef __NOVELL_LIBC__
+extern "C" { void MF_DisplayCriticalError(const char* format, ...); }
+#define ConsolePrintf MF_DisplayCriticalError
 #endif
 
 	#undef _MAX_DRIVE
