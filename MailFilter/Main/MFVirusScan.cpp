@@ -293,34 +293,19 @@ long MFVS_DecodeAttachment(const char* szScanFile, FILE* mailFile, mimeEncodingT
 		return -237;
 	}
 	
-	bool bAgain = false;
-	
 	// Read In lines and decode ...
 	do {
 		curPos = -1; curChr = 0;
 		szScanBuffer[0] = 0; szScanBuffer[2000] = 0;
 		
-		while ((curChr != '\n') && (curChr != -1) && (curPos<65) && (!bDecodeDone))
+		while ((curChr != '\n') && (curChr != -1))
 		{
 			if (curPos >= 2000) break;
 			curChr = fgetc(mailFile);
 			curPos++;
 
-//			if (curChr == '\n')
-//			{
-//				if (curPos<6)
-//				{
-//MFD_Out(MFD_SOURCE_VSCAN," skip");
-//					curChr = fgetc(mailFile);
-//				}
-//					else
-//					break;
-//					
-//				if (curChr == '\n')
-//					break;
-//			}
-			if ((curChr != '\r') && (curChr != '\n') && (curChr != ' '))
-					{ szScanBuffer[curPos]=(char)curChr; }
+			if (curChr == '\n')									break;
+			if ((curChr != '\r') && (curChr != '\n'))			szScanBuffer[curPos]=(char)curChr;
 			if (curChr == -1)									{ bDecodeDone = true; break; }
 			if (feof(mailFile))									{ bDecodeDone = true; break; }
 		}
@@ -331,8 +316,8 @@ long MFVS_DecodeAttachment(const char* szScanFile, FILE* mailFile, mimeEncodingT
 
 		MFD_Out(MFD_SOURCE_VSCAN," %d",curPos);
 			
-//		if ( (encodingType == mimeEncodingBase64) && (curPos == 73) && (lastPos == 0) )
-//			bDecodeExec = true;
+		if ( (encodingType == mimeEncodingBase64) && (curPos == 73) && (lastPos == 0) )
+			bDecodeExec = true;
 
 		for(rc=2001; rc>curPos; rc--)
 			szScanBuffer[rc]=0;
