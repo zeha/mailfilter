@@ -55,7 +55,9 @@ bool MF_StatusInit()
 
 	MF_Status_Initialized = true;
 
-//	char szTemp[80];
+#if defined(MAILFILTER_VERSION_BETA) || defined(_TRACE)
+	char szTemp[80];
+#endif
 //	sprintf(szTemp,"This is MailFilter professional Version %s.",MAILFILTERVERNUM);
 //	MF_StatusText(szTemp);
 

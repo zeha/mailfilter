@@ -17,9 +17,6 @@
 #include "MFConfig-Filter.h++"
 #include <pcreposix45.h>
 
-// OLD, please REMOVE
-int NLM_noUserInterface = FALSE;
-
 int MFC_CurrentList = 0;
 
 #define MFCONFIG_KEYS_NONE			0x0000
@@ -31,13 +28,36 @@ int MFC_CurrentList = 0;
 #define MFCONFIG_KEYS_EXIT			0x0020
 #define MFCONFIG_KEYS_SAVE			0x0040
 #define MFCONFIG_KEYS_CANCEL		0x0080
-void MFConfig_UI_ShowKeys(int keys);
 
 #ifndef NUT_SEVERITY_FATAL
 #define NUT_SEVERITY_FATAL 2
 #endif
 
-void MF_RegError(int errcode, const regex_t *preg)
+
+static void MFConfig_UI_ShowKeys(int keys)
+{
+	char szTemp[80+2];
+	int curItem;
+	memset(szTemp,' ',80);
+	szTemp[81]=0;
+	NWSShowLineAttribute ( 24 , 0 , (_MF_NUTCHAR)szTemp , VREVERSE , 80 , (struct ScreenStruct*)MF_NutInfo->screenID );
+	
+	curItem=1;
+	if (chkFlag(keys,MFCONFIG_KEYS_IMPORT)) 	{	strncpy(szTemp+curItem, "<F8> Import ",12);		curItem=curItem+14;	}
+	if (chkFlag(keys,MFCONFIG_KEYS_EXPORT)) 	{	strncpy(szTemp+curItem, "<F9> Export ",12);		curItem=curItem+14; }
+	if (chkFlag(keys,MFCONFIG_KEYS_NEW)) 		{	strncpy(szTemp+curItem, "<INS> New   ",12);		curItem=curItem+14;	}
+	if (chkFlag(keys,MFCONFIG_KEYS_DELETE)) 	{	strncpy(szTemp+curItem, "<DEL> Delete",12); 	curItem=curItem+14;	}
+	if (chkFlag(keys,MFCONFIG_KEYS_SELECT)) 	{	strncpy(szTemp+curItem, "<RET> Select",12);		curItem=curItem+14; }
+	if (chkFlag(keys,MFCONFIG_KEYS_EXIT)) 		{	strncpy(szTemp+curItem, "<ESC> Exit  ",12);		curItem=curItem+14; }
+	if (chkFlag(keys,MFCONFIG_KEYS_SAVE)) 		{	strncpy(szTemp+curItem, "<ESC> Save  ",12);		curItem=curItem+14; }
+	if (chkFlag(keys,MFCONFIG_KEYS_CANCEL)) 	{	strncpy(szTemp+curItem, "<ESC> Cancel",12);		curItem=curItem+14; }
+
+	NWSShowLineAttribute ( 24 , (unsigned long)((80-curItem)/2) , (_MF_NUTCHAR)szTemp , VREVERSE , (unsigned long)curItem , (struct ScreenStruct*)MF_NutInfo->screenID );
+
+}
+
+
+static void MF_RegError(int errcode, const regex_t *preg)
 {
 	char szErrBuf[3500];
 	if (!errcode)
@@ -45,30 +65,24 @@ void MF_RegError(int errcode, const regex_t *preg)
 		
 	regerror(errcode, preg, szErrBuf, sizeof(szErrBuf));
 
-	if (!NLM_noUserInterface)
-	{
-		char szTemp[4000];
-		
-		sprintf(szTemp,"Regular Expression Error:\n%s\n",szErrBuf);
-		
-		NWSDisplayInformation (
-		
-			NULL,
-			1,
-			0,
-			0,
-			ERROR_PALETTE,
-			VREVERSE,
-			(_MF_NUTCHAR) szTemp,
-			MF_NutInfo
-			);
-		
-	} else {
-		ConsolePrintf("MFCONFIG: RegExp Error: %s\n",szErrBuf);
-	}
+	char szTemp[4000];
+	
+	sprintf(szTemp,"Regular Expression Error:\n%s\n",szErrBuf);
+	
+	NWSDisplayInformation (
+	
+		NULL,
+		1,
+		0,
+		0,
+		ERROR_PALETTE,
+		VREVERSE,
+		(_MF_NUTCHAR) szTemp,
+		MF_NutInfo
+		);
 }
 
-void MFConfig_ImportLicenseKey(void *)
+static void MFConfig_ImportLicenseKey(void *)
 {
 
 	char szTemp[MAX_PATH];
@@ -171,9 +185,67 @@ void MFConfig_ImportLicenseKey(void *)
 				
 }
 
-void MF_Filter_Sort()
+class CompareFilters {
+public:
+	bool operator() 
+			(const MailFilter_Configuration::Filter& f1, 
+			 const MailFilter_Configuration::Filter& f2)
+		{
+			bool rc = false;
+		
+			if (f1.enabled == false)
+				rc = false;
+			else
+			if (f1.action == f2.action)
+			{
+				if (f1.matchfield == f2.matchfield)
+					rc = f1.expression > f2.expression;
+				else
+				{
+					if (f1.matchfield == MailFilter_Configuration::attachment)
+						rc = true;
+					else
+					if (f2.matchfield == MailFilter_Configuration::attachment)
+						rc = false;
+					else
+					if (f1.matchfield == MailFilter_Configuration::blacklist)
+						rc = true;
+					else
+					if (f2.matchfield == MailFilter_Configuration::blacklist)
+						rc = false;
+					else
+						rc = f1.matchfield > f2.matchfield;
+				}
+			}
+			else
+			{
+				if (f1.action == MailFilter_Configuration::pass)
+				{
+					rc = true;
+				}
+				else
+				{
+					if (f2.action == MailFilter_Configuration::pass)
+						rc = false;
+				}
+			}
+			
+			consoleprintf("f %s %s %d %s %s\n",
+				(f1.action == MailFilter_Configuration::pass) ? "1" : "0",
+				(f2.action == MailFilter_Configuration::pass) ? "1" : "0",
+				rc, f1.expression.c_str(), f2.expression.c_str()
+				);
+			
+			return rc;
+		}
+};
+
+static void MF_Filter_Sort()
 {
-	/*int fltItem;
+	sort(MF_GlobalConfiguration.filterList.begin(),MF_GlobalConfiguration.filterList.end(),CompareFilters());
+	consoleprintf("i have %d filters\n",MF_GlobalConfiguration.filterList.size());
+/*
+	int fltItem;
 	int curId = 0;
 
 	// pass 1 ...
@@ -218,7 +290,7 @@ void MF_Filter_Sort()
 
 
 
-void MFU_strxor(char* string, char xorVal)
+static void MFU_strxor(char* string, char xorVal)
 {
 	if (string == NULL) return;
 	
@@ -231,7 +303,7 @@ void MFU_strxor(char* string, char xorVal)
 }
 
 // Reads the configuration ...
-int MF_ConfigReadXXX()
+static int MF_ConfigReadXXX()
 {
 	bool freshInstall = false;
 
@@ -435,7 +507,7 @@ MF_ConfigRead_ERR:
 /****************************************************************************
 ** Main menu action procedure.
 */
-int NLM_VerifyProgramExit(void)
+static int NLM_VerifyProgramExit(void)
 	{
 	int cCode;
 	
@@ -461,7 +533,7 @@ int NLM_VerifyProgramExit(void)
 /****************************************************************************
 ** Main menu action procedure.
 */
-int NLM_VerifySaveExit(void)
+static int NLM_VerifySaveExit(void)
 	{
 	int cCode;
 	
@@ -485,7 +557,7 @@ int NLM_VerifySaveExit(void)
 	}
 
 
-void MFConfig_Util_ImportListFromFile(void* nutHandle)
+static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 {
 	FILE* fImp;
 	char szTemp[MAX_BUF+1];
@@ -667,7 +739,7 @@ void MFConfig_Util_ImportListFromFile(void* nutHandle)
 }
 
 
-void MFConfig_Util_ExportListToFile(void* nutHandle)
+static void MFConfig_Util_ExportListToFile(void* nutHandle)
 {
 	FILE* fLst;
 	char szTemp[MAX_BUF+1];
@@ -763,8 +835,8 @@ void MFConfig_Util_ExportListToFile(void* nutHandle)
 */
 static	FIELD		*MFConfig_EditFilterDialog_fieldDescription;
 
-int MFConfig_EditFilterDialog_MenuAction(int option, void *parameter)   {      parameter = parameter;	return option;   }
-int MFConfig_EditFilterDialog_MenuActionAction(int option, void *parameter)   
+static int MFConfig_EditFilterDialog_MenuAction(int option, void *parameter)   {      parameter = parameter;	return option;   }
+static int MFConfig_EditFilterDialog_MenuActionAction(int option, void *parameter)   
 {
 #pragma unused(parameter)
 
@@ -848,18 +920,13 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 	line++;
 	
 	NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_EXPRESSION), MF_NutInfo);
-consoleprintf("BOOM03B\n");
 	strcpy (newExpression, flt->expression.c_str());
-consoleprintf("BOOM03C\n");
 	NWSAppendScrollableStringField  (line, 20, 55, REQUIRED_FIELD, (_MF_NUTCHAR)newExpression, 500, (_MF_NUTCHAR)"A..Za..z \\/:_-+.0..9{}[]()*#!\"§$%&=?~", EF_ANY, NULL, MF_NutInfo); 
-consoleprintf("BOOM03D\n");
 	line++;
 
-consoleprintf("BOOM04\n");
 	MFConfig_EditFilterDialog_fieldDescription = NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_DESCRIPTION), MF_NutInfo);
 	strcpy (newDescription, flt->name.c_str());
 	NWSAppendScrollableStringField  (line, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newDescription, 60, (_MF_NUTCHAR)"A..Za..z \\/:_-+.0..9{}[]()*#!\"§$%&=?~", EF_ANY, NULL, MF_NutInfo); 
-consoleprintf("BOOM05\n");
 	
 	line++;
 	
@@ -909,8 +976,6 @@ consoleprintf("BOOM05\n");
 	if (newMatchaction==MAILFILTER_MATCHACTION_COPY) 
 		MFConfig_EditFilterDialog_fieldDescription->fieldData = (unsigned char*)"Destination";
 	
-consoleprintf("BOOM09\n");
-	
 	formSaved = NWSEditForm (
 		EDIT_FILTERS_EDITRULE,		//headernum	//0
 		3,							//line
@@ -924,8 +989,6 @@ consoleprintf("BOOM09\n");
 		MSG_SAVE_CHANGES,			//confirmMessage,
 		MF_NutInfo
 	);
-
-consoleprintf("BOOM10\n");
 
 	/*------------------------------------------------------------------------
 	** This function returns TRUE if the form was saved, FALSE if not.
@@ -987,7 +1050,7 @@ consoleprintf("BOOM10\n");
 ** Edit filter list action
 */
 
-int MFConfig_EditFilters_Act(LONG keyPressed, LIST **elementSelected,
+static int MFConfig_EditFilters_Act(LONG keyPressed, LIST **elementSelected,
 		LONG *itemLineNumber, void *actionParameter)
 	{
 	MailFilter_Configuration::Filter myItem;
@@ -1053,7 +1116,6 @@ int MFConfig_EditFilters_Act(LONG keyPressed, LIST **elementSelected,
 
 
 		case M_SELECT:
-consoleprintf("bong\n");
 			rc = MFConfig_EditFilterDialog(&MF_GlobalConfiguration.filterList[*(unsigned int *)((*elementSelected)->otherInfo)]);
 			MF_Filter_Sort();
 			return rc;
@@ -1069,7 +1131,7 @@ consoleprintf("bong\n");
 /****************************************************************************
 ** Edit filters.
 */
-void MFConfig_EditFilters()
+static void MFConfig_EditFilters()
 	{
 	
 	 char				szTemp[80+1];
@@ -1152,10 +1214,10 @@ void MFConfig_EditFilters()
 	MFC_CurrentList = 1;
 	rc = (long) NWSList(
 		/* I-	header			*/	MENU_MAIN_EDIT_FILTERS,
-		/*	I-	centerLine		*/	1,
+		/*	I-	centerLine		*/	0,
 		/*	I-	centerColumn	*/	0,
 		/*	I-	height			*/	17,
-		/* I-	width			*/  50,
+		/* I-	width			*/  80,
 		/* I-	validKeyFlags	*/	M_ESCAPE|M_SELECT|M_INSERT|M_DELETE|M_NO_SORT|M_REFRESH,
 		/*	IO	element			*/	0,
 		/*	I-	handle			*/  MF_NutInfo,
@@ -1186,7 +1248,7 @@ void MFConfig_EditFilters()
 /****************************************************************************
 ** MFConfig: Edit License Key
 */
-void MFConfig_EditLicense()
+static void MFConfig_EditLicense()
 	{
 //	unsigned long	line;
 	int	formSaved;
@@ -1275,7 +1337,7 @@ void MFConfig_EditLicense()
 /****************************************************************************
 ** MFConfig: Edit Config Settings
 */
-void MFConfig_EditConfig()
+static void MFConfig_EditConfig()
 	{
 	unsigned long	line;
 	int		formSaved;
@@ -1530,7 +1592,7 @@ void MFConfig_EditConfig()
 /****************************************************************************
 ** Main menu action procedure.
 */
-int NLM_MenuMainAct(int index, void *parm)
+static int NLM_MenuMainAct(int index, void *parm)
 	{
 	parm=parm;	 /* Rid compiler warning. */
 
@@ -1598,16 +1660,9 @@ int NLM_MenuMainAct(int index, void *parm)
 /****************************************************************************
 ** Main menu.
 */
-void NLM_MenuMain(bool bStandalone)
+static void NLM_MenuMain(bool bStandalone)
 	{
 	LIST *defaultOption;
-
-	/*------------------------------------------------------------------------
-	**	Don't do this menu if we should be exiting.
-	*/
-
-	if(NLM_noUserInterface)
-		return;
 
 	/*------------------------------------------------------------------------
 	**	At this point, the current list is uninitialized (being that it is the
@@ -1661,28 +1716,6 @@ void NLM_MenuMain(bool bStandalone)
 	return;
 	}
 
-void MFConfig_UI_ShowKeys(int keys)
-{
-	char szTemp[80+2];
-	int curItem;
-	memset(szTemp,' ',80);
-	szTemp[81]=0;
-	NWSShowLineAttribute ( 24 , 0 , (_MF_NUTCHAR)szTemp , VREVERSE , 80 , (struct ScreenStruct*)MF_NutInfo->screenID );
-	
-	curItem=1;
-	if (chkFlag(keys,MFCONFIG_KEYS_IMPORT)) 	{	strncpy(szTemp+curItem, "<F8> Import ",12);		curItem=curItem+14;	}
-	if (chkFlag(keys,MFCONFIG_KEYS_EXPORT)) 	{	strncpy(szTemp+curItem, "<F9> Export ",12);		curItem=curItem+14; }
-	if (chkFlag(keys,MFCONFIG_KEYS_NEW)) 		{	strncpy(szTemp+curItem, "<INS> New   ",12);		curItem=curItem+14;	}
-	if (chkFlag(keys,MFCONFIG_KEYS_DELETE)) 	{	strncpy(szTemp+curItem, "<DEL> Delete",12); 	curItem=curItem+14;	}
-	if (chkFlag(keys,MFCONFIG_KEYS_SELECT)) 	{	strncpy(szTemp+curItem, "<RET> Select",12);		curItem=curItem+14; }
-	if (chkFlag(keys,MFCONFIG_KEYS_EXIT)) 		{	strncpy(szTemp+curItem, "<ESC> Exit  ",12);		curItem=curItem+14; }
-	if (chkFlag(keys,MFCONFIG_KEYS_SAVE)) 		{	strncpy(szTemp+curItem, "<ESC> Save  ",12);		curItem=curItem+14; }
-	if (chkFlag(keys,MFCONFIG_KEYS_CANCEL)) 	{	strncpy(szTemp+curItem, "<ESC> Cancel",12);		curItem=curItem+14; }
-
-	NWSShowLineAttribute ( 24 , (unsigned long)((80-curItem)/2) , (_MF_NUTCHAR)szTemp , VREVERSE , (unsigned long)curItem , (struct ScreenStruct*)MF_NutInfo->screenID );
-
-}
-
 int MailFilter_Main_RunAppConfig(bool bStandalone)
 {
 
@@ -1707,19 +1740,14 @@ int MailFilter_Main_RunAppConfig(bool bStandalone)
 
 	memset(szTemp,' ',80);
 	szTemp[81]=0;
-	sprintf(szTemp,"  Editor Version: 001.%03i",
-						MAILFILTER_CONFIGURATION_THISBUILD);
+	sprintf(szTemp,"  MailFilter Version: 001.%03i              Configuration File Version: 001.%03i",
+						MAILFILTER_CONFIGURATION_THISBUILD,MF_GlobalConfiguration.config_build);
 	NWSShowLineAttribute ( 2 , 0 , (_MF_NUTCHAR)szTemp , VNORMAL , 80 , (struct ScreenStruct*)MF_NutInfo->screenID );
-
-	memset(szTemp,' ',80);
-	szTemp[81]=0;
-	sprintf(szTemp,"  CFFile Version: 001.%03i",
-						MF_GlobalConfiguration.config_build);
-	NWSShowLineAttribute ( 3 , 0 , (_MF_NUTCHAR)szTemp , VNORMAL , 80 , (struct ScreenStruct*)MF_NutInfo->screenID );
 
 	NLM_MenuMain(bStandalone);
 
-	MF_NutDeinit();
+	if (!bStandalone)
+		MF_NutDeinit();
 
 	return 0;
 }

@@ -757,12 +757,6 @@ void NLM_SignalHandler(int sig)
 					NXThreadYield();
 				}
 
-				extern char* MFT_Local_ServerName;
-				if (MFT_Local_ServerName != NULL)
-				{
-					_mfd_free(MFT_Local_ServerName,"Config:LocalServer");
-				}
-
 			}
 			break;
 		case SIGINT:
@@ -1064,10 +1058,10 @@ MF_MAIN_RUNLOOP:
 		if (!MF_StatusInit())
 			goto MF_MAIN_TERMINATE;
 
-		// Run loop
+		// get OS info
 		{
 			char szStatusMsg[82];
-	#ifndef __NOVELL_LIBC__
+		#ifndef __NOVELL_LIBC__
 			struct utsname un;
 			
 			MF_StatusLog("MailFilter CLIB Version "MAILFILTERVERNUM);
@@ -1079,7 +1073,7 @@ MF_MAIN_RUNLOOP:
 
 			MF_StatusText(szStatusMsg);
 			
-	#else
+		#else
 			MF_StatusLog("MailFilter LIBC Version "MAILFILTERVERNUM);
 
 			struct utsname u;
@@ -1091,7 +1085,7 @@ MF_MAIN_RUNLOOP:
 					u.servicepack);
 			MF_StatusText(szStatusMsg);
 
-	#endif
+		#endif
 	    }
 	    
 		// Start Thread: ** WORK **
@@ -1114,7 +1108,6 @@ MF_MAIN_RUNLOOP:
 			MF_Thread_Work = 0;
 			goto MF_MAIN_TERMINATE;
 		}
-			
 			/*
 	#ifndef _MF_CLEANBUILD
 		MFD_Out("Starting SMTP Thread...\n");
@@ -1134,19 +1127,18 @@ MF_MAIN_RUNLOOP:
 	#endif
 		*/
 		
-		// Allow a Thread Switch to occour
+		// Allow a Thread Switch to occour - start the worker!
 		ThreadSwitch();
 
 		// Lie that we've already exited ...
 		--MFT_NLM_ThreadCount;
 
-		// 
-		LONG tmp_Key_Type;
-		BYTE tmp_Key_Value;
-
 		MF_StatusUI_Update(MSG_BOOT_COMPLETE);
 		MFD_Out(MFD_SOURCE_GENERIC,"Startup Complete.\n");
 
+		// 
+		LONG tmp_Key_Type;
+		BYTE tmp_Key_Value;
 
 		// Don't exit thread until all other threads are terminated ...
 		while (MFT_NLM_ThreadCount>0)
@@ -1154,7 +1146,6 @@ MF_MAIN_RUNLOOP:
 			if (MFT_NLM_Exiting > 0)
 				break;
 
-				
 			if (MFT_NUT_GetKey)
 				NWSGetKey (
 					&tmp_Key_Type,
@@ -1164,7 +1155,7 @@ MF_MAIN_RUNLOOP:
 			
 			ThreadSwitch();
 		}
-		
+
 		// 254 = restart
 		// 253 = config
 		if ((MFT_NLM_Exiting == 254) || (MFT_NLM_Exiting == 253))
@@ -1239,7 +1230,6 @@ MF_MAIN_RUNLOOP:
 
 			goto MF_MAIN_RUNLOOP;
 		}
-
 	}
 
 MF_MAIN_TERMINATE:
@@ -1389,12 +1379,14 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 	signal(	SIGINT	, NLM_SignalHandler	);
 	
 
+	int rc = 0;
+
 	if (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::SERVER)
 	{
 #ifdef __NOVELL_LIBC__
 		NXContextSetName(NXContextGet(),"MailFilterServer");
 #endif
-		return MailFilter_Main_RunAppServer();
+		rc = MailFilter_Main_RunAppServer();
 	}
 	else
 	if (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::CONFIG)
@@ -1403,22 +1395,30 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		NXContextSetName(NXContextGet(),"MailFilterConfig");
 #endif
 		--MFT_NLM_ThreadCount;
-		return MailFilter_Main_RunAppConfig(true);
+		rc = MailFilter_Main_RunAppConfig(true);
 	}
 	else
 	if (MF_GlobalConfiguration.ApplicationMode == MailFilter_Configuration::RESTORE)
 	{
 		system("LOAD MFREST.NLM");
-		return 0;
+		rc = 0;
 	}
 	else
 	{
 		ConsolePrintf("MAILFILTER: Could not run your selected application.\n\tMaybe it is not compiled-in.\n");
 	
-		return -1;		
+		rc = -1;		
 	}
+
+	extern char* MFT_Local_ServerName;
+	if (MFT_Local_ServerName != NULL)
+	{
+		_mfd_free(MFT_Local_ServerName,"Config:LocalServer");
+	}
+
+
 MF_MAIN_TERMINATE:
-	return 0;
+	return rc;
 }
 
 

@@ -63,12 +63,12 @@ char *programMesgTable[] =
 	"MFConfig Trace",
 	"Enter File to Import from:",
 	"Enter File to Export to:",
-	"Edit Filters",
+	"Edit Filter Rules",
 	"Configuration",
 	"The License file is either invalid, not for this version of MailFilter or not for this server.",
-	"The Configuration is either invalid or non-existant. MFConfig can not continue without a valid Configuration. Please use the MailFilter Installation Wizard to create a new one, or try to recover an older Configuration.",
+	"The Configuration is either invalid or non-existant. The Config Editor can not continue without a valid Configuration. Please use the MailFilter Installation Wizard to create a new one, or try to recover an older Configuration.",
 	"The File \"%s\" could not be found.",
-	"The File \"%s\" already exists. MFConfig won't overwrite existing files.",
+	"The File \"%s\" already exists. The Config Editor won't overwrite existing files.",
 	"License Key",
 	"Save & Exit",
 	"Save & Restart",
@@ -114,8 +114,9 @@ char *programMesgTable[] =
 	"Notification for Outgoing Mails",
 	"E-Mail Adresses: To, CC",
 	"E-Mail Adresses: From, To, CC",
-     "GWIA:",
-     "MFLT:",
-     "View File (truncated by 8kB)"
+	// restore app
+	"GWIA:",
+	"MFLT:",
+	"View File (truncated by 8kB)"
 };
 // UpTime:   0 Days  9 Hrs 38 Mins

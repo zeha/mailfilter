@@ -27,29 +27,6 @@
 #include "MFVersion.h"
 #include "../Licensing/MFLic.h"
 
-/*
-//*EXPERIMENTAL*
-#undef MF_WITH_ZIP
-
-
-// Define this for tracing ...
-#undef _TRACE
-#undef _MF_WITHOUTNUT
-
-// set this to #define _MF_MEMTRACE 1 and you will get much output :)  (~ 9k)
-// also define _trace
-//#define _MF_MEMTRACE 1
-
-// Define for use of .msg files
-#undef MF_WITH_I18N
-
-// To check for obsolete NDK headers ...
-//#define _FIND_OLD_HEADERS_
-
-// Enable this to compile without debug messages, etc ...	(~ 5k)
-#undef _MF_CLEANBUILD
-*/
-
 // MailFilter Constants etc.
 //
 // *Default Buffer Size*
@@ -63,7 +40,6 @@
 // Just _some_ includes ;-)
 #include <stdlib.h>
 #include <stdio.h>
-//#include "tchar.h"
 #include <time.h>
 #include <signal.h>
 #include <ctype.h>
@@ -506,16 +482,16 @@ static inline void _mfd_nt_free(void *ptr, const char* szFuncName)
 }
 
 #ifdef _MF_MEMTRACE
-static void _mfd_cpp_allocX( const char* szArea, size_t approxSize )
+static inline void _mfd_cpp_allocX( const char* szArea, size_t approxSize )
 {	++MFD_AllocCountsCPP;	
 //	consoleprintf("MAILFILTER: ++ALLC in "_MFD_MODULE" ; count: %d ; %s ; %d\n",MFD_AllocCountsCPP,szArea,approxSize);
 }
-static void _mfd_cpp_freeX( const char* szArea, size_t approxSize )
+static inline void _mfd_cpp_freeX( const char* szArea, size_t approxSize )
 {	--MFD_AllocCountsCPP;	
 //	consoleprintf("MAILFILTER: ++FREE in "_MFD_MODULE" ; count: %d ; %s ; %d\n",MFD_AllocCountsCPP,szArea,approxSize);
 }
 
-static void _mfd_free( void *ptr , const char* szFuncName )
+static inline void _mfd_free( void *ptr , const char* szFuncName )
 {
 	--MFD_AllocCounts;
 #ifdef __NOVELL_LIBC__
@@ -525,13 +501,13 @@ static void _mfd_free( void *ptr , const char* szFuncName )
 #endif
 	free(ptr);
 }
-static void *_mfd_malloc( size_t size , const char* szFuncName )
+static inline void *_mfd_malloc( size_t size , const char* szFuncName )
 {
 	++MFD_AllocCounts;
 	consoleprintf("MAILFILTER: MALLOC in "_MFD_MODULE" ; count: %d ; %s ; %d\n",MFD_AllocCounts,szFuncName,size);
 	return malloc(size);
 }
-static char *_mfd_strdup( const char * str , const char* szFuncName )
+static inline char *_mfd_strdup( const char * str , const char* szFuncName )
 {
 	++MFD_AllocCounts;
 	ConsolePrintf("MAILFILTER: STRDUP in "_MFD_MODULE" ; count: %d ; %s\n",MFD_AllocCounts,szFuncName);
@@ -570,7 +546,7 @@ extern int MFL_Certified;
 
 // Prototypes
 void MF_ShutDown(void);
-int MF_ConfigReadString(char ConfigFile[MAX_PATH], int Entry, char Value[]);
+//int MF_ConfigReadString(char ConfigFile[MAX_PATH], int Entry, char Value[]);
 void MF_ExitProc(void);
 void MF_StatusText( const char *newText );
 void MF_MakeValidPath(char* thePath);
