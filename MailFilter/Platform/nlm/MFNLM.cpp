@@ -110,7 +110,12 @@ void MF_ExitProc(void)
 	}
 	
 	// Destroy Screen ...
-//	if (MFD_ScreenID)	CloseScreen ( MFD_ScreenID );
+	if (MFD_ScreenID)
+#ifdef __NOVELL_LIBC__
+		CloseScreen ( MFD_ScreenID );
+#else
+		DestroyScreen ( MFD_ScreenID );
+#endif
 }
 
 //	"   F6-Restart  F7-Exit                   F9-Show Configuration  F10 Configure  ",
