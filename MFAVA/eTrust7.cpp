@@ -10,7 +10,7 @@
 #include <netware.h>
 #include <malloc.h>
 #include <library.h>
-
+#include <nks/vm.h>
 
 #include "MFAVA.h"
 #include "library.h"
@@ -313,6 +313,8 @@ int eTrust7_DeInit(MFAVA_HANDLE hAVA)
 	if ((app = GetOrSetAppData()) == NULL)
 		return ENOMEM;
 
+	app->eTrust_InitComplete = 0;
+
 	if ((hAVA != NULL) && (hAVA != (MFAVA_HANDLE)ETRUST7_MAGIC))
 	{
 		if (app->Debug)
@@ -351,6 +353,8 @@ int eTrust7_Init(MFAVA_HANDLE &hAVA)
 	if ((app = GetOrSetAppData()) == NULL)
 		return ENOMEM;
 	
+	app->eTrust_InitComplete = 0;
+
 	if (eTrust7_Check())
 		return ENOTSUP;
 	
@@ -377,25 +381,26 @@ int eTrust7_Init(MFAVA_HANDLE &hAVA)
 					if (pos != -1)
 					{
 						param = line.substr(0,pos);
-						if (line.size() > pos)
+						if (line.size() > pos+1)
 							value = line.substr(pos+1);
 						else
 							value = "";
 						
 						if (app->Debug)
-							printf(" etrust config: '%s'='%s'\n",param.c_str(),value.c_str());
+							printf("MFAVADebug: CAENV: '%s'='%s'\n",param.c_str(),value.c_str());
 
 						if (param == "AVENGINE_LOC")
 							strncpy(szAvEnginePath,value.c_str(),260);
 						
 					}
 				}
+				NXThreadYield();
 			}
 			
 			cfgFile.close();
 		}
 	}
-	szAvEnginePath[260] = 0;
+	szAvEnginePath[259] = 0;
 	if (szAvEnginePath[0] == 0)
 		return ENOTSUP;
 	
@@ -470,10 +475,10 @@ int eTrust7_Init(MFAVA_HANDLE &hAVA)
 	if (app->Debug)
 		printf("MFAVADebug: InoScanSetConfig rc = 0x%X %i\n",rc,rc);
 	
-	app->eTrust_InitComplete = 1;
-	
 	free(cf2.p1);
 	free(cf2.p2);
+	
+	app->eTrust_InitComplete = 1;
 	
 	return ESUCCESS;
 }
