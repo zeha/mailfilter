@@ -92,7 +92,7 @@ void _NonAppStop ( void )
 #endif
 
 extern "C" { 
-	extern bool NWIsNLMLoadedProtected(void);
+	extern int NWIsNLMLoadedProtected(void);
 }
 
 bool mf_nlmisloadedprotected()
