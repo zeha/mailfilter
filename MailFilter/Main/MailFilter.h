@@ -22,7 +22,6 @@
 
 #include "MFApp.h"
 
-#include "MFVersion.h"
 #include "../Licensing/MFLic.h"
 
 // MailFilter Constants etc.
@@ -298,7 +297,7 @@ typedef LONG rtag_t;
 		 static LONG allocTag;
 	#endif // N_PLAT_NLM
 
-	char	MF_ProductName[]	= "MailFilter professional "MAILFILTERVERNUM" ["MAILFILTERPLATFORM"]";
+	char*	MF_ProductName;
 
 	#ifdef __cplusplus
 		#include "MFConfig.h++"

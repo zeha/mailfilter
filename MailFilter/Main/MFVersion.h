@@ -1,7 +1,6 @@
 /*
  *   Change something in this file every new build (for date ...)
  *
- * Be warned: changing something in here will recompile everything!
  *
  */
 

@@ -15,6 +15,7 @@
 #include "MailFilter.h"
 #include "MFConfig.h++"
 #include "MFConfig-Filter.h++"
+#include "MFConfig-defines.h"
 #include <pcreposix45.h>
 
 int MFC_CurrentList = 0;
@@ -257,31 +258,34 @@ static void MFConfig_AddFilterItem(MailFilter_Configuration::Filter flt, int cur
 	szTemp[0] = ' '; szTemp[1] = ' ';
 	switch (flt.matchfield)
 	{
-	case MAILFILTER_MATCHFIELD_ALWAYS:
+	case MailFilter_Configuration::always:
 		szTemp[0] = '*';	break;
-	case MAILFILTER_MATCHFIELD_ATTACHMENT:
+	case MailFilter_Configuration::attachment:
 		szTemp[0] = 'A';	break;
-	case MAILFILTER_MATCHFIELD_EMAIL:
-	case MAILFILTER_MATCHFIELD_EMAIL_BOTHANDCC:
+	case MailFilter_Configuration::email:
+	case MailFilter_Configuration::emailBothAndCC:
 		szTemp[0] = 'E';	break;
-	case MAILFILTER_MATCHFIELD_SUBJECT:
+	case MailFilter_Configuration::subject:
 		szTemp[0] = 'S';	break;
-	case MAILFILTER_MATCHFIELD_SIZE:
+	case MailFilter_Configuration::size:
 		szTemp[0] = 's';	break;
-	case MAILFILTER_MATCHFIELD_EMAIL_FROM:
+	case MailFilter_Configuration::emailFrom:
 		szTemp[0] = 'F';	break;
-	case MAILFILTER_MATCHFIELD_EMAIL_TO:
-	case MAILFILTER_MATCHFIELD_EMAIL_TOANDCC:
+	case MailFilter_Configuration::emailTo:
+	case MailFilter_Configuration::emailToAndCC:
 		szTemp[0] = 'T';	break;
-	case MAILFILTER_MATCHFIELD_BLACKLIST:
+	case MailFilter_Configuration::blacklist:
 		szTemp[0] = 'B';	break;
-	case MAILFILTER_MATCHFIELD_IPUNRESOLVABLE:
+	case MailFilter_Configuration::ipUnresolvable:
 		szTemp[0] = 'U';	break;
+	case MailFilter_Configuration::archiveContentName:
+	case MailFilter_Configuration::archiveContentCount:
+		szTemp[0] = 'Z';
 	default:
 		szTemp[0] = '?';	break;
 	}
 	
-	if (flt.type == MAILFILTER_MATCHTYPE_NOMATCH)
+	if (flt.type == MailFilter_Configuration::noMatch)
 	{
 		szTemp[1] = '!';
 	}
@@ -757,6 +761,8 @@ static void MFConfig_Util_ExportListToFile(void* nutHandle)
 			NWSDisplayErrorText ( MSG_ERROR_FILE_EXISTS , NUT_SEVERITY_FATAL , MF_NutInfo , szTemp );
 			
 		} else {
+			char szSignature[sizeof(MAILFILTER_CONFIGURATION_BASESIGNATURE) + 4];
+			sprintf(szSignature,"%s%03i",MAILFILTER_CONFIGURATION_BASESIGNATURE,MailFilter_Configuration::CurrentConfigVersion);
 		
 			MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator first = MF_GlobalConfiguration.filterList.begin();
 			MAILFILTER_CONFIGURATION_FILTERLISTTYPE::const_iterator last = MF_GlobalConfiguration.filterList.end();
@@ -768,7 +774,7 @@ static void MFConfig_Util_ExportListToFile(void* nutHandle)
 
 			fprintf(fLst,"MAILFILTER_FILTER_EXCHANGEFILE");
 			fputc(0,fLst);
-			fprintf(fLst,MAILFILTER_CONFIGURATION_SIGNATURE);
+			fprintf(fLst,szSignature);
 			fputc(0,fLst);
 			fputc(0,fLst);
 			fputc(0,fLst);
@@ -862,37 +868,37 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 
 	NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_MATCHFIELD), MF_NutInfo);
 	ctlMatchfield = NWSInitMenuField (MSG_MENU_MAIN_EDIT_FILTERS, 10, 40, MFConfig_EditFilterDialog_MenuAction, 		MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ALWAYS,		MAILFILTER_MATCHFIELD_ALWAYS, 			MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ATTACHMENT,	MAILFILTER_MATCHFIELD_ATTACHMENT, 		MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL,			MAILFILTER_MATCHFIELD_EMAIL, 			MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL_BOTHANDCC,MAILFILTER_MATCHFIELD_EMAIL_BOTHANDCC,	MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL_FROM,	MAILFILTER_MATCHFIELD_EMAIL_FROM,		MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL_TO,		MAILFILTER_MATCHFIELD_EMAIL_TO, 		MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL_TOANDCC,	MAILFILTER_MATCHFIELD_EMAIL_TOANDCC,	MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_SUBJECT,		MAILFILTER_MATCHFIELD_SUBJECT, 			MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_SIZE,			MAILFILTER_MATCHFIELD_SIZE, 			MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ARCHIVECONTENTNAME,MAILFILTER_MATCHFIELD_ARCHIVECONTENTNAME,MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ARCHIVECONTENTCOUNT,MAILFILTER_MATCHFIELD_ARCHIVECONTENTCOUNT,MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_BLACKLIST,		MAILFILTER_MATCHFIELD_BLACKLIST, 		MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_IPUNRESOLVABLE,MAILFILTER_MATCHFIELD_IPUNRESOLVABLE, 	MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ALWAYS,		MailFilter_Configuration::always		,MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ATTACHMENT,	MailFilter_Configuration::attachment	,MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL,			MailFilter_Configuration::email			,MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL_BOTHANDCC,MailFilter_Configuration::emailBothAndCC,MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL_FROM,	MailFilter_Configuration::emailFrom		,MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL_TO,		MailFilter_Configuration::emailTo		,MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL_TOANDCC,	MailFilter_Configuration::emailToAndCC	,MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_SUBJECT,		MailFilter_Configuration::subject		,MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_SIZE,			MailFilter_Configuration::size			,MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ARCHIVECONTENTNAME,MailFilter_Configuration::archiveContentName,MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ARCHIVECONTENTCOUNT,MailFilter_Configuration::archiveContentCount,MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_BLACKLIST,		MailFilter_Configuration::blacklist		,MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_IPUNRESOLVABLE,MailFilter_Configuration::ipUnresolvable,MF_NutInfo);
 	NWSAppendMenuField (line, 20, REQUIRED_FIELD, &newMatchfield, ctlMatchfield, NULL, MF_NutInfo);   
 	line++;
 
 	NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_MATCHACTION), MF_NutInfo);
-	ctlMatchaction = NWSInitMenuField (MSG_MENU_MAIN_EDIT_FILTERS, 10, 40, MFConfig_EditFilterDialog_MenuActionAction, 			MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_DROP_MAIL,	MAILFILTER_MATCHACTION_DROP_MAIL, 		MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_PASS,		MAILFILTER_MATCHACTION_PASS,		 	MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_SCHEDULE,	MAILFILTER_MATCHACTION_SCHEDULE,		MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_NOSCHEDULE,	MAILFILTER_MATCHACTION_NOSCHEDULE,		MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_COPY,		MAILFILTER_MATCHACTION_COPY,			MF_NutInfo);
+	ctlMatchaction = NWSInitMenuField (MSG_MENU_MAIN_EDIT_FILTERS, 10, 40, MFConfig_EditFilterDialog_MenuActionAction, 	MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_DROP_MAIL,	MailFilter_Configuration::dropMail, 	MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_PASS,		MailFilter_Configuration::pass,		 	MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_SCHEDULE,	MailFilter_Configuration::schedule,		MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_NOSCHEDULE,	MailFilter_Configuration::noschedule,	MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchaction, EDIT_FILTERS_MATCHACTION_COPY,		MailFilter_Configuration::copy,			MF_NutInfo);
 	NWSAppendMenuField (line, 20, REQUIRED_FIELD, &newMatchaction, ctlMatchaction, NULL, MF_NutInfo);   
 	line++;
 
 
 	NWSAppendCommentField (line, 1, MF_NMsg(EDIT_FILTERS_MATCHTYPE), MF_NutInfo);
 	ctlMatchtype = NWSInitMenuField (MSG_MENU_MAIN_EDIT_FILTERS, 10, 40, MFConfig_EditFilterDialog_MenuAction, 			MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchtype, EDIT_FILTERS_MATCHTYPE_MATCH,			MAILFILTER_MATCHTYPE_MATCH, 		MF_NutInfo);
-	NWSAppendToMenuField (ctlMatchtype, EDIT_FILTERS_MATCHTYPE_NOMATCH,			MAILFILTER_MATCHTYPE_NOMATCH,		MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchtype, EDIT_FILTERS_MATCHTYPE_MATCH,			MailFilter_Configuration::match, 		MF_NutInfo);
+	NWSAppendToMenuField (ctlMatchtype, EDIT_FILTERS_MATCHTYPE_NOMATCH,			MailFilter_Configuration::noMatch,		MF_NutInfo);
 	NWSAppendMenuField (line, 20, REQUIRED_FIELD, &newMatchtype, ctlMatchtype, NULL, MF_NutInfo);   
 	line++;
 	
@@ -1007,7 +1013,7 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 		}
 	}
 
-	if ( (newMatchfield != MAILFILTER_MATCHFIELD_SIZE) || (newMatchfield != MAILFILTER_MATCHFIELD_BLACKLIST) || (newMatchfield != MAILFILTER_MATCHFIELD_IPUNRESOLVABLE) )
+	if ( (newMatchfield != MailFilter_Configuration::size) || (newMatchfield != MailFilter_Configuration::blacklist) || (newMatchfield != MailFilter_Configuration::ipUnresolvable) )
 	{
 		MF_RegError(regcomp(&re,flt->expression.c_str(),0),&re);
 		regfree(&re);
@@ -1347,28 +1353,28 @@ static void MFConfig_EditConfig()
 	
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"GWIA Mode/Version: (see manual)", MF_NutInfo);
 	newGwiaVersion = (unsigned long)MF_GlobalConfiguration.GWIAVersion;
-	NWSAppendUnsignedIntegerField (line, 40, NORMAL_FIELD, &newGwiaVersion, 550, 600, NULL, MF_NutInfo);
+	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newGwiaVersion, 550, 600, NULL, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"MailFilter Control/Config Password:", MF_NutInfo);
 	strcpy (newControlPassword, MF_GlobalConfiguration.ControlPassword.c_str());
-	NWSAppendPasswordField(line, 40, 20, NORMAL_FIELD, (_MF_NUTCHAR)newControlPassword, 50, NULL, true, NULL, '*', MF_NutInfo); 
+	NWSAppendPasswordField(line, 50, 20, NORMAL_FIELD, (_MF_NUTCHAR)newControlPassword, 50, NULL, true, NULL, '*', MF_NutInfo); 
 	line++;
 	
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable PFA Functionality:", MF_NutInfo);
-	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newEnablePFA, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnablePFA, NULL, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable Incoming Rcpt Rule Check:", MF_NutInfo);
-	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newEnableIncomingRcptCheck, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableIncomingRcptCheck, NULL, MF_NutInfo);
 	line++;
 	
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable NRM on load (OS address space only):", MF_NutInfo);
-	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newEnableNRMThread, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableNRMThread, NULL, MF_NutInfo);
 	line++;
 	
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable Mail Restore in NRM:", MF_NutInfo);
-	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newEnableNRMRestore, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableNRMRestore, NULL, MF_NutInfo);
 	line++;
 	
 	line++;
@@ -1378,16 +1384,16 @@ static void MFConfig_EditConfig()
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Number of MFSCAN Directories:", MF_NutInfo);
 	newScanDirNum = (unsigned long)MF_GlobalConfiguration.MailscanDirNum;
-	NWSAppendUnsignedIntegerField (line, 40, NORMAL_FIELD, &newScanDirNum, 0, 50, NULL, MF_NutInfo);
+	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newScanDirNum, 0, 50, NULL, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Seconds to wait for Real Time Scan:", MF_NutInfo);
 	newScanDirWait = (unsigned long)MF_GlobalConfiguration.MailscanTimeout;
-	NWSAppendUnsignedIntegerField (line, 40, NORMAL_FIELD, &newScanDirWait, 0, 600, NULL, MF_NutInfo);
+	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newScanDirWait, 0, 600, NULL, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Decode Attachments for VScan:", MF_NutInfo);
-	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newEnableAttachmentDecoder, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableAttachmentDecoder, NULL, MF_NutInfo);
 	line++;
 
 	line++;
@@ -1396,29 +1402,29 @@ static void MFConfig_EditConfig()
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Internal Recipient:", MF_NutInfo);
-	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newNotification_InternalRcpt, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_InternalRcpt, NULL, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Internal Sender:", MF_NutInfo);
-	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newNotification_InternalSndr, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_InternalSndr, NULL, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"External Recipient:", MF_NutInfo);
-	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newNotification_ExternalRcpt, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_ExternalRcpt, NULL, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"External Sender:", MF_NutInfo);
-	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newNotification_ExternalSndr, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_ExternalSndr, NULL, MF_NutInfo);
 	line++;
 
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Notify Admin On Log Cycle Error:", MF_NutInfo);
-	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newNotification_AdminLogs, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminLogs, NULL, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Send Admin Daily Status Report:", MF_NutInfo);
-	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newNotification_AdminDailyReport, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminDailyReport, NULL, MF_NutInfo);
 	line++;
 
 	line++;
@@ -1427,17 +1433,17 @@ static void MFConfig_EditConfig()
 	line++;
 	
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Maximum Total Size (kBytes):", MF_NutInfo);
-	NWSAppendUnsignedIntegerField (line, 40, NORMAL_FIELD, &newProblemDir_MaxSize, 0, 1000000, NULL, MF_NutInfo);
+	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newProblemDir_MaxSize, 0, 1000000, NULL, MF_NutInfo);
 	NWSAppendCommentField (line, 65, (_MF_NUTCHAR)"(0=disabled)", MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Maximum File Age (Days):", MF_NutInfo);
-	NWSAppendUnsignedIntegerField (line, 40, NORMAL_FIELD, &newProblemDir_MaxAge, 0, 10000, NULL, MF_NutInfo);
+	NWSAppendUnsignedIntegerField (line, 50, NORMAL_FIELD, &newProblemDir_MaxAge, 0, 10000, NULL, MF_NutInfo);
 	NWSAppendCommentField (line, 65, (_MF_NUTCHAR)"(0=disabled)", MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Notify Admin On Cleanup:", MF_NutInfo);
-	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newNotification_AdminMailsKilled, NULL, MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newNotification_AdminMailsKilled, NULL, MF_NutInfo);
 	line++;
 
 	formSaved = NWSEditForm (
@@ -1672,7 +1678,7 @@ int MailFilter_Main_RunAppConfig(bool bStandalone)
 	memset(szTemp,' ',80);
 	szTemp[81]=0;
 	sprintf(szTemp,"  MailFilter Version: 001.%03i              Configuration File Version: 001.%03i",
-						MAILFILTER_CONFIGURATION_THISBUILD,MF_GlobalConfiguration.config_build);
+						MailFilter_Configuration::CurrentConfigVersion,MF_GlobalConfiguration.config_build);
 	NWSShowLineAttribute ( 2 , 0 , (_MF_NUTCHAR)szTemp , VNORMAL , 80 , (struct ScreenStruct*)MF_NutInfo->screenID );
 
 	NLM_MenuMain(bStandalone);

@@ -23,7 +23,7 @@
 namespace MailFilter_Configuration
 {
 
-#include "MFConfig-defines.h"
+	const int CurrentConfigVersion = 10;
 
 //#define MAILFILTER_CONFIGURATION_SIGNATURE			"MAILFILTER_R001_009"		//*** MODIFY THESE
 //#define MAILFILTER_CONFIGURATION_THISBUILD			9							//    TWO BUILD NUMBERS ***
@@ -88,7 +88,7 @@ public:
 
 	int setDefaults(std::string directory = "", std::string domainname = "");
 
-	bool isCurrentVersion() { return config_build == MAILFILTER_CONFIGURATION_THISBUILD; }
+	bool isCurrentVersion() { return config_build == CurrentConfigVersion; }
 	
 	bool ReadFromFile(std::string alternateFilename);
 	bool WriteToFile(std::string alternateFilename);

@@ -33,6 +33,9 @@
 #include "MFRelayHost.h++"
 // Include Version Header
 #include "..\..\Main\MFVersion.h"
+#include "MFConfig-defines.h"
+#include "MFVersion.h"
+
 
 #include <sys/utsname.h>
 
@@ -1373,6 +1376,8 @@ int main( int argc, char *argv[ ])
 #ifdef _MF_MEMTRACE
 	atexit(_mfd_tellallocccountonexit);
 #endif //_MF_MEMTRACE
+
+	MF_ProductName = "MailFilter professional "MAILFILTERVERNUM" ["MAILFILTERPLATFORM"]";
 
 #ifdef MF_WITH_I18N
 	if (LoadLanguageMessageTable(&programMesgTable, &MFT_I18N_MessageCount, &MFT_I18N_LanguageID))

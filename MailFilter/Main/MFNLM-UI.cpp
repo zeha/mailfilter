@@ -11,6 +11,7 @@
  
 #define _MFD_MODULE			"MFNLM-UI.CPP"
 #include "MailFilter.h"
+#include "MFVersion.h"
 
 void MF_UI_ShowConfiguration(void)
 {
@@ -66,7 +67,7 @@ void MF_UI_ShowConfiguration(void)
 	MF_StatusUI_UpdateLog(szTemp);
 
 	/* this is inverse */
-	sprintf(szTemp, " Scheduling...: %s, %d rule(s)", MFBW_CheckCurrentScheduleState() == false ? "On" : "Off",MF_CountFilters(MAILFILTER_MATCHACTION_SCHEDULE));
+	sprintf(szTemp, " Scheduling...: %s, %d rule(s)", MFBW_CheckCurrentScheduleState() == false ? "On" : "Off",MF_CountFilters(MailFilter_Configuration::schedule));
 	MF_StatusUI_UpdateLog(szTemp);
 
 	sprintf(szTemp, " Scheduling...: %s",MF_GlobalConfiguration.BWLScheduleTime.c_str());

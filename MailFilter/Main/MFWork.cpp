@@ -16,6 +16,8 @@
 #include "MFMail.h++"
 #include "MFRelayHost.h++"
 #include "MFZip.h"
+#include "MFConfig-defines.h"
+#include "MFVersion.h"
 
 static int MF_GoOn();
 
@@ -365,10 +367,10 @@ int MFAPI_FilterCheck( char *szScan , int mailSource, int matchfield )
 				    {	// no error, but no match
 				    		rc = 0;
 				    		// if this is a NO match rule, then the filter applies and we break the cycle...
-							if (MF_GlobalConfiguration.filterList[curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
+							if (MF_GlobalConfiguration.filterList[curItem].type == MailFilter_Configuration::noMatch)
 							{
 								rc=(int)curItem+1;
-								if (MF_GlobalConfiguration.filterList[curItem].action == MAILFILTER_MATCHACTION_SCHEDULE)
+								if (MF_GlobalConfiguration.filterList[curItem].action == MailFilter_Configuration::schedule)
 									rc = 0;
 								
 								if (rc)	break;

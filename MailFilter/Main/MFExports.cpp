@@ -105,7 +105,7 @@ long MailFilter_API_RuleCheck( char *szScan , unsigned int mailSource , unsigned
 		return -1;
 	}
 	
-	if (matchfield > MAILFILTER_MATCHFIELD_SIZE)
+	if (matchfield > MailFilter_Configuration::size)
 	{
 		MFAPI_EXPORT_FUNC_END;
 		return -1;

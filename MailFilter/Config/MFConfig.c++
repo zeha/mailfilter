@@ -19,6 +19,7 @@
 #include "MailFilter.h"
 #include "MFConfig.h++"
 #include "MFConfig-Filter.h++"
+#include "MFConfig-defines.h"
 
 #define MAILFILTER_CONFIGURATION_PATHFILE "sys:\\etc\\mfpath.cfg"
 
@@ -142,7 +143,7 @@ std::string MF_MakeValidPath(std::string thePath)
 
 int Configuration::setDefaults(std::string directory, std::string domainname)
 {
-	this->config_build = MAILFILTER_CONFIGURATION_THISBUILD;
+	this->config_build = CurrentConfigVersion;
 	if (directory != "") { this->config_directory = directory; }
 	if (this->config_directory != "")
 	{
@@ -592,7 +593,7 @@ bool Configuration::CreateFromInstallFile(std::string installFile)
 
 	if (!isUpgrade)
 	{
-		this->config_build = MAILFILTER_CONFIGURATION_THISBUILD;
+		this->config_build = CurrentConfigVersion;
 
 		this->filterList.clear();
 		
@@ -697,9 +698,13 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 			
 	std::string ConfigVersion;
 	ConfigVersion = MF_ConfigReadString(pConfigFile, 0);
+
+	char szSignature[sizeof(MAILFILTER_CONFIGURATION_BASESIGNATURE) + 4];
+	sprintf(szSignature,"%s%03i",MAILFILTER_CONFIGURATION_BASESIGNATURE,MailFilter_Configuration::CurrentConfigVersion);
+
 	if (this->config_mode_strict)
 	{
-		if (ConfigVersion != MAILFILTER_CONFIGURATION_SIGNATURE)
+		if (ConfigVersion != szSignature)
 		{
 			rc = 99;
 			goto MF_ConfigRead_ERR;	
@@ -978,7 +983,7 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 #define doNull(howMany)	{ ThreadSwitch(); iMax = ftell(cfgFile); for (iCnt=0;iCnt<(howMany-iMax);iCnt++) fputc(0,cfgFile); }
 
 	// write out header:	
-	fprintf(cfgFile,"%s",MAILFILTER_CONFIGURATION_SIGNATURE);
+	fprintf(cfgFile,"%s%03i",MAILFILTER_CONFIGURATION_BASESIGNATURE,MailFilter_Configuration::CurrentConfigVersion);
 	
 	doNull(60);
 	fprintf(cfgFile,"%s",this->ControlPassword.c_str());
