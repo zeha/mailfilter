@@ -532,8 +532,14 @@ void MF_StatusUI_Update(const char* newText)
 
 
 			sprintf(szTemp,MF_Msg(MSG_INFOPORTAL_LINE2),MFS_MF_MailsInputTotal,MFS_MF_MailsInputFailed);
-			szDynamic = "Running ";
-			szDynamic += cStatus[iStatusChar];
+
+			if ( MF_GlobalConfiguration.RequireAVA && !MFT_bTriedAVInit )
+			{
+				szDynamic = "Waiting for AntiVirus NLM";
+			} else {
+				szDynamic = "Running ";
+				szDynamic += cStatus[iStatusChar];
+			}
 			memcpy(szTemp+2,szDynamic.c_str(),szDynamic.length());
 			NWSShowLineAttribute( 2, 0, (_MF_NUTCHAR) szTemp, VNORMAL, strlen(szTemp), (struct ScreenStruct*)MF_NutInfo->screenID);
 
@@ -798,7 +804,7 @@ static void MF_Cleanup_Startup(void *dummy)
 	{
 		++counter;
 		
-		if (counter>3600)
+		if (counter > (2*3600))	// wait two hours between checks.
 		{
 			counter = 0;
 			
@@ -832,6 +838,8 @@ static void LoadNRMThreadStartup(void *dummy)
 //
 static int MailFilter_Main_RunAppServer(const char* szProgramName)
 {	
+	int rc = 0;
+
 	// Init NWSNut
 	printf(MF_Msg(MSG_BOOT_USERINTERFACE));
 
@@ -857,6 +865,7 @@ MF_MAIN_RUNLOOP:
 	{
 		// needed for mf restart
 		MFT_NLM_Exiting = 0;
+		MFT_bStartupComplete = false;
 
 		MFD_Out(MFD_SOURCE_GENERIC,"Initializing Logging...\n");
 
@@ -1017,20 +1026,23 @@ MF_MAIN_RUNLOOP:
 		BYTE tmp_Key_Value;
 
 		// Don't exit thread until all other threads are terminated ...
-		while (MFT_NLM_ThreadCount>0)
+		while ( (MFT_NLM_ThreadCount > 0) || (!MFT_bStartupComplete) )
 		{
 			if (MFT_NLM_Exiting > 0)
+			{
+				MF_DisplayCriticalError("MAILFILTER: NLM is exiting.\n");
 				break;
+			}
 
 			ThreadSwitch();
 
 			if (MFT_NUT_GetKey)
-				NWSGetKey (
-					&tmp_Key_Type,
-					&tmp_Key_Value,
-					MF_NutInfo
-					);
+			{
+				NWSGetKey (	&tmp_Key_Type, &tmp_Key_Value,
+								MF_NutInfo );
+			}
 		}
+		MF_DisplayCriticalError("MAILFILTER: threads: %d\n",MFT_NLM_ThreadCount);
 		
 		// 254 = restart
 		// 253 = config
@@ -1122,14 +1134,15 @@ MF_MAIN_RUNLOOP:
 
 			// increase thread count so we can decrease it above again.
 			++MFT_NLM_ThreadCount;
-
 			goto MF_MAIN_RUNLOOP;
 		}
 	}
 
+	rc = 666;
+
 MF_MAIN_TERMINATE:
 	MailFilterApp_Server_LogoutFromServer();
-	return 0;
+	return rc;
 }
 
 

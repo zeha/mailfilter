@@ -1,5 +1,6 @@
 @echo off
 cd ..\MailFilter\out
+del *.zip
 del *.nlm
 del *.map
 del *.ncv

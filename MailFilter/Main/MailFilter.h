@@ -358,6 +358,7 @@ typedef LONG rtag_t;
 	_MFGS(	unsigned long,	MFT_I18N_LanguageID,				0		);
 	_MFGS(	bool,			MFC_MAILSCAN_Enabled,				0		);
 	_MFGS(	bool,			MFT_bTriedAVInit,					false	);
+	_MFGS(	bool,			MFT_bStartupComplete,				false	);
 
 	_MFGS(	int,			MFD_AllocCounts,					0		);
 	_MFGS(	int,			MFD_AllocCountsCPP,					0		);

@@ -3187,6 +3187,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 	int shallTerminate = 0;
 
 	MFT_NLM_ThreadCount++;
+	MFT_bStartupComplete = true;
 	MFT_bTriedAVInit = false;
 	
 	// Rename this Thread

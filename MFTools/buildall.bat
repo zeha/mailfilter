@@ -1,7 +1,7 @@
 @echo off
 echo.
 echo.
-echo MailFilter/ax Build-All
+echo MailFilter Build-All
 echo.
 echo   EDIT MAILFILTER/MAIN/MFVERSION.H!
 echo.
@@ -54,6 +54,6 @@ REM %CMDIDE% mfrestore mfrestore.mcp
 %CMDIDE% MFAVA MFAVA.mcp /t "AntiVirusAgent"
 
 
-%CMDIDE% mailfilter\platform\nlm mailfilter-clib.mcp /t "MailFilter CLib"
+%CMDIDE% mailfilter\platform\nlm mailfilter-clib.mcp /t "NLMRelease"
 %CMDIDE% mailfilter\platform\nlm-libc mailfilter-libc.mcp /t "NLMRelease"
 
