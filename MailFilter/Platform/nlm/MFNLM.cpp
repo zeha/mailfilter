@@ -1102,8 +1102,6 @@ int main( int argc, char *argv[ ])
 	atexit(_mfd_tellallocccountonexit);
 #endif //_MF_MEMTRACE
 
-	MF_DisplayCriticalError("MailFilter: Loading...\n");
-
 	MF_ProductName = "MailFilter professional "MAILFILTERVERNUM" ["MAILFILTERPLATFORM"]";
 
 
