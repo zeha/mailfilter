@@ -391,10 +391,10 @@ void MF_Filter_Sort()
 	return;
 }
 
-int MF_Filter_InitListsV6();
+/*int MF_Filter_InitListsV6();
 int MF_Filter_InitListsV7();
 int MF_Filter_InitListsV8();
-
+*/
 //
 // Init the Cache (Subject and Attachment Scan)
 //
@@ -409,7 +409,10 @@ int MF_Filter_InitLists()
 	if (MFC_ConfigBuild < 9)
 		return MF_Filter_InitListsV8();
 		else
-		return MF_Filter_InitListsV9();
+	if (MFC_ConfigBuild < 10)
+		return MF_Filter_InitListsV8();
+		else
+		return MF_Filter_InitListsV8();
 }
 
 // this one can read the V9 config file and put it in the current memory config
@@ -457,7 +460,7 @@ int MF_Filter_InitListsV9()
 	return 0;
 }
 
-// this one can read the V8 config file and put it in the current memory config
+// this one can read the V8, V9 and V10 config file and put it in the current memory config
 int MF_Filter_InitListsV8()
 {
 	FILE* cfgFile;
@@ -466,7 +469,7 @@ int MF_Filter_InitListsV8()
 	long rc2;
 	char szTemp[1002];
 
-	// version 8
+	// version 8, 9, 10
 
 	cfgFile = fopen(MAILFILTER_CONFIGURATION_MAILFILTER,"rb");
 	fseek(cfgFile,4000,SEEK_SET);
@@ -482,20 +485,35 @@ int MF_Filter_InitListsV8()
 		MFC_Filters[curItem].enabledOutgoing = (char)fgetc(cfgFile);
 		MFC_Filters[curItem].expression[0] = 0;
 
-		switch (MFC_Filters[curItem].matchfield)
+		if (MFC_ConfigBuild < 9)
 		{
-		case MAILFILTER_OLD_MATCHFIELD_SUBJECT:
-			MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_SUBJECT;
-			break;
-		case MAILFILTER_OLD_MATCHFIELD_SIZE:
-			MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_SIZE;
-			break;
-		case MAILFILTER_OLD_MATCHFIELD_EMAIL_FROM:
-			MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_EMAIL_FROM;
-			break;
-		case MAILFILTER_OLD_MATCHFIELD_EMAIL_TO:
-			MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_EMAIL_TO;
-			break;
+			switch (MFC_Filters[curItem].matchfield)
+			{
+			case MAILFILTER_OLD_MATCHFIELD_SUBJECT:
+				MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_SUBJECT;
+				break;
+			case MAILFILTER_OLD_MATCHFIELD_SIZE:
+				MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_SIZE;
+				break;
+			case MAILFILTER_OLD_MATCHFIELD_EMAIL_FROM:
+				MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_EMAIL_FROM;
+				break;
+			case MAILFILTER_OLD_MATCHFIELD_EMAIL_TO:
+				MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_EMAIL_TO;
+				break;
+			}
+		}
+		if (MFC_ConfigBuild < 10)
+		{
+			switch (MFC_Filters[curItem].matchfield)
+			{
+			case MAILFILTER_MATCHFIELD_EMAIL_TO:
+				MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_EMAIL_TOANDCC;
+				break;
+			case MAILFILTER_MATCHFIELD_EMAIL:
+				MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_EMAIL_BOTHANDCC;
+				break;
+			}
 		}
 		
 		rc1 = (long)fread(szTemp,sizeof(char),501,cfgFile);
@@ -548,7 +566,7 @@ int MF_Filter_InitListsV7()
 			MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_EMAIL_FROM;
 			break;
 		case MAILFILTER_OLD_MATCHFIELD_EMAIL_TO:
-			MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_EMAIL_TO;
+			MFC_Filters[curItem].matchfield = MAILFILTER_MATCHFIELD_EMAIL_TOANDCC;
 			break;
 		}
 			
@@ -1465,6 +1483,7 @@ void MFConfig_Util_ImportListFromFile(void* nutHandle)
 				case MAILFILTER_MATCHFIELD_ATTACHMENT:
 					szTemp[0] = 'A';	break;
 				case MAILFILTER_MATCHFIELD_EMAIL:
+				case MAILFILTER_MATCHFIELD_EMAIL_BOTHANDCC:
 					szTemp[0] = 'E';	break;
 				case MAILFILTER_MATCHFIELD_SUBJECT:
 					szTemp[0] = 'S';	break;
@@ -1473,6 +1492,7 @@ void MFConfig_Util_ImportListFromFile(void* nutHandle)
 				case MAILFILTER_MATCHFIELD_EMAIL_FROM:
 					szTemp[0] = 'F';	break;
 				case MAILFILTER_MATCHFIELD_EMAIL_TO:
+				case MAILFILTER_MATCHFIELD_EMAIL_TOANDCC:
 					szTemp[0] = 'T';	break;
 				case MAILFILTER_MATCHFIELD_BLACKLIST:
 					szTemp[0] = 'B';	break;
@@ -1657,8 +1677,10 @@ int MFConfig_EditFilterDialog(unsigned int filterHandle)
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ALWAYS,		MAILFILTER_MATCHFIELD_ALWAYS, 			NLM_nutHandle);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_ATTACHMENT,	MAILFILTER_MATCHFIELD_ATTACHMENT, 		NLM_nutHandle);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL,			MAILFILTER_MATCHFIELD_EMAIL, 			NLM_nutHandle);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL_BOTHANDCC,MAILFILTER_MATCHFIELD_EMAIL_BOTHANDCC,	NLM_nutHandle);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL_FROM,	MAILFILTER_MATCHFIELD_EMAIL_FROM,		NLM_nutHandle);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL_TO,		MAILFILTER_MATCHFIELD_EMAIL_TO, 		NLM_nutHandle);
+	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_EMAIL_TOANDCC,	MAILFILTER_MATCHFIELD_EMAIL_TOANDCC,	NLM_nutHandle);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_SUBJECT,		MAILFILTER_MATCHFIELD_SUBJECT, 			NLM_nutHandle);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_SIZE,			MAILFILTER_MATCHFIELD_SIZE, 			NLM_nutHandle);
 	NWSAppendToMenuField (ctlMatchfield, EDIT_FILTERS_MATCHFIELD_BLACKLIST,		MAILFILTER_MATCHFIELD_BLACKLIST, 		NLM_nutHandle);
@@ -1941,6 +1963,7 @@ void MFConfig_EditFilters()
 		case MAILFILTER_MATCHFIELD_ATTACHMENT:
 			szTemp[0] = 'A';	break;
 		case MAILFILTER_MATCHFIELD_EMAIL:
+		case MAILFILTER_MATCHFIELD_EMAIL_BOTHANDCC:
 			szTemp[0] = 'E';	break;
 		case MAILFILTER_MATCHFIELD_SUBJECT:
 			szTemp[0] = 'S';	break;
@@ -1949,6 +1972,7 @@ void MFConfig_EditFilters()
 		case MAILFILTER_MATCHFIELD_EMAIL_FROM:
 			szTemp[0] = 'F';	break;
 		case MAILFILTER_MATCHFIELD_EMAIL_TO:
+		case MAILFILTER_MATCHFIELD_EMAIL_TOANDCC:
 			szTemp[0] = 'T';	break;
 		case MAILFILTER_MATCHFIELD_BLACKLIST:
 			szTemp[0] = 'B';	break;

@@ -277,7 +277,7 @@ MFD_Out(MFD_SOURCE_VSCAN,">> Attached %d bytes.\n",bytes);
 						
 						default:
 							// Unknown
-							sprintf(templateString,"** Escape Characted %c not recognized. **",iTemplateChar);
+							sprintf(templateString,"** Escape Character %c not recognized. **",iTemplateChar);
 							break;
 					}
 					
@@ -724,10 +724,18 @@ consoleprintf("***RuleExec called***\n");
 			szFieldDescription = "Always";
 			iResult = 1;
 			break;
-
 		case MailFilter_Configuration::MailFilter_Configuration::email:
-//MFD_Out("E");
-			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL)) break;
+//			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL)) break;
+			szFieldDescription = "E-Mail address";
+
+			if (m->szMailFrom[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailFrom);		szFieldDescription = "Sender's E-Mail";	}
+			if (m->szEnvelopeFrom[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeFrom);	szFieldDescription = "Sender's E-Mail";		}
+			if (m->szMailRcpt[0]!=0)		if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailRcpt);		szFieldDescription = "Recipients's E-Mail";	}
+			if (m->szEnvelopeRcpt[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeRcpt);	szFieldDescription = "Recipients's E-Mail";	}
+
+			break;
+		case MailFilter_Configuration::MailFilter_Configuration::emailBothAndCC:
+//			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL)) break;
 			szFieldDescription = "E-Mail address";
 
 			if (m->szMailFrom[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailFrom);		szFieldDescription = "Sender's E-Mail";	}
@@ -738,8 +746,7 @@ consoleprintf("***RuleExec called***\n");
 
 			break;
 		case MailFilter_Configuration::MailFilter_Configuration::emailFrom:
-//MFD_Out("F");
-			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL_FROM)) break;
+//			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL_FROM)) break;
 			szFieldDescription = "Sender's E-Mail";
 
 			if (m->szMailFrom[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailFrom);		}
@@ -747,8 +754,15 @@ consoleprintf("***RuleExec called***\n");
 
 			break;
 		case MailFilter_Configuration::MailFilter_Configuration::emailTo:
-//MFD_Out("T");
-			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL_TO)) break;
+//			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL_TO)) break;
+			szFieldDescription = "Recipients's E-Mail";
+
+			if (m->szMailRcpt[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailRcpt);		}
+			if (m->szEnvelopeRcpt[0]!=0)	if (iResult != 1){	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szEnvelopeRcpt);	}
+
+			break;
+		case MailFilter_Configuration::MailFilter_Configuration::emailToAndCC:
+//			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_EMAIL_TO)) break;
 			szFieldDescription = "Recipients's E-Mail";
 
 			if (m->szMailRcpt[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailRcpt);		}
@@ -758,7 +772,7 @@ consoleprintf("***RuleExec called***\n");
 			break;
 		case MailFilter_Configuration::MailFilter_Configuration::subject:
 //MFD_Out("S");
-			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_SUBJECT)) break;
+//			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_SUBJECT)) break;
 			szFieldDescription = "Subject";
 
 			if (m->szMailSubject[0]!=0)						 {	iResult = 0;	iResult = MF_RuleExec_RE(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),m->szMailSubject);		}
@@ -766,7 +780,7 @@ consoleprintf("***RuleExec called***\n");
 			break;
 		case MailFilter_Configuration::MailFilter_Configuration::size:
 //MFD_Out("Z");
-			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_SIZE)) break;
+//			if (chkFlag(iIgnoreFields,MAILFILTER_MATCHFIELD_SIZE)) break;
 			szFieldDescription = "Mail Size";
 			lVal = 0;
 			lVal = atol(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str()+1);
@@ -798,40 +812,6 @@ consoleprintf("***RuleExec called***\n");
 			break;
 		case MailFilter_Configuration::MailFilter_Configuration::blacklist:
 		
-/*			if (m->bHaveReceivedFrom)
-			{
-				char* holeZone = _mfd_strdup(MF_GlobalConfiguration.filterList[curItem].expression.c_str(),"holeZone");
-				char* validResponse = strchr(holeZone,':');
-				if (validResponse == NULL) 
-				{   // this was the default in previous versions
-					validResponse = "";
-				} else {
-					validResponse[0] = 0;
-					validResponse++;
-				}
-MFD_Out(MFD_SOURCE_RULE,"%s, %s\n",holeZone,validResponse);
-						
-				bOverrideErrorMessage = true;
-				szFieldDescription = (char*)_mfd_malloc(1001,"szFieldDescription");
-				sprintf(szFieldDescription,"Found a blacklisted mailserver address. (RBL: %s)",holeZone);
-				
-				bl = new MFBlacklist(holeZone,validResponse);
-				if( bl->Lookup(m->szReceivedFrom) == 1 )	{ iResult = 1; } else { iResult = 0; }
-				delete(bl);
-				
-				_mfd_free(holeZone,"holeZone");
-				
-			} else {
-				// this is a dirty hack!
-				// if we cannot test, we have to pretend everything's fine - also for the reverse
-				// matching type
-				//
-				iResult = 0;
-				if (MF_GlobalConfiguration.filterList[curItem].type == MAILFILTER_MATCHTYPE_NOMATCH)
-				{	iResult = 1;	}
-			}
-*/
-			
 			char* holeZone = _mfd_strdup(MF_GlobalConfiguration.filterList[(unsigned int)curItem].expression.c_str(),"holeZone");
 			char* validResponse = strchr(holeZone,':');
 			if (validResponse == NULL) 
@@ -852,18 +832,7 @@ MFD_Out(MFD_SOURCE_RULE,"%s, %s\n",holeZone,validResponse);
 		    break;
 		case MailFilter_Configuration::MailFilter_Configuration::ipUnresolvable:
 		
-/*			if (m->bHaveReceivedFrom)
-			{
-				bOverrideErrorMessage = true;
-				szFieldDescription = (char*)_mfd_malloc(1001,"szFieldDescription");
-				strcpy(szFieldDescription,"Found an unknown/unresolvable relay host address.");
-				
-				// the new() with in-addr.arpa is more pseudo then anything else...
-				// CheckValidName ignores the holeZone && validResult as it isn't needed anywhere...
-				bl = new MFBlacklist("in-addr.arpa","127.0.0.2");
-				if( bl->CheckValidName(m->szReceivedFrom) == 2 )	{ iResult = 1; } else { iResult = 0; }
-				delete(bl);
-			
+/*		
 			} else {
 				// this is a dirty hack!
 				// if we cannot test, we have to pretend everything's fine - also for the reverse
@@ -3847,6 +3816,84 @@ void MFBW_CheckQueue(char* szFile,char* szIn,char* szOut)
 	}
 }
 
+
+/*
+ * Create the directory szDirectoryName if it doesnt exist.
+ * If bCleanup, delete old files from the directory.
+ */
+bool CheckDirectory(const char* szDirectoryName, bool bCleanUp)
+{
+	// Create directory if not existant
+	if (chdir(szDirectoryName))
+	{
+		MFD_Out(MFD_SOURCE_GENERIC,"Create: %s\n",szDirectoryName);
+		mkdir(szDirectoryName,S_IRWXU);
+	}
+
+	// delete stale files? (age > 2days && 0 bytes)
+	if (bCleanUp == true)
+	{
+		time_t mintime = time(NULL) - (2*(24*60*60));
+		iXDir dir(szDirectoryName);
+		
+		char szTemp[250];
+
+		while ( dir.ReadNextEntry() )
+		{
+			const char* e = dir.GetCurrentEntryName();
+			long long s = dir.GetCurrentEntrySize();
+			time_t t = dir.GetCurrentEntryModificationTime();
+
+			if ( (t < mintime) && (s == 0) )
+			{
+				sprintf(szTemp,"Found old file '%s' in a queue. Deleting.",e);
+				MF_StatusText(szTemp);
+				dir.UnlinkCurrentEntry();
+			}
+		}
+	}
+	
+	return true;
+}
+
+/*
+ * Loop through the directory szDirectoryName 
+ * and call MF_ProcessFile for all files in it.
+ */
+bool HandleGwiaDirectory(const char* szDirectoryName, const char* szDirectoryName2, int passOn, int tlc)
+{
+	char fileIn[MAX_PATH];
+	char fileOut[MAX_PATH];
+	
+	#ifdef _TRACE
+	MFD_Out(MFD_SOURCE_WORKER,"Check %s\n", szDirectoryName);
+	#endif
+	
+	iXDir dir(szDirectoryName);
+	dir.SkipDotFiles = true;
+	
+	while ( dir.ReadNextEntry() )
+	{
+		const char* e = dir.GetCurrentEntryName();
+		
+		if (MFT_NLM_Exiting > 0)
+			break;
+
+		// Build filenames...
+		sprintf(fileIn,  "%s%s", szDirectoryName,  e);
+		sprintf(fileOut, "%s%s", szDirectoryName2, e);
+
+		if (tlc>10)
+			MF_ProcessFile(e,fileIn,fileOut,passOn);
+
+		ThreadSwitch();
+	}
+	
+	MF_StatusNothing();
+
+	return true;
+}
+
 // 
 // **** Worker Thread ****
 //
@@ -3858,8 +3905,9 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 {
 #pragma unused(dummy)
 
-	DIR *mailDir;
-	DIR *readentry;
+	DIR* mailDir;
+	DIR* readentry;
+
 	char fileIn[MAX_PATH];
 	char fileOut[MAX_PATH];
 	char scanDir[MAX_PATH];
@@ -3867,9 +3915,6 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 	int tlc = 0;
 	int lc = 255;
 	int shallTerminate = 0;
-#ifdef WIN32
-	struct dirent *dirEntry;
-#endif
 
 #pragma unused(scanPath)
 
@@ -3896,37 +3941,33 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 	sprintf(MFT_MF_ScheduleDirSend,			"%s"PS"MFSCHED"PS,		MF_GlobalConfiguration.MFLTRoot.c_str());
 	sprintf(MFT_MF_ProbDir,					"%s"PS"MFPROB"PS,		MF_GlobalConfiguration.MFLTRoot.c_str());
 
-	if (chdir(MFT_GWIA_SendDirIn))			mkdir(MFT_GWIA_SendDirIn,S_IRWXU);
-	if (chdir(MFT_GWIA_SendDirOut)) 	 	mkdir(MFT_GWIA_SendDirOut,S_IRWXU);
-	if (chdir(MFT_GWIA_RecvDirIn))			mkdir(MFT_GWIA_RecvDirIn,S_IRWXU);
-	if (chdir(MFT_GWIA_RecvDirOut)) 		mkdir(MFT_GWIA_RecvDirOut,S_IRWXU);
-	if (chdir(MFT_GWIA_ResultDirIn))		mkdir(MFT_GWIA_ResultDirIn,S_IRWXU);
-	if (chdir(MFT_GWIA_ResultDirOut))		mkdir(MFT_GWIA_ResultDirOut,S_IRWXU);
-	if (chdir(MFT_MF_ScheduleDirSend))		mkdir(MFT_MF_ScheduleDirSend,S_IRWXU);
-	if (chdir(MFT_MF_ProbDir))				mkdir(MFT_MF_ProbDir,S_IRWXU);
+	CheckDirectory(MFT_GWIA_SendDirIn		,true	);
+	CheckDirectory(MFT_GWIA_SendDirOut		,false	);
+	CheckDirectory(MFT_GWIA_RecvDirIn		,true	);
+	CheckDirectory(MFT_GWIA_RecvDirOut		,false	);
+	CheckDirectory(MFT_GWIA_ResultDirIn		,true	);
+	CheckDirectory(MFT_GWIA_ResultDirOut	,false	);
 
-	sprintf(scanDir,"%sCRASH"PS,MFT_MF_ProbDir);
-	if (chdir(scanDir))						mkdir(scanDir,S_IRWXU);
-	sprintf(scanDir,"%sDROP"PS,MFT_MF_ProbDir);
-	if (chdir(scanDir))						mkdir(scanDir,S_IRWXU);
+	CheckDirectory(MFT_MF_ScheduleDirSend	,false	);
+	CheckDirectory(MFT_MF_ProbDir			,false	);
 
+	sprintf(scanDir,"%sCRASH"PS,MFT_MF_ProbDir);	CheckDirectory(scanDir					,false	);
+	sprintf(scanDir,"%sDROP"PS,MFT_MF_ProbDir);		CheckDirectory(scanDir					,false	);
 
 	// Create SCAN directory.
 	sprintf(scanDir,"%s"IX_DIRECTORY_SEPARATOR_STR"MFSCAN"PS,MF_GlobalConfiguration.MFLTRoot.c_str());
-	if (chdir(scanDir))						mkdir(scanDir,S_IRWXU);
+	CheckDirectory(scanDir					,false	);
 
 	// Create SCAN %i subdirectories...
 	int iScanDir = 0;
 	for (iScanDir = 0; iScanDir < MF_GlobalConfiguration.MailscanDirNum; iScanDir++)
 	{
 		sprintf(scanDir,"%s"PS"MFSCAN"PS"%04i"PS,MF_GlobalConfiguration.MFLTRoot.c_str(),iScanDir);
-		
-		if (chdir(scanDir))
-		{
-			mkdir(scanDir,S_IRWXU);
-		}
+		CheckDirectory(scanDir					,true	);
 	}
 
+	// OLD BROKEN CODE
+	// PLEASE REPLACE WITH iXDir c++ api!
 #ifdef N_PLAT_NLM
 #ifdef __NOVELL_LIBC__
 #define _MF_DIRECTORY_FILENAME readentry->d_name
@@ -3938,10 +3979,6 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 #define _MF_DIRECTORY_OPENDIR(dirPath) errno = 0; chdir(dirPath); sprintf(scanPath,"%s*.*",dirPath); mailDir = opendir(scanPath);
 #define _MF_DIRECTORY_READDIR readentry = readdir(mailDir);  if (readentry == NULL) break;
 #endif
-#else
-#define _MF_DIRECTORY_FILENAME dirEntry->d_name
-#define _MF_DIRECTORY_READDIR dirEntry = readdir(mailDir); if (dirEntry == NULL) break;
-#define _MF_DIRECTORY_OPENDIR(dirPath) chdir(dirPath); mailDir = opendir(dirPath);
 #endif
 
 	// check SCAN %i subdirectories for left-over files ...
@@ -3964,17 +4001,6 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 				
 				MFD_Out(MFD_SOURCE_VSCAN,"Delete: %s\n",fileIn);
 				unlink(fileIn);
-				
-/*				sprintf(szTemp,"Found '%s' in MFSCAN. -> MFPROB/CRASH.",_MF_DIRECTORY_FILENAME);
-				MF_StatusText(szTemp);
-				
-				sprintf(fileIn,"%s%s",MFT_MF_WorkDir,_MF_DIRECTORY_FILENAME);
-				sprintf(fileOut,"%sCRASH"PS"%s",MFT_MF_ProbDir,_MF_DIRECTORY_FILENAME);
-				MFD_Out("moving:\n");
-				MFD_Out(" from %s\n",fileIn);
-				MFD_Out("   to %s\n",fileOut);
-				MFD_Out(" rename returned: %d\n",rename(fileIn,fileOut));
-*/
 			}
 			else
 			{
@@ -3994,17 +4020,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 					MFD_Out(MFD_SOURCE_VSCAN,"Delete: %s\n",fileIn);
 					unlink(fileIn);
 				}
-				
-/*				sprintf(fileIn,"%s%s",MFT_MF_WorkDir,_MF_DIRECTORY_FILENAME);
-				sprintf(fileOut,"%sCRASH"PS"%s",MFT_MF_ProbDir,_MF_DIRECTORY_FILENAME);
-				MFD_Out("moving:\n");
-				MFD_Out(" from %s\n",fileIn);
-				MFD_Out("   to %s\n",fileOut);
-				MFD_Out(" rename returned: %d\n",rename(fileIn,fileOut));
-*/
 			}
-
-
 		}
 		if (mailDir != NULL)		closedir(mailDir);
 	}
@@ -4039,94 +4055,45 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 	sprintf(scanDir,"%sDROP"PS,MFT_MF_ProbDir);
 	strcpy(MFT_MF_ProbDir,scanDir);
 
-/*	MF_StatusNothing();*/
-
 
 	// Endless Loop ...
 	while (MFT_NLM_Exiting == 0)
 	{
-#ifdef _TRACE
-MFD_Out(MFD_SOURCE_WORKER,"Check %s\n", MFT_GWIA_SendDirIn);
-#endif
+
 		/* Send Directory ... */
-		_MF_DIRECTORY_OPENDIR(MFT_GWIA_SendDirIn);
-		while ( mailDir != NULL )
-		{
-			if (MFT_NLM_Exiting > 0)	break;
-
-			_MF_DIRECTORY_READDIR;
-
-			if ( _MF_DIRECTORY_FILENAME[0] != '.' )
-			{
-				// Build filenames...
-				sprintf(fileIn,  "%s%s", MFT_GWIA_SendDirIn,  _MF_DIRECTORY_FILENAME);
-				sprintf(fileOut, "%s%s", MFT_GWIA_SendDirOut, _MF_DIRECTORY_FILENAME);
-
-				if (tlc>10)
-					MF_ProcessFile(_MF_DIRECTORY_FILENAME,fileIn,fileOut,0);
-			}
-#ifdef N_PLAT_NLM
-			ThreadSwitch();
-#endif
-
-		}
-		if (mailDir != NULL) 		closedir(mailDir);
-		MF_StatusNothing();
-
+		HandleGwiaDirectory(MFT_GWIA_SendDirIn,MFT_GWIA_SendDirOut,0,tlc);
 		if (MFT_NLM_Exiting > 0)	break;
 
 		/* Receive Directory ... */
-#ifdef _TRACE
-MFD_Out(MFD_SOURCE_WORKER,"Check %s\n", MFT_GWIA_RecvDirIn);
-#endif
-		_MF_DIRECTORY_OPENDIR(MFT_GWIA_RecvDirIn);
-		while ( mailDir != NULL )
-		{
-			if (MFT_NLM_Exiting > 0)	break;
-
-			_MF_DIRECTORY_READDIR;
-
-			if ( _MF_DIRECTORY_FILENAME[0] != '.' )
-			{
-				// Build filenames...
-				sprintf(fileIn,  "%s%s", MFT_GWIA_RecvDirIn,  _MF_DIRECTORY_FILENAME);
-				sprintf(fileOut, "%s%s", MFT_GWIA_RecvDirOut, _MF_DIRECTORY_FILENAME);
-
-				if (tlc>10)
-					MF_ProcessFile(_MF_DIRECTORY_FILENAME,fileIn,fileOut,1);
-			}
-#ifdef N_PLAT_NLM
-			ThreadSwitch();
-#endif
-		}
-		if (mailDir != NULL) closedir(mailDir);
-		MF_StatusNothing();
+		HandleGwiaDirectory(MFT_GWIA_RecvDirIn,MFT_GWIA_RecvDirOut,1,tlc);
+		if (MFT_NLM_Exiting > 0)	break;
 		
 		tlc++;
 		if (MFT_NLM_Exiting > 0)	break;
 
 		// Results Directory ...
-		_MF_DIRECTORY_OPENDIR(MFT_GWIA_ResultDirIn);
-		while ( mailDir != NULL )
 		{
-			if (MFT_NLM_Exiting > 0)	break;
-
-			_MF_DIRECTORY_READDIR;
-	
-			if ( _MF_DIRECTORY_FILENAME[0] != '.' )
+		
+			iXDir dir(MFT_GWIA_ResultDirIn);
+			dir.SkipDotFiles = true;
+			
+			while ( dir.ReadNextEntry() )
 			{
+				const char* e = dir.GetCurrentEntryName();
+				
+				if (MFT_NLM_Exiting > 0)
+					break;
+
 				// Build filenames...
-				sprintf(fileIn,  "%s%s", MFT_GWIA_ResultDirIn,  _MF_DIRECTORY_FILENAME);
+				sprintf(fileIn,  "%s%s", MFT_GWIA_ResultDirIn,  e);
 
 				if (access(fileIn,W_OK) == 0)
-				MF_MoveFileToDir(fileIn,MFT_GWIA_ResultDirOut,false);
+					MF_MoveFileToDir(fileIn,MFT_GWIA_ResultDirOut,false);
+
+				ThreadSwitch();
 			}
-#ifdef N_PLAT_NLM
-			ThreadSwitch();
-#endif
+			MF_StatusNothing();
 		}
-		if (mailDir != NULL) closedir(mailDir);
-		MF_StatusNothing();
 
 		if (MFT_NLM_Exiting > 0)	break;
 
@@ -4165,7 +4132,7 @@ MFD_Out(MFD_SOURCE_WORKER,"Check %s\n", MFT_GWIA_RecvDirIn);
 						if (rCode)
 						{
 							ConsolePrintf("\nMailFilter: Unexpected Error (Code: CEIFF)\n");
-							ConsolePrintf("  Error Code was: %d\n",errcode);
+//							ConsolePrintf("  Error Code was: %d\n",errcode);
 							shallTerminate=255;
 							break;
 						}
@@ -4308,11 +4275,7 @@ MFD_Out(MFD_SOURCE_WORKER,"Schedule: Found %s for Sched.\n",_MF_DIRECTORY_FILENA
 			break;		
 	}
 
-//	// Tell User that MailFilter is shutting down ...
-//	ConsolePrintf(programMesgTable[CONMSG_MAIN_SHUTDOWN]);
-
 	MF_Worker_WSA_Shutdown();
-	
 
 	// Tell NLM that we've exited...
 	MFT_NLM_ThreadCount--;

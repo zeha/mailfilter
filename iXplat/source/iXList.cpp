@@ -27,10 +27,14 @@ iXList::~iXList(void)
 	{
 		attold = att;
 		if (att->type == String)
-			free(att->data);
+			if (att->data != NULL)
+				free(att->data);
+		
+		if (att->name != NULL)
+			free(att->name);
+		
 		att = this->GetPrev(att);
 		delete(attold);
-//		att->next = NULL;
 	}
 	
 	delete(m_StorageRoot);
@@ -51,7 +55,7 @@ iXList_Storage* iXList::AddValue(const char* name, void* data, iXList_DataType t
 	iXList_Storage* storage;
 
 	storage = (iXList_Storage*)malloc(sizeof(iXList_Storage));
-	storage->name = name;
+	storage->name = strdup(name);
 	storage->data = data;
 	storage->type = type;
 	storage->prev = NULL;

@@ -6,7 +6,7 @@
 char *programMesgTable[] =
 {
      "MailFilter/ax Configuration",
-     "1.5[1123]",
+     "1.5[1127]",
      "Exit without Saving?",
      "MailFilter/ax Configuration",
      "MFConfig Tag",
@@ -33,7 +33,7 @@ char *programMesgTable[] =
      "Internal Rcpt Bounce:",
      "Attachment Name",
      "Mail Subject",
-     "E-Mail Adresses: Both",
+     "E-Mail Adresses: From, To",
      "No Action",
      "Drop Mail",
      "Move Mail",
@@ -63,6 +63,7 @@ char *programMesgTable[] =
      "Copy",
      "Always",
      "Destination:",
-	 "Notification for Outgoing Mails"
-
+	 "Notification for Outgoing Mails",
+     "E-Mail Adresses: To, CC",
+     "E-Mail Adresses: From, To, CC"
 };
