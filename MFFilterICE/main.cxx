@@ -637,7 +637,10 @@ int main( int argc, char* argv[] ) {
 		printf("Usage: \n");
 		printf("  MFFilterICE <InputType> <InputFile> <OutputType> <OutputFile>\n\n");
 		printf("  Where <InputType> and <OutputType> can be one of: -csv -bin -tab\n");
+		printf("\n");
 		printf("  WARNING: This utility can not import CSV files in this release.\n");
+		printf("\n");
+		printf("  Please have a look at the documentation on how to use this utility.\n");
 		return 0;
 	}
 

@@ -281,7 +281,7 @@ BOOL CInstApp::InitInstance()
 					}
 					if ((server_majorVersion == 6) && (server_minorVersion == 50) && (server_revision >= 1))
 					{	WriteLog(" Server 6.5 SP1 or newer");
-						this->mf_InstallLegacyVersion = true;
+						this->mf_InstallLegacyVersion = false;
 					}
 					if ((server_majorVersion == 6) && (server_minorVersion > 50))
 					{	WriteLog(" Server 6.x (x=newer than 50)");

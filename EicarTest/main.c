@@ -3,7 +3,7 @@
 #include <nks/dirio.h>
 #include <client.h>
 #include <errno.h>
-
+/*
 static NXPathCtx_t	MFT_PathCtxt_ServerConnection = 0;
 static NXPathCtx_t	MFT_PathCtxt_UserConnection = 0;
 static int			MFT_ServerIdentity = 0;
@@ -57,15 +57,22 @@ static bool MailFilterApp_Server_LogoutFromServer()
 	return true;
 }
 
-
+*/
 void main(int argc, char* argv[])
 {
 	FILE* f;
 	const char* foo = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$";
-	const char* bar = "EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*";
 	const char* destFile = "SYS:\\EICAR.COM";
+	const char* bar = "EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*";
 
 	printf("  MailFilter EICAR.COM Test Utility\n");
+	printf("\n");
+	printf("  Copyright 2004 Christian Hofstaedtler -- www.mailfilter.cc\n");
+	printf("  EICAR Test file Copyright by EICAR -- www.eicar.org\n");
+	printf("\n");
+	printf("  WARNING: THIS UTILITY COMES WITH ABSOLUTELY NO WARRANTY, USE AT YOUR OWN RISK\n");
+	printf("\n");
+	printf("\n");
 	printf("  Usage: EICARTST.NLM [Filename]\n");
 	printf("\n");
 	printf("  EICAR Test File will be written to:\n");
@@ -75,8 +82,8 @@ void main(int argc, char* argv[])
 	printf("       %s\n", destFile);
 
 
-	if (!MailFilterApp_Server_LoginToServer())
-		printf("  -!> ERROR logging in to server!\n");
+//	if (!MailFilterApp_Server_LoginToServer())
+//		printf("  -!> ERROR logging in to server!\n");
 
 //	if (!MailFilterApp_Server_SelectUserConnection())
 //		printf("  -!> ERROR selecting new server connection!\n");
@@ -90,5 +97,5 @@ void main(int argc, char* argv[])
 	
 	pressenter();
 
-	MailFilterApp_Server_LogoutFromServer();	
+//	MailFilterApp_Server_LogoutFromServer();	
 }

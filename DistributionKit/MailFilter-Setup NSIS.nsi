@@ -9,7 +9,7 @@
 ; *** UPDATE BUILD NUMBERS *HERE* ***
   !define PROD_VERSION_MAJOR 1
   !define PROD_VERSION_MINOR 6
-  !define PROD_VERSION_REVISION 0-rc1
+  !define PROD_VERSION_REVISION 0-rc2
 ;
 ;
 
@@ -137,7 +137,8 @@ Section All
   File "..\MailFilter\out\MFAVA.nlm"
   File "..\MailFilter\out\MFConfig.nlm"
 
-;  File "..\MailFilter\out\MFBUG.NLM"
+  File "..\MailFilter\out\EicarTst.nlm"
+  File "..\MailFilter\out\MFBUG.NLM"
 ;  File "..\MailFilter\out\MFPACK.NLM"
 
 
