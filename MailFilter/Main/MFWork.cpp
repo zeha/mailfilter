@@ -1214,17 +1214,32 @@ int MF_HandleMailFile(MailFilter_MailData* m)
 	// do the parse work
 	int q = MF_ParseMail(m,false);
 
-	if (m->bInvalidData)
-		MFD_Out(MFD_SOURCE_MAIL,"mail has invaliddata.\n");
-		
-	if (m->bInvalidData && (!MF_GlobalConfiguration.PassOnNonStandardAttachments))
+	if (m->bBrokenMessage)
+		MFD_Out(MFD_SOURCE_MAIL,"Classified as Broken.\n");
+	if (m->bPartialMessage)
+		MFD_Out(MFD_SOURCE_MAIL,"Classified as Partial.\n");
+
+	// pre-flight checks
+	if (m->bBrokenMessage && MF_GlobalConfiguration.DropBrokenMessages)
 	{
 		MF_StatusText("  Mail contains broken data.");
 		m->iFilterNotify = MAILFILTER_NOTIFICATION_ADMIN_INCOMING|MAILFILTER_NOTIFICATION_ADMIN_OUTGOING;
 		m->bFilterMatched = true;
 		strcpy(m->szErrorMessage,"Invalid/Broken E-Mail data or attachments detected.");
 		
-	} else {
+	}
+	if (m->bPartialMessage && MF_GlobalConfiguration.DropPartialMessages)
+	{
+		MF_StatusText("  Mail is only a partial message.");
+		m->iFilterNotify = MAILFILTER_NOTIFICATION_ADMIN_INCOMING|MAILFILTER_NOTIFICATION_ADMIN_OUTGOING;
+		m->bFilterMatched = true;
+		strcpy(m->szErrorMessage,"Partial E-Mail message detected.");
+		
+	}
+	
+	// okay, check if this mail matches a rule.
+	if (!m->bFilterMatched)
+	{
 
 		MF_StatusLog("Applying rules.");
 		MFD_Out(MFD_SOURCE_MAIL,"Applying rules.\n");

@@ -18,9 +18,9 @@
 #define _MAILFILTER_H_
 #define _MAILFILTER_
 
-#include "ix.h"			// include ionus crossplatform library header
+#include "ix.h"			// include crossplatform library header
 
-#include "MFApp.h"
+#include "MFApp.h"		// compile switches
 
 #include "../Licensing/MFLic.h"
 
@@ -46,13 +46,12 @@
 
 #include "streamprintf.h"
 
-/* *****    N E T W A R E     ***** */
+/* *****    N E T W A R E    ***** */
 #ifdef N_PLAT_NLM
-
-#undef SEVERITY_WARNING
-#undef SEVERITY_FATAL
-
 #define MAILFILTERPLATFORM "NLM"
+
+#undef SEVERITY_WARNING		// header fixup
+#undef SEVERITY_FATAL
 #define _NWNSPACE_H_
 #include <errno.h>
 #include <unistd.h>
@@ -60,13 +59,11 @@
 #include <fcntl.h>
 
 #include <nwsnut.h>
-
-#undef SEVERITY_WARNING
+#undef SEVERITY_WARNING		// fixup 2.
 #undef SEVERITY_FATAL
 
 
-
-#ifndef __NOVELL_LIBC__
+#ifndef __NOVELL_LIBC__		// stuff for clib/mflt50
 #include <nwadv.h>
 #include <unicode.h>
 #include <nwerrno.h>
@@ -94,14 +91,14 @@
 #define NETDB_USE_INTERNET  1
 
 #ifdef __cplusplus
-extern "C" { 
-	int snprintf  (     char* str,     size_t n, const char *  format,  ... ); 
-}
+//extern "C" { 
+//	int snprintf  (     char* str,     size_t n, const char *  format,  ... ); 
+//}
 #endif // __cplusplus
 
 	typedef unsigned char BOOL;
 
-#else
+#else						// stuff for libc
 
 	typedef int BOOL;
 
@@ -585,18 +582,17 @@ extern "C" {
 	void MF_DisplayCriticalError(const char* format, ...);
 }
 
+
 #ifdef HAVE_WINSOCK
+
 bool WinSockStartup();
 bool WinSockShutdown();
+
 #else
-__inline bool WinSockStartup()
-{
-	return true;
-}
-__inline bool WinSockShutdown()
-{
-	return true;
-}
+
+__inline bool WinSockStartup()		{ return true; }
+__inline bool WinSockShutdown()		{ return true; }
+
 #endif /* HAVE_WINSOCK */
 
 
@@ -614,13 +610,6 @@ DWORD WINAPI MF_SMTP_Startup(void *dummy);
 #undef consoleprintf
 #undef ConsolePrintf
 
-
-/*
- *
- *
- *  --- eof ---
- *
- *
- */
-
 #endif	// _MAILFILTER_H_
+
+/* eof */

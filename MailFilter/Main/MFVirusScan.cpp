@@ -113,7 +113,7 @@ long MFVS_CheckZIPFile(const char* szAttFile, std::string szZipFilename, MailFil
 
 				} else {
 					MFD_Out(MFD_SOURCE_MAIL," --> Decoding failed for unknown reason (%d)\n",bytes);
-					m->bInvalidData = true;
+					m->bBrokenMessage = true;
 				}
 				
 				att = zipAttachments->GetNext(att);
@@ -121,7 +121,7 @@ long MFVS_CheckZIPFile(const char* szAttFile, std::string szZipFilename, MailFil
 			MFD_Out(MFD_SOURCE_MAIL,"\n");
 			delete(zipAttachments);
 		} else {
-			m->bInvalidData = true;
+			m->bBrokenMessage = true;
 		}
 	}
 	
@@ -192,7 +192,7 @@ long MFVS_CheckWinmailDat(const char* szAttFile, std::string szTNEFFilename, Mai
 */
 						} else {
 							MFD_Out(MFD_SOURCE_MAIL," --> Decoding failed for unknown reason\n");
-							m->bInvalidData = true;
+							m->bBrokenMessage = true;
 						}
 					}
 

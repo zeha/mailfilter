@@ -1017,7 +1017,8 @@ static void MFConfig_EditConfig()
   	BOOL	newEnablePFA = (BOOL)MF_GlobalConfiguration.EnablePFAFunctionality;
   	BOOL	newEnableNRMThread = (BOOL)MF_GlobalConfiguration.EnableNRMThread;
   	BOOL	newEnableNRMRestore = (BOOL)MF_GlobalConfiguration.EnableNRMRestore;
-	BOOL	newPassOnNonStandardAttachments = (BOOL)MF_GlobalConfiguration.PassOnNonStandardAttachments;
+	BOOL	newDropBrokenMessages = (BOOL)MF_GlobalConfiguration.DropBrokenMessages;
+	BOOL	newDropPartialMessages = (BOOL)MF_GlobalConfiguration.DropPartialMessages;
 
 	NWSPushList(MF_NutInfo);
 	NWSInitForm(MF_NutInfo);
@@ -1111,6 +1112,14 @@ static void MFConfig_EditConfig()
 	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableIncomingRcptCheck, NULL, MF_NutInfo);
 	line++;
 	
+	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Drop Broken Messages:", MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newDropBrokenMessages, NULL, MF_NutInfo);
+	line++;
+
+	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Drop Partial Messages:", MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newDropPartialMessages, NULL, MF_NutInfo);
+	line++;
+
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable Netware Remote Manager Snap-In:", MF_NutInfo);
 	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableNRMThread, NULL, MF_NutInfo);
 	line++;
@@ -1134,10 +1143,6 @@ static void MFConfig_EditConfig()
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Unpack Mails for Virus Scanner:", MF_NutInfo);
 	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newEnableAttachmentDecoder, NULL, MF_NutInfo);
-	line++;
-
-	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Ignore Invalid/Broken Attachments:", MF_NutInfo);
-	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newPassOnNonStandardAttachments, NULL, MF_NutInfo);
 	line++;
 
 	NWSAppendCommentField (line, 3, (_MF_NUTCHAR)"Seconds to wait for Real Time Scan:", MF_NutInfo);
@@ -1255,22 +1260,15 @@ static void MFConfig_EditConfig()
 		MF_GlobalConfiguration.EnablePFAFunctionality		=(bool)newEnablePFA;
 		MF_GlobalConfiguration.EnableNRMThread				=(bool)newEnableNRMThread;
 		MF_GlobalConfiguration.EnableNRMRestore				=(bool)newEnableNRMRestore;
+		MF_GlobalConfiguration.EnableIncomingRcptCheck		=(bool)newEnableIncomingRcptCheck;
+		MF_GlobalConfiguration.DropBrokenMessages 			=(bool)newDropBrokenMessages;
+		MF_GlobalConfiguration.DropPartialMessages 			=(bool)newDropPartialMessages;
 
 		MF_GlobalConfiguration.GWIAVersion					=(unsigned int)newGwiaVersion;
 		
-		switch (MF_GlobalConfiguration.GWIAVersion)
-		{	
-			case 550:
-			case 600:
-				break;
-			default:
-				MF_GlobalConfiguration.GWIAVersion = 550;
-				break;
-		}
+		if (MF_GlobalConfiguration.GWIAVersion != 600)			// only allow 600 or 550
+			MF_GlobalConfiguration.GWIAVersion = 550;
 
-		MF_GlobalConfiguration.EnableIncomingRcptCheck		=(bool)newEnableIncomingRcptCheck;
-//		MFC_DropUnresolvableRelayHosts		=(int)newDropUnresolvableRelayHosts;
-		
 	}
 
 	NWSDestroyForm (MF_NutInfo);

@@ -175,7 +175,9 @@ int Configuration::setDefaults(std::string directory, std::string domainname)
 	this->EnablePFAFunctionality = false;
 	this->EnableNRMThread = false;
 	this->EnableNRMRestore = true;
-	this->PassOnNonStandardAttachments = false;
+	this->DropBrokenMessages = true;
+	this->DropPartialMessages = true;
+	
 	
 	this->MessageFooter = "";
 	this->Multi2One = "";
@@ -877,8 +879,11 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 							if (param == "scan-attachments")
 								this->EnableAttachmentDecoder = mkBoolFromStr(value);
 								
-							if (param == "passon-nonstandardattachments")
-								this->PassOnNonStandardAttachments = mkBoolFromStr(value);
+							if (param == "drop-broken-messages")
+								this->DropBrokenMessages = mkBoolFromStr(value);
+
+							if (param == "drop-partial-messages")
+								this->DropPartialMessages = mkBoolFromStr(value);
 
 							if (param == "pfa")
 								this->EnablePFAFunctionality = mkBoolFromStr(value);
@@ -962,6 +967,9 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 				MF_ConfigReadInt(pConfigFile, iIntegerBase+47);
 
 			// Next start at 49
+			
+			this->DropBrokenMessages = true;
+			this->DropPartialMessages = true;
 		}
 		
 
@@ -1151,7 +1159,9 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 
 	fprintf(cfgFile,"/check-incomingrecipients=%s\n",this->EnableIncomingRcptCheck == 0 ? "0" : "1");
 	fprintf(cfgFile,"/scan-attachments=%s\n",this->EnableAttachmentDecoder == 0 ? "0" : "1");
-	fprintf(cfgFile,"/passon-nonstandardattachments=%s\n",this->PassOnNonStandardAttachments == 0 ? "0" : "1");
+
+	fprintf(cfgFile,"/drop-broken-messages=%s\n",this->DropBrokenMessages == 0 ? "0" : "1");
+	fprintf(cfgFile,"/drop-partial-messages=%s\n",this->DropPartialMessages == 0 ? "0" : "1");
 	fprintf(cfgFile,"/pfa=%s\n",this->EnablePFAFunctionality == 0 ? "0" : "1");
 	fprintf(cfgFile,"/nrm-enableinprocess=%s\n",this->EnableNRMThread == 0 ? "0" : "1");
 	fprintf(cfgFile,"/nrm-enablerestore=%s\n",this->EnableNRMRestore == 0 ? "0" : "1");

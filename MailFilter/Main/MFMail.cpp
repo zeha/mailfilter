@@ -56,7 +56,8 @@ int MailFilter_MailWrite(const char* szOutFile, MailFilter_MailData* m) {
 	_MFMW_PRINT_STRING	(	szReceivedFrom		);
 	_MFMW_PRINT_BOOL	(	bHaveReceivedFrom	);
 	_MFMW_PRINT_BOOL	(	bCopy				);
-	_MFMW_PRINT_BOOL	(	bInvalidData		);
+	_MFMW_PRINT_BOOL	(	bBrokenMessage		);
+	_MFMW_PRINT_BOOL	(	bPartialMessage		);
 	
 	int iListCount;
 	iXList_Storage* ixlist_storage;
@@ -133,7 +134,8 @@ MailFilter_MailData* MailFilter_MailRead(const char* szInFile) {
 	_MFMW_READ_STRING	(	szReceivedFrom		,250);
 	_MFMW_READ_BOOL		(	bHaveReceivedFrom	);
 	_MFMW_READ_BOOL		(	bCopy				);
-	_MFMW_READ_BOOL		(	bInvalidData		);
+	_MFMW_READ_BOOL		(	bBrokenMessage		);
+	_MFMW_READ_BOOL		(	bPartialMessage		);
 
 	int iListCount, i;
 	
@@ -198,7 +200,8 @@ MailFilter_MailData* MailFilter_MailInit(const char* szFileName, int iMailSource
 	mail->szReceivedFrom			= (char*)_mfd_malloc(252,"Init");			mail->szReceivedFrom			[0] = 0;
 	mail->bHaveReceivedFrom			= false;
 	mail->bCopy						= false;
-	mail->bInvalidData				= false;
+	mail->bBrokenMessage			= false;
+	mail->bPartialMessage			= false;
 		
 	if (szFileName != NULL)
 		strncpy(mail->szFileName,szFileName,MAX_PATH);
@@ -888,7 +891,16 @@ MFD_Out(MFD_SOURCE_MAIL,"UU Attachment: '%s'\n",szCmpBuffer);
 					} else {		// Disposition , Type
 
 						if (memicmp(szScanBuffer+curPos,"type",4) == 0)
-						{	
+						{
+							{
+								// see if this could be Content-Type: message/partial; total=...
+								curPos = 12;
+								if (szScanBuffer[curPos] == ' ')
+									curPos++;
+								if (memicmp(szScanBuffer+curPos,"message/partial",15) == 0)
+									m->bPartialMessage = true;
+							}
+						
 							// ex.: ": application/zip; name=\""
 							curPos = 12;
 							// we're looking for '='
