@@ -50,12 +50,15 @@ extern void MailFilter_NRM_sigterm();
 
 // NUT: Local Prototypes
 static int MF_NutVerifyExit(void);
-//static bool MF_NutInit();
+
+// debug key
+static void MF_NutHandlerKeyF2 (void *handle);
+// real keys
 static void MF_NutHandlerKeyF6 (void *handle);
 static void MF_NutHandlerKeyF7 (void *handle);
+static void MF_NutHandlerKeyF8 (void *handle);
 static void MF_NutHandlerKeyF9 (void *handle);
 static void MF_NutHandlerKeyF10 (void *handle);
-static void MF_NutHandlerKeyF2 (void *handle);
 
 // NUT: Status Portal Handle
 static PCB *statusPortalPCB = NULL;
@@ -168,7 +171,6 @@ void MF_NutHandlerKeyF6 (void *handle)		// RESTART
 }
 void MF_NutHandlerKeyF7 (void *handle)		// EXIT
 {
-	
 	if (MF_NutVerifyExit())
 	{
 		MF_StatusText("Shutting Down On Keyboard Request ...");
@@ -185,10 +187,21 @@ void MF_NutHandlerKeyF7 (void *handle)		// EXIT
 	}
 }
 
+void MF_NutHandlerKeyF8 (void *handle)		// RESTORE ME
+{
+#pragma unused(handle)
+
+	MFT_NLM_Exiting = 252;
+	
+	// We need this to wake the UI thread up ...
+	NWSUngetKey ( K_ESCAPE , 0 , MF_NutInfo );
+
+	return;
+}
+
 void MF_NutHandlerKeyF10 (void *handle)		// CONFIGURE ME
 {
-	int rc = 0;
-	handle = handle;			// Keep compiler quiet.
+#pragma unused(handle)
 
 	MFT_NLM_Exiting = 253;
 	
@@ -199,7 +212,7 @@ void MF_NutHandlerKeyF10 (void *handle)		// CONFIGURE ME
 }
 void MF_NutHandlerKeyF9 (void *handle)		// SHOW CONFIG
 {
-	handle = handle;			// Keep compiler quiet.
+#pragma unused(handle)
 	MF_UI_ShowConfiguration();
 }
 
@@ -347,13 +360,13 @@ static bool MailFilterApp_Server_InitNut()
 
 	NWSEnableFunctionKey (	K_F6 , MF_NutInfo );
 	NWSEnableFunctionKey (	K_F7 , MF_NutInfo );
-	//
+	NWSEnableFunctionKey (	K_F8 , MF_NutInfo );
 	NWSEnableFunctionKey (	K_F9 , MF_NutInfo );
 	NWSEnableFunctionKey (	K_F10 , MF_NutInfo );
 
 	NWSEnableInterruptKey (	K_F6 , *MF_NutHandlerKeyF6, MF_NutInfo );
 	NWSEnableInterruptKey (	K_F7 , *MF_NutHandlerKeyF7, MF_NutInfo );
-	//
+	NWSEnableInterruptKey ( K_F8 , *MF_NutHandlerKeyF8, MF_NutInfo );
 	NWSEnableInterruptKey (	K_F9 , *MF_NutHandlerKeyF9, MF_NutInfo );
 	NWSEnableInterruptKey (	K_F10 , *MF_NutHandlerKeyF10, MF_NutInfo );
 
@@ -575,7 +588,7 @@ extern "C" {
 
 	#else
 
-		OutputToScreenWithPointer( getnetwareconsole(), format, argList );
+		OutputToScreenWithPointer( 0, format, argList );
 		
 	#endif
 
@@ -857,11 +870,19 @@ static bool MailFilterApp_Server_LoginToServer()
 		MF_DisplayCriticalError(" * Details: create_identity failed with rc=%d, errno: %d\n",err,errno);
 		return false;
 	}
+	
+	if (!is_valid_identity(MFT_ServerIdentity, &err))
+	{
+		MF_DisplayCriticalError(" * No Valid Identity! rc: %d\n",err);
+		return false;
+	} else {
+		MF_DisplayCriticalError(" * valid_id.\n");
+	}
 
-	err = NXCreatePathContext(0, "SYS:", NX_PNF_DEFAULT, NULL, &MFT_PathCtxt_ServerConnection);
+	err = NXCreatePathContext(0, "SYS:\\SYSTEM", NX_PNF_DEFAULT, NULL, &MFT_PathCtxt_ServerConnection);
 	if (err)	return false;
 
-	err = NXCreatePathContext(0, "SYS:", NX_PNF_DEFAULT, (void *) MFT_ServerIdentity, &MFT_PathCtxt_UserConnection);
+	err = NXCreatePathContext(0, "SYS:\\SYSTEM", NX_PNF_DEFAULT, (void *) MFT_ServerIdentity, &MFT_PathCtxt_UserConnection);
 	if (err)	return false;
 
 	MFT_IdentitiesOkay = true;
@@ -1112,10 +1133,14 @@ MF_MAIN_RUNLOOP:
 
 		// 254 = restart
 		// 253 = config
-		if ((MFT_NLM_Exiting == 254) || (MFT_NLM_Exiting == 253))
+		// 252 = restore
+		if ((MFT_NLM_Exiting == 254) || (MFT_NLM_Exiting == 253) || (MFT_NLM_Exiting == 252))
 		{
 			bool bDoConfig = false;
-			if (MFT_NLM_Exiting == 253) bDoConfig = true;
+			if (MFT_NLM_Exiting == 253)		bDoConfig = true;
+
+			bool bDoRestore = false;
+			if (MFT_NLM_Exiting == 252)		bDoRestore = true;
 		
 			MF_StatusText("  Please wait ...");
 
@@ -1177,6 +1202,12 @@ MF_MAIN_RUNLOOP:
 					MF_DisplayCriticalError("\tConfiguration Module reported an unrecoverable error.\n");
 					goto MF_MAIN_TERMINATE;
 				}
+			}
+			
+			if (bDoRestore == true)
+			{
+				// open restore list
+				MailFilter_Main_RunAppRestore(false);
 			}
 							
 			if (!MailFilterApp_Server_InitNut())
@@ -1310,6 +1341,8 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 
 
 	int rc = 0;
+	
+	unlink("SYS:\\SYSTEM\\MFREST.NLM");
 
 	switch (MF_GlobalConfiguration.ApplicationMode)
 	{
@@ -1334,6 +1367,8 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		
 	case MailFilter_Configuration::CONFIG:
 	
+		bool rc;
+	
 		#ifdef __NOVELL_LIBC__
 		NXContextSetName(NXContextGet(),"MailFilterConfig");
 		#endif
@@ -1347,7 +1382,6 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 			goto MF_MAIN_TERMINATE;
 		}
 		
-
 		--MFT_NLM_ThreadCount;
 		rc = MailFilter_Main_RunAppConfig(true);
 
@@ -1355,7 +1389,22 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 
 	case MailFilter_Configuration::RESTORE:
 
-		system("LOAD MFREST.NLM");
+		#ifdef __NOVELL_LIBC__
+		NXContextSetName(NXContextGet(),"MailFilterRestore");
+		#endif
+
+		// Read Configuration from File
+		printf(MF_Msg(MSG_BOOT_CONFIGURATION));
+		MF_GlobalConfiguration.config_mode_strict = true;
+		if (!MF_GlobalConfiguration.ReadFromFile(""))
+		{
+			MF_DisplayCriticalError("MAILFILTER: Could not read configuration. Terminating!\n");
+			goto MF_MAIN_TERMINATE;
+		}
+
+		--MFT_NLM_ThreadCount;
+		rc = MailFilter_Main_RunAppRestore(true);
+
 		rc = 0;
 		
 		break;

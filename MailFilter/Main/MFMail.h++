@@ -63,13 +63,15 @@ typedef struct MailFilter_MailData {
 	iXList* lstCopies;
 } MailFilter_MailData;
 
-MailFilter_MailData* MailFilter_MailInit(char* szFileName, int iMailSource);
+MailFilter_MailData* MailFilter_MailInit(const char* szFileName, int iMailSource);
 int MailFilter_MailDestroy(MailFilter_MailData* mail);
-int MailFilter_MailWrite(char* szOutFile, MailFilter_MailData* m);
-MailFilter_MailData* MailFilter_MailRead(char* szInFile);
+int MailFilter_MailWrite(const char* szOutFile, MailFilter_MailData* m);
+MailFilter_MailData* MailFilter_MailRead(const char* szInFile);
 
 extern int MF_MailProblemReport(MailFilter_MailData* mMailInfo);
 extern int MF_Notification_Send2(const char messageType, const char* bounceRcpt, MailFilter_MailData* mMailInfo);
+
+extern int MF_ParseMail(MailFilter_MailData* m, bool bMiniMode);
 
 #endif
 

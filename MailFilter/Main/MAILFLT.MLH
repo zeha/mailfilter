@@ -119,5 +119,5 @@
 #define MSG_ERROR_UNKNOWN_ERROR                  0x0073
 #define EDIT_LOGIN_USERNAME                      0x0074
 #define EDIT_LOGIN_PASSWORD                      0x0075
-#define MSG_LOGIN
-
+#define MSG_LOGIN                                0x0076
+#define MSG_ERROR_ONLY_ONE_OF_RESTORE_RECHECK    0x0077

@@ -110,7 +110,6 @@ public:
 
 private:
 	bool ReadFilterList(std::string filterFile, long startAt);
-
 };
 
 } // namespace MailFilter_Configuration

@@ -426,7 +426,7 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 	{
 		if (access(szTemp,F_OK) != 0)
 		{
-			NWSDisplayErrorText ( MSG_ERROR_FILE_NOT_FOUND , NUT_SEVERITY_FATAL , MF_NutInfo , szTemp );
+			NWSDisplayErrorText ( MSG_ERROR_FILE_NOT_FOUND , NUT_SEVERITY_INFORM , MF_NutInfo , szTemp );
 			
 		} else {
 			//
@@ -477,7 +477,7 @@ static void MFConfig_Util_ImportListFromFile(void* nutHandle)
 			NWSStartWait(0,0,MF_NutInfo);
 		
 			if (!MF_GlobalConfiguration.ReadFilterListFromRulePackage(szTemp))
-				NWSDisplayErrorText ( MSG_ERROR_UNKNOWN_ERROR , NUT_SEVERITY_FATAL , MF_NutInfo , szTemp );
+				NWSDisplayErrorText ( MSG_ERROR_UNKNOWN_ERROR , NUT_SEVERITY_WARNING , MF_NutInfo , szTemp );
 
 			NWSEndWait(MF_NutInfo);
 			
@@ -518,13 +518,13 @@ static void MFConfig_Util_ExportListToFile(void* nutHandle)
 	{
 		if (access(szTemp,F_OK) == 0)
 		{
-			NWSDisplayErrorText ( MSG_ERROR_FILE_EXISTS , NUT_SEVERITY_FATAL , MF_NutInfo , szTemp );
+			NWSDisplayErrorText ( MSG_ERROR_FILE_EXISTS , NUT_SEVERITY_INFORM , MF_NutInfo , szTemp );
 			
 		} else {
 			NWSStartWait(0,0,MF_NutInfo);
 
 			if (!MF_GlobalConfiguration.WriteFilterList(szTemp))
-				NWSDisplayErrorText ( MSG_ERROR_UNKNOWN_ERROR , NUT_SEVERITY_FATAL , MF_NutInfo , szTemp );
+				NWSDisplayErrorText ( MSG_ERROR_UNKNOWN_ERROR , NUT_SEVERITY_WARNING , MF_NutInfo , szTemp );
 			
 			NWSEndWait(MF_NutInfo);
 			

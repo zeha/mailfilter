@@ -21,9 +21,6 @@
 #define _MAX_EXT     5   /* maximum length of extension component */
 #define _MAX_NAME    13  /* maximum length of file name */
 
-// checks if contained has flag -- OR-ing required -- returns 1 if flag is contained, 0 otherwise
-#define chkFlag(contained,flag)		((contained | flag) == contained)
-
 #define MAILFILTER_NOTIFICATION_NONE				0x0000
 #define MAILFILTER_NOTIFICATION_ADMIN_INCOMING		0x0001
 #define MAILFILTER_NOTIFICATION_ADMIN_OUTGOING		0x0002

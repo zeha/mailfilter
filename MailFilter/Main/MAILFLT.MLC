@@ -21,8 +21,7 @@ char *programMesgTable[] =
 	"MailFilter Work",
 	"MailFilter: Event Registration failed!\n",
 	"\r  http://www.mailfilter.cc/\n  order@mailfilter.cc\n",
-	// f6 restart f7 exit f8 info f9 log f10 options
-	"  F6-Restart  F7-Exit                     F9-Show Configuration  F10-Configure  ",
+	"   F6-Restart  F7-Exit  F8-Restore Mail  F9-Show Configuration  F10-Configure   ",
 	"MailFilter: *** UNKNOWN CONFIGURATION FILE VERSION ***\n\tPlease upgrade the configuration file, if you just upgraded MailFilter.\n",
 	"MailFilter: *** NO (VALID) Configuration ? ***\n",
 	"MailFilter: *** NO (VALID) Filter List ? ***\n",
@@ -44,9 +43,9 @@ char *programMesgTable[] =
 	"MailFilter: Debugging: Disabled.\n",
 	"MailFilter: Unrecognized Arguments.\n",
 	" Done.\n",
-	"MailFilter is initializing ...",
-	"Loading Configuration...",
-	"Initializing User Interface...",
+	"MailFilter is initializing ...\n",
+	"Loading Configuration...\n",
+	"Initializing User Interface...\n",
 	"MailFilter Startup Completed.",
 	"MailFilter: *** UNABLE TO INITIALIZE LOGGING ***\n",
 	"*** ERROR CYCLING LOG ***",
@@ -54,7 +53,7 @@ char *programMesgTable[] =
 	"  **                                                  %4d Days %2d Hrs %2d Mins  ",
 	"  **                                                    In: %4d, Failed: %4d  ",
 	"  **                                                   Out: %4d, Failed: %4d  ",
-	"\nCheck the System Console for Error Messages!\nError Code: %d\n",
+	"MailFilter: Configuration Error Code: %d\n",
 // config app messages
 	"MailFilter Configuration",
 	"Exit without Saving?",
@@ -126,5 +125,6 @@ char *programMesgTable[] =
 	"The requested operation failed for an unkown reason.",
 	"Login as Username:",
 	"         Password:",
-	"Login"
+	"Login",
+	"You have selected both of Restore and Re-Check. Only one selection is possible.\nPlease open this mail again and select your real choice!"
 };

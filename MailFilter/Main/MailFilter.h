@@ -508,7 +508,7 @@ static inline char *_mfd_strdup( const char * str , const char* szFuncName )
 // Message Support Macro
 #define MF_Msg(id)							programMesgTable[id]
 #define MF_NMsg(id)							(_MF_NUTCHAR)programMesgTable[id]
-#define MF_DisplayCriticalErrorId(id)		MF_DisplayCriticalError("%s",MF_Msg(id))
+#define MF_DisplayCriticalErrorId(id)		MF_DisplayCriticalError(MF_Msg(id))
 #define MF_StatusNothing(void)				MF_StatusText("")
 
 // MFL Prototypes
@@ -517,6 +517,10 @@ bool MFL_GetFlag(int flag);
 extern int MFL_Certified;
 
 // Macros
+
+// checks if contained has flag -- OR-ing required -- returns 1 if flag is contained, 0 otherwise
+#define chkFlag(contained,flag)		((contained | flag) == contained)
+
 
 // Prototypes
 void MF_ShutDown(void);
@@ -552,6 +556,7 @@ void MF_CheckProblemDirAgeSize();
 bool MF_NutInit(void);
 bool MF_NutDeinit(void);
 
+
 bool MailFilterApp_Server_SelectServerConnection();
 bool MailFilterApp_Server_SelectUserConnection();
 
@@ -576,6 +581,7 @@ __inline bool WinSockShutdown()
 
 
 int MailFilter_Main_RunAppConfig(bool bStandalone);
+int MailFilter_Main_RunAppRestore(bool bStandalone);
 #ifdef N_PLAT_NLM
 int MailFilter_Main_RunAppNRM();
 #endif
