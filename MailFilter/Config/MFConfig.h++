@@ -75,6 +75,7 @@ public:
 	bool EnablePFAFunctionality;
 	bool EnableNRMThread;
 	bool EnableNRMRestore;
+	bool PassOnNonStandardAttachments;
 	std::string MessageFooter;
 	std::string BWLScheduleTime;
 	std::string Multi2One;

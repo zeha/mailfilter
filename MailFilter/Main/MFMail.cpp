@@ -56,6 +56,7 @@ int MailFilter_MailWrite(const char* szOutFile, MailFilter_MailData* m) {
 	_MFMW_PRINT_STRING	(	szReceivedFrom		);
 	_MFMW_PRINT_BOOL	(	bHaveReceivedFrom	);
 	_MFMW_PRINT_BOOL	(	bCopy				);
+	_MFMW_PRINT_BOOL	(	bInvalidData		);
 	
 	int iListCount;
 	iXList_Storage* ixlist_storage;
@@ -132,6 +133,7 @@ MailFilter_MailData* MailFilter_MailRead(const char* szInFile) {
 	_MFMW_READ_STRING	(	szReceivedFrom		,250);
 	_MFMW_READ_BOOL		(	bHaveReceivedFrom	);
 	_MFMW_READ_BOOL		(	bCopy				);
+	_MFMW_READ_BOOL		(	bInvalidData		);
 
 	int iListCount, i;
 	
@@ -196,6 +198,7 @@ MailFilter_MailData* MailFilter_MailInit(const char* szFileName, int iMailSource
 	mail->szReceivedFrom			= (char*)_mfd_malloc(252,"Init");			mail->szReceivedFrom			[0] = 0;
 	mail->bHaveReceivedFrom			= false;
 	mail->bCopy						= false;
+	mail->bInvalidData				= false;
 		
 	if (szFileName != NULL)
 		strncpy(mail->szFileName,szFileName,MAX_PATH);

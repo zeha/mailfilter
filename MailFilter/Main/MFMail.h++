@@ -57,6 +57,7 @@ typedef struct MailFilter_MailData {
 	char* szReceivedFrom;
 	bool  bHaveReceivedFrom;
 	bool  bCopy;
+	bool  bInvalidData;
 	// below only things we cannot copy to the MFS file
 	iXList*	lstAttachments;
 	iXList*	lstArchiveContents;

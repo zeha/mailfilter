@@ -26,6 +26,9 @@ int main( int argc, char **argv )
 //	if (!MF_GlobalConfiguration.ReadFromFile(""))
 //		goto MF_WIN32_MAIN_TERMINATE;
 
+	MF_GlobalConfiguration.setDefaults();
+	MF_GlobalConfiguration.EnableAttachmentDecoder = true;
+
 	// Init Status
 	if (!MF_StatusInit())
 		return 1;

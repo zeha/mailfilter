@@ -147,7 +147,6 @@ int MFUnZip::ExtractFile(const char* innerFilename, const char* localFilename)
 
 iXList* MFUnZip::ReadZipContents()
 {
-	iXList* lst = new iXList();
 	
 	unsigned long i;
 	MFUnZip_GlobalInfo gi;
@@ -157,34 +156,36 @@ iXList* MFUnZip::ReadZipContents()
 	if (err!=MFUnZip_OK)
 	{
 		MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: zipfile prob (%d) in unzGetGlobalInfo\n",err);
-	}
-	for (i=0;i<gi.number_entry;i++)
-	{
-		char filename_inzip[256];
-		MFUnZip_Fileinfo file_info;
-		unsigned long ratio=0;
-		err = unzGetCurrentFileInfo(this->zipFile,&file_info,filename_inzip,sizeof(filename_inzip),NULL,0,NULL,0);
-		if (err!=MFUnZip_OK)
+		return NULL;
+	} else {
+		iXList* lst = new iXList();
+		for (i=0;i<gi.number_entry;i++)
 		{
-//			printf("error %d with zipfile in unzGetCurrentFileInfo\n",err);
-			break;
-		}
-
-		// false == not encrypted
-		// true == encrytped...
-		lst->AddValueBool(filename_inzip, (bool)(file_info.flag & 0x1) );
-
-		if ((i+1)<gi.number_entry)
-		{
-			err = unzGoToNextFile(this->zipFile);
+			char filename_inzip[256];
+			MFUnZip_Fileinfo file_info;
+			unsigned long ratio=0;
+			err = unzGetCurrentFileInfo(this->zipFile,&file_info,filename_inzip,sizeof(filename_inzip),NULL,0,NULL,0);
 			if (err!=MFUnZip_OK)
 			{
-				MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: zipfile prob (%d) in unzGoToNextFile\n",err);
+	//			printf("error %d with zipfile in unzGetCurrentFileInfo\n",err);
 				break;
 			}
+
+			// false == not encrypted
+			// true == encrytped...
+			lst->AddValueBool(filename_inzip, (bool)(file_info.flag & 0x1) );
+
+			if ((i+1)<gi.number_entry)
+			{
+				err = unzGoToNextFile(this->zipFile);
+				if (err!=MFUnZip_OK)
+				{
+					MFD_Out(MFD_SOURCE_ERROR,"MFUnZip: zipfile prob (%d) in unzGoToNextFile\n",err);
+					break;
+				}
+			}
 		}
-	}
-	
-	return lst;
+		return lst;
+	}	
 }
 

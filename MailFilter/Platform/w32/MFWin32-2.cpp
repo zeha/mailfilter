@@ -57,6 +57,7 @@ void MF_StatusUI_UpdateLog(const char* newText)
 void MFD_Out_func(int attr, const char* format, ...) {
 
 	va_list	argList;
+	int col;
 	bool show = ( chkFlag(MFT_Debug,attr) == 1 );
 
 	if (!MFT_Debug)
@@ -67,16 +68,16 @@ void MFD_Out_func(int attr, const char* format, ...) {
 
 	switch (attr)
 	{
-		case MFD_SOURCE_GENERIC:	{	attr = 0;										break;	}
-		case MFD_SOURCE_WORKER:		{	attr = FOREGROUND_GREEN|FOREGROUND_INTENSITY;	break;	}
-		case MFD_SOURCE_CONFIG:		{	attr = FOREGROUND_GREEN;						break;	}
-		case MFD_SOURCE_VSCAN:		{	attr = FOREGROUND_BLUE;							break;  }
-		case MFD_SOURCE_ZIP:		{	attr = FOREGROUND_BLUE|FOREGROUND_INTENSITY;	break;  }
-		case MFD_SOURCE_ERROR:		{	attr = FOREGROUND_RED|FOREGROUND_INTENSITY;		break;  }
-		case MFD_SOURCE_RULE:		{	attr = FOREGROUND_GREEN|FOREGROUND_INTENSITY;	break;	}
-		case MFD_SOURCE_MAIL:		{	attr = FOREGROUND_RED;							break;	}
-		case MFD_SOURCE_SMTP:		{	attr = FOREGROUND_INTENSITY;					break;	}
-		default:					{	attr = 0;										break;  }
+		case MFD_SOURCE_GENERIC:	{	col = FOREGROUND_GREEN|FOREGROUND_BLUE|FOREGROUND_RED;	break;	}
+		case MFD_SOURCE_WORKER:		{	col = FOREGROUND_GREEN|FOREGROUND_INTENSITY;	break;	}
+		case MFD_SOURCE_CONFIG:		{	col = FOREGROUND_GREEN;							break;	}
+		case MFD_SOURCE_VSCAN:		{	col = FOREGROUND_BLUE;							break;  }
+		case MFD_SOURCE_ZIP:		{	col = FOREGROUND_BLUE|FOREGROUND_INTENSITY;		break;  }
+		case MFD_SOURCE_ERROR:		{	col = FOREGROUND_RED|FOREGROUND_INTENSITY;		break;  }
+		case MFD_SOURCE_RULE:		{	col = FOREGROUND_GREEN|FOREGROUND_RED|FOREGROUND_INTENSITY;		break;	}
+		case MFD_SOURCE_MAIL:		{	col = FOREGROUND_RED;							break;	}
+		case MFD_SOURCE_SMTP:		{	col = FOREGROUND_GREEN|FOREGROUND_BLUE|FOREGROUND_RED|FOREGROUND_INTENSITY;	break;	}
+		default:					{	col = FOREGROUND_GREEN|FOREGROUND_BLUE|FOREGROUND_RED;	break;  }
 	}
 
 	if (!show)
@@ -100,7 +101,13 @@ void MFD_Out_func(int attr, const char* format, ...) {
 	OutputToScreenWithAttribute(MFD_ScreenID,(unsigned char)attr,buffer);
 	
 #endif*/
+
+	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(hStdOut, col);
+
 	vprintf(format,argList);
+
+	SetConsoleTextAttribute(hStdOut, (FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_RED));
 
 	va_end (argList);
 }
@@ -125,34 +132,6 @@ int __cdecl ConsolePrintf(const char* format, ... )
 
 	return rc;
 }
-
-
-
-#ifndef _MF_CLEANBUILD
-void MFD_Out_func(const char* format, ...) {
-
-/*	int oldScreen;    
-*/
-	if (!MFT_Debug)
-		return;
-
-	va_list	argList;
-	va_start(argList, format);
-/*
-	oldScreen=SetCurrentScreen(MFD_ScreenID);   
-	
-	*/vprintf(format, argList);/*
-//	
-//	ConsolePrintf(format,argList);
-
-	SetCurrentScreen(oldScreen);
-
-	*/
-	va_end (argList);
-}
-#endif	//!_MF_CLEANBUILD
-
-
 
 void MFL_VerInfo()
 {
@@ -209,9 +188,7 @@ extern "C" {
 	{
 		va_list	argList;
 		va_start(argList, format);
-
-//		vaprintf(format,argList);
-		printf("w32todo %s",format);
+		vprintf(format,argList);
 		va_end (argList);
 	}
 

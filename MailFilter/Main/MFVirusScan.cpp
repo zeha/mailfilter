@@ -113,12 +113,15 @@ long MFVS_CheckZIPFile(const char* szAttFile, std::string szZipFilename, MailFil
 
 				} else {
 					MFD_Out(MFD_SOURCE_MAIL," --> Decoding failed for unknown reason (%d)\n",bytes);
+					m->bInvalidData = true;
 				}
 				
 				att = zipAttachments->GetNext(att);
 			}
 			MFD_Out(MFD_SOURCE_MAIL,"\n");
 			delete(zipAttachments);
+		} else {
+			m->bInvalidData = true;
 		}
 	}
 	
@@ -188,6 +191,7 @@ long MFVS_CheckWinmailDat(const char* szAttFile, std::string szTNEFFilename, Mai
 */
 						} else {
 							MFD_Out(MFD_SOURCE_MAIL," --> Decoding failed for unknown reason\n");
+							m->bInvalidData = true;
 						}
 					}
 
@@ -286,27 +290,46 @@ long MFVS_DecodeAttachment(const char* szScanFile, FILE* mailFile, mimeEncodingT
 		return -237;
 	}
 	
+	bool bAgain = false;
+	
 	// Read In lines and decode ...
 	do {
 		curPos = -1; curChr = 0;
 		szScanBuffer[0] = 0; szScanBuffer[2000] = 0;
-		while ((curChr != '\n') && (curChr != -1))
+		
+		while ((curChr != '\n') && (curChr != -1) && (curPos<65) && (!bDecodeDone))
 		{
 			if (curPos >= 2000) break;
 			curChr = fgetc(mailFile);
 			curPos++;
 
-			if (curChr == '\n')									break;
-			if ((curChr != '\r') && (curChr != '\n'))			szScanBuffer[curPos]=(char)curChr;
+//			if (curChr == '\n')
+//			{
+//				if (curPos<6)
+//				{
+//MFD_Out(MFD_SOURCE_VSCAN," skip");
+//					curChr = fgetc(mailFile);
+//				}
+//					else
+//					break;
+//					
+//				if (curChr == '\n')
+//					break;
+//			}
+			if ((curChr != '\r') && (curChr != '\n') && (curChr != ' '))
+					{ szScanBuffer[curPos]=(char)curChr; }
 			if (curChr == -1)									{ bDecodeDone = true; break; }
 			if (feof(mailFile))									{ bDecodeDone = true; break; }
 		}
+		
 		/* we do -1, because we want +1 in the mimedecoderwrite() call */
 		if (curPos>0)	szScanBuffer[curPos-1]=0;
 			else		{ curPos=0; szScanBuffer[0]=0; }
+
+		MFD_Out(MFD_SOURCE_VSCAN," %d",curPos);
 			
-		if ( (encodingType == mimeEncodingBase64) && (curPos == 73) && (lastPos == 0) )
-			bDecodeExec = true;
+//		if ( (encodingType == mimeEncodingBase64) && (curPos == 73) && (lastPos == 0) )
+//			bDecodeExec = true;
 
 		for(rc=2001; rc>curPos; rc--)
 			szScanBuffer[rc]=0;
@@ -330,6 +353,7 @@ long MFVS_DecodeAttachment(const char* szScanFile, FILE* mailFile, mimeEncodingT
 		if (szScanBuffer[0] == 0)
 			bDecodeExec = true;
 	} while (bDecodeDone == false);
+		MFD_Out(MFD_SOURCE_VSCAN,"\n");
 	
 	// Destroy Decoder
 	MimeDecoderDestroy(mimeDecoder,false);
