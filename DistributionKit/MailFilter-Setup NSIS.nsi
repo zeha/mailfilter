@@ -1,8 +1,7 @@
 ;
 ;  (c) Copyright 2001-2004 Christian Hofstaedtler
 ;
-;  This is the MailFilter professional Installation
-;  Script. 
+;  This is the MailFilter professional Installation Script. 
 ;
 ;  Use this script with NSIS v2.0.
 
@@ -187,11 +186,11 @@ Section All
 
   SetOutPath "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}"
   SetOutPath "$INSTDIR"
-  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Documentation (English).lnk" '"$INSTDIR\docs\index.en.html"'
+  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Documentation.lnk" '"$INSTDIR\docs\index.en.html"'
 ;  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Administrators Guide (PDF - German).lnk"  '"$INSTDIR\Administrators Guide DE.pdf"'
 
   CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Release Notes.lnk" '"$INSTDIR\docs\notes\ReleaseNotes.de.html"'
-  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Cluster Installation Note.lnk" '"$INSTDIR\docs\notes\ClusterNotes.de.html"'
+;  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\Cluster Installation Note.lnk" '"$INSTDIR\docs\notes\ClusterNotes.de.html"'
 SectionEnd
 
 
