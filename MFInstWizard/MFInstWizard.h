@@ -32,6 +32,7 @@ public:
 	BOOL mf_SharedInstallation;
 	BOOL mf_GroupwiseVersion6;
 	BOOL mf_GwiaResetSmtpHome;
+	BOOL mf_InstallLegacyVersion;
 	CString mf_AppDir;
 	CString mf_GwiaCfgPath;
 	CString mf_LicenseKey;

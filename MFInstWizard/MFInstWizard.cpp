@@ -28,6 +28,7 @@ CInstApp::CInstApp()
 {
 	this->mf_SharedInstallation = FALSE;
 	this->mf_AppDir = "SYS:MAILFILTER";
+	this->mf_InstallLegacyVersion = FALSE;
 
 	NetwareApi api;
 	api.GetPrimaryServerName(&this->mf_ServerName);	
@@ -38,6 +39,45 @@ CInstApp::CInstApp()
 
 CInstApp theApp;
 
+
+static unsigned int MF_CreateDirectory(const char* szDirectoryName)
+{
+	CFileStatus status;
+	if (CFile::GetStatus(szDirectoryName,status))
+	{
+		if (!(status.m_attribute | 0x10))
+			return 1;
+		// ok directory already exists, no need to create it
+		return 0;
+	} else {
+		// no status --> nothing there, go create.
+		if (CreateDirectory(szDirectoryName,NULL) == FALSE)
+			return 2;
+		return 0;
+	}
+}
+
+static unsigned int MF_CopyFile(CProgressCtrl *progressCtrl, CString sourcePath, CString destPath, CString fileName)
+{
+	progressCtrl->SetPos(progressCtrl->GetPos()+1);
+	return CopyFile(sourcePath + "\\" + fileName, destPath + "\\" + fileName, FALSE);
+}
+
+static unsigned int MF_CreateNCFFile(const char* szNCFFilename, const char* szExecLine)
+{
+	DeleteFile(szNCFFilename);
+	FILE* fp = fopen(szNCFFilename,"w");
+	if (fp == NULL)
+		return 1;
+
+	fprintf(fp,"#\n# %s\n# NCF File created by MailFilter Installation Wizard\n",szNCFFilename);
+	fprintf(fp,"%s\n",szExecLine);
+	fprintf(fp,"#\n#\n\n");
+
+	fclose(fp);
+
+	return 0;
+}
 
 // CInstApp Initialisierung
 
@@ -68,7 +108,8 @@ BOOL CInstApp::InitInstance()
 	bool bErrors = false;
 	CString szError = "";
 
-UIWizard:
+	do
+	{
 	bErrors = false;
 	szError = "";
 	// "ui" wizard = ask user bleh and blah
@@ -107,72 +148,132 @@ UIWizard:
 
 			CProgressCtrl *progressCtrl = &((ProgressDlg*)progress.GetPage(0))->m_ProgressCtrl;
 			progressCtrl->SetRange(0,100);
-			progressCtrl->SetPos(1);
+			progressCtrl->SetPos(30);
 			CStatic* progressTextCtrl = (CStatic*)((ProgressDlg*)progress.GetPage(0))->GetDlgItem(IDC_PROGRESSTEXT);
+			progress.UpdateWindow();
 
 
 			// do what we want
 			CString szAppConfigDest = "";
 			CString szAppBinaryDest = "";
+			CString szAppBaseDest = "";
 
 			if (this->mf_SharedInstallation == TRUE)
 			{
-				szAppConfigDest = "\\\\" + this->mf_ServerName;
-				szAppConfigDest += "\\" + this->mf_AppDir.Replace(":","\\");
-				if (szAppConfigDest.Right(1) != "\\")
-					szAppConfigDest += "\\";
-				szAppBinaryDest = szAppConfigDest;
+				szAppBaseDest = "\\\\" + this->mf_ServerName;
+				szAppBaseDest += "\\" + this->mf_AppDir;
+				szAppBaseDest.Replace(":","\\");
+				if (szAppBaseDest.Right(1) == "\\")
+					szAppBaseDest.Delete(szAppBaseDest.GetLength());
+				szAppConfigDest = szAppBaseDest + "\\ETC";
+				szAppBinaryDest = szAppBaseDest + "\\BIN";
 			}
 			else
 			{
-				szAppConfigDest = "\\\\" + this->mf_ServerName + "\\SYS\\";
-				szAppBinaryDest = szAppConfigDest + "SYSTEM\\";
-				szAppConfigDest += "ETC\\MAILFLT";
+				szAppBaseDest = "\\\\" + this->mf_ServerName + "\\SYS\\";
+				szAppBinaryDest = szAppBaseDest + "SYSTEM";
+				szAppConfigDest = szAppBaseDest + "ETC\\MAILFLT";
+				szAppBaseDest += "SYSTEM";
 			}
 
 
 			// 1: Create Directory
 			{
+				int rc = 0;
+				rc = MF_CreateDirectory(szAppBaseDest);
+				if (!rc) MF_CreateDirectory(szAppBinaryDest);
+				if (!rc) MF_CreateDirectory(szAppConfigDest);
+				switch (rc) 
 				{
-					CFileStatus status;
-					if (CFile::GetStatus(szAppConfigDest,status))
-					{
-						if (!(status.m_attribute | 0x10))
-						{
-							szError = "The target directory could not be created: a file already exists at this place. Please delete it before continuing.";
-							bErrors = true;
-						}
-
-					} else {
-						// no status --> nothing there, go create.
-						if (CreateDirectory(szAppConfigDest,NULL) == FALSE)
-						{
-							szError = "The target directory could not be created: an unknown error occoured.";
-							bErrors = true;
-						}
-					}
+				case 0:
+					// kay
+					break;
+				case 1:
+					szError = "The target directory could not be created: a file already exists at this place. Please delete it before continuing.";
+					bErrors = true;
+					break;
+				default:
+					szError = "The target directory could not be created: an unknown error occoured.";
+					bErrors = true;
+					break;
 				}
 			}
 
 			if (!bErrors)
 			{
 				// 2: Copy Files
-				progressCtrl->SetPos(2);
+				progressCtrl->SetPos(progressCtrl->GetPos()+1);
 				progressTextCtrl->SetWindowText("Copying files");
 				{
-					CString sourceBase = ".\\NLM\\";
-					CopyFile(sourceBase + "MAILFLT.NLM", szAppBinaryDest + "MAILFLT.NLM", FALSE);
-					CopyFile(sourceBase + "MFLT50.NLM", szAppBinaryDest + "MFLT50.NLM", FALSE);
-					CopyFile(sourceBase + "MFCONFIG.NLM", szAppBinaryDest + "MFCONFIG.NLM", FALSE);
-					CopyFile(sourceBase + "MFREST.NLM", szAppBinaryDest + "MFREST.NLM", FALSE);
-					CopyFile(sourceBase + "MFNRM.NLM", szAppBinaryDest + "MFNRM.NLM", FALSE);
-					CopyFile(sourceBase + "MFSTOP.NCF", szAppBinaryDest + "MFSTOP.NCF", FALSE);
+					CString sourceBase = ".\\SERVER\\";
+					CString sourceBin = sourceBase + "BIN\\";
+					CString sourceEtc = sourceBase + "ETC\\";
+
+					// base
+					szError = "Could not copy NCF file.";
+					if (MF_CopyFile(progressCtrl, sourceBase, szAppBaseDest, "MFSTOP.NCF") == FALSE)			bErrors = true;
+
+					// binaries
+					if (!bErrors)
+						szError = "Could not copy NLM file.";
+					if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MAILFLT.NLM") == FALSE)		bErrors = true;
+					if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MFLT50.NLM") == FALSE)			bErrors = true;
+					DeleteFile(szAppBinaryDest + "\\MFCONFIG.NLM");
+					DeleteFile(szAppBinaryDest + "\\MFUPGR.NLM");
+					//if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MFCONFIG.NLM") == FALSE)		bErrors = true;
+					if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MFREST.NLM") == FALSE)			bErrors = true;
+					if (MF_CopyFile(progressCtrl, sourceBin, szAppBinaryDest, "MFNRM.NLM") == FALSE)			bErrors = true;
+
+					// config
+					if (!bErrors)
+						szError = "Could not copy configuration file.";
+					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "MAILCOPY.TPL") == FALSE)		bErrors = true;
+					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "REPORT.TPL") == FALSE)			bErrors = true;
+					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "RINSIDE.TPL") == FALSE)		bErrors = true;
+					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "ROUTRCPT.TPL") == FALSE)		bErrors = true;
+					if (MF_CopyFile(progressCtrl, sourceEtc, szAppConfigDest, "ROUTSNDR.TPL") == FALSE)		bErrors = true;
+
+					if (!bErrors)
+						szError = "";
 				}
 			}
 
 			if (!bErrors)
 			{
 				// 3: Create mfstart.ncf
+				progressCtrl->SetPos(progressCtrl->GetPos()+1);
+				progressTextCtrl->SetWindowText("Creating NCF files");
+				{
+					// mfstart.ncf
+					CString line = "LOAD PROTECTED ";
+					line += szAppBinaryDest;
+					line += "\\";
+
+					if (!this->mf_InstallLegacyVersion)
+						line += "MAILFLT";
+					else
+						line += "MFLT50";
+
+					line += ".NLM -t server ";
+					line += szAppConfigDest;
+
+					MF_CreateNCFFile(szAppBaseDest + "\\MFSTART.NCF", line);
+
+					// mfinst.ncf
+					line = "LOAD PROTECTED ";
+					line += szAppBinaryDest;
+					line += "\\";
+
+					if (!this->mf_InstallLegacyVersion)
+						line += "MAILFLT";
+					else
+						line += "MFLT50";
+
+					line += ".NLM -t install ";
+					line += szAppConfigDest;
+
+					MF_CreateNCFFile(szAppBaseDest + "\\MFINST.NCF", line);
+				}
 			}
 
 			if (!bErrors)
@@ -185,12 +286,19 @@ UIWizard:
 				// 6: patch autoexec.ncf
 			}
 
+			if (!bErrors)
+			{
+				// 7: patch gwia.cfg
+			}
+
 			// Done.
 
 			if (!bErrors)
 			{
 				// present finish dialog
-
+				int nLower; int nUpper;	progressCtrl->GetRange(nLower,nUpper);
+				progressCtrl->SetPos(nUpper);
+				progressTextCtrl->SetWindowText("Finished.");
 				progress.UpdateWindow();
 				progress.SetWizardButtons(PSWIZB_FINISH);
 				progress.RunModalLoop(MLF_SHOWONIDLE);
@@ -201,8 +309,7 @@ UIWizard:
 			}
 		}
 	}
-	if (bErrors)
-		goto UIWizard;
+	} while (bErrors);
 
 	// Da das Dialogfeld geschlossen wurde, FALSE zurückliefern, so dass wir die
 	//  Anwendung verlassen, anstatt das Nachrichtensystem der Anwendung zu starten.

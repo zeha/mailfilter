@@ -44,8 +44,8 @@
   !define MUI_LICENSEPAGE_RADIOBUTTONS
   !define MUI_COMPONENTSPAGE_NODESC
   !define MUI_FINISHPAGE_NOAUTOCLOSE
-  !define MUI_FINISHPAGE_RUN "$INSTDIR\MailFilter.exe"
-  !define MUI_FINISHPAGE_RUN_NOTCHECKED
+;  !define MUI_FINISHPAGE_RUN "$INSTDIR\MFInstWizard.exe"
+;  !define MUI_FINISHPAGE_RUN_NOTCHECKED
   !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\relnotes.html"
 
 ;  !insertmacro MUI_RESERVEFILE_WELCOMEFINISHPAGE
@@ -63,7 +63,7 @@
 
   !insertmacro MUI_LANGUAGE "English"
   LangString NAME_Section_Base ${LANG_English} "Server Binaries (NLMs)"
-  LangString NAME_Section_Installer ${LANG_English} "Install Wizard"
+  LangString NAME_Section_Installer ${LANG_English} "Installation Wizard"
   LangString NAME_Section_Docs ${LANG_English} "Documentation"
   LangString NAME_Section_ConfigW32 ${LANG_English} "Configuration Editor for Windows"
 
@@ -110,12 +110,12 @@ Section $(NAME_Section_Base) Section_Base
   File "..\MailFilter\out\MFFilterICE.exe"
   File ".\src\MFFilterICE.txt"
 
-  SetOutPath "$INSTDIR\NLM"
+  SetOutPath "$INSTDIR\SERVER"
 
 ;
 ; Copy MailFilter Default Configuration
 ;
-  SetOutPath "$INSTDIR\NLM\ETC"
+  SetOutPath "$INSTDIR\SERVER\ETC"
   File ".\src\NLM\ETC\MailFlt\CONFIG.NUL"
   File ".\src\NLM\ETC\MailFlt\DEFAULTS\FILTERS.BIN"
 
@@ -129,9 +129,11 @@ Section $(NAME_Section_Base) Section_Base
 ; Copy NLM Files
 ;
 
-  SetOutPath "$INSTDIR\NLM"
+  SetOutPath "$INSTDIR\SERVER"
+  File ".\src\NLM\SYSTEM\mfstart.ncf"
+  File ".\src\NLM\SYSTEM\mfstop.ncf"
 
-  SetOutPath "$INSTDIR\NLM\SYSTEM"
+  SetOutPath "$INSTDIR\SERVER\BIN"
   File "..\MailFilter\out\MailFlt.nlm"	; LibC version
   File "..\MailFilter\out\MFLT50.nlm"	; CLib version
   File "..\MailFilter\out\MFNRM.nlm"
@@ -141,9 +143,6 @@ Section $(NAME_Section_Base) Section_Base
 
 ;  File "..\MailFilter\out\MFBUG.NLM"
 ;  File "..\MailFilter\out\MFPACK.NLM"
-
-  File ".\src\NLM\SYSTEM\mfstart.ncf"
-  File ".\src\NLM\SYSTEM\mfstop.ncf"
 
 
   SetOutPath "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}"
@@ -179,11 +178,12 @@ Section $(NAME_Section_Installer) Section_Installer
   SectionIn 1
   SetOutPath "$INSTDIR"
 
-  File "..\MFInstall.W32\out\MailFilter.exe"
+  File "..\MailFilter\out\MFInstWizard.exe"
+;  File "..\MailFilter\out\MFUpgrWizard.exe"
 
   SetOutPath "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}"
   SetOutPath "$INSTDIR"
-  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\ Installation Wizard.lnk" '"$INSTDIR\MailFilter.exe"'
+  CreateShortCut "$SMPROGRAMS\MailFilter professional ${PROD_VERSION}\ Installation Wizard.lnk" '"$INSTDIR\MFInstWizard.exe"'
 SectionEnd
 
 
