@@ -284,8 +284,6 @@ int M_MFAVA_ScanFile(MFAVA_HANDLE hAVA, const char* szFileName, char* szVirusNam
 
 	thread = pthread_self();
 	
-	consoleprintf("MFAVA***** VirusNameLength: %d\n",iVirusNameLength);
-	
 /*	if (err = RxRegisterThreadResource(thread, CleanUpFooStuff))
 	{
 		if (szFileName)
