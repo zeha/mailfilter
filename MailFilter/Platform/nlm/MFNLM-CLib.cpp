@@ -59,8 +59,8 @@ extern "C" {
 bool MailFilterApp_Server_LoginToServer()
 {	
 	if (
-		 (MF_GlobalConfiguration.LoginUserName == "") &&
-		 (MF_GlobalConfiguration.LoginUserPassword == "")
+		 (MF_GlobalConfiguration->LoginUserName == "") &&
+		 (MF_GlobalConfiguration->LoginUserPassword == "")
 		)
 		return true;		// dont login
 
