@@ -273,6 +273,8 @@ static int MF_NRM_RestoreFile(const char* szInFile, const char* szOutFile, char*
 
 	while(!feof(inputFile) )
 	{
+		ThreadSwitch();
+
 		szScanBuffer[0]=0;
 		fgets(szScanBuffer,2000,inputFile);
 
@@ -372,6 +374,7 @@ UINT32 MF_NLM_RM_HttpHandler_Restore(
 		--MFT_NLM_ThreadCount;
 		return 0;
 	}
+	ThreadSwitch();
 	
 	{
 		// page output
@@ -472,7 +475,7 @@ UINT32 MF_NLM_RM_HttpHandler_Restore(
 		}
 	}
 	
-	
+	ThreadSwitch();
 	{
 		// end
 		DL_HttpSendData(hndl,"    <br>\n");
@@ -663,6 +666,7 @@ int MF_NLM_RM_Init()
 		);
 		
 	MF_NRM_InitComplete = 1;
+	ThreadSwitch();
 	return 1;
 }
 
@@ -731,6 +735,8 @@ int MailFilter_Main_RunAppNRM(bool bStandalone)
 	// Rename thread
 	NXContextSetName(NXContextGet(),"MailFilterNRM");
 
+	ThreadSwitch();
+
 	if (bStandalone)
 		RenameScreen(getscreenhandle(),"MailFilter NRM");
 
@@ -739,6 +745,7 @@ int MailFilter_Main_RunAppNRM(bool bStandalone)
 		printf("Could not import PORTAL/HTTPSTK symbols. Aborting Startup.\n");
 		return -1;
 	}
+	ThreadSwitch();
 
 	if (!MF_NLM_RM_Init())
 	{
@@ -747,6 +754,7 @@ int MailFilter_Main_RunAppNRM(bool bStandalone)
 	}
 
 	
+	ThreadSwitch();
 	if (cond_init ( &condMainThread , USYNC_THREAD, NULL ) != 0)
 	{
 		printf("Could not initialize mutex. Startup Failed\n");
@@ -763,6 +771,7 @@ int MailFilter_Main_RunAppNRM(bool bStandalone)
 		cond_wait(&condMainThread,&mtx);
 	}
    	
+	ThreadSwitch();
 	if (bStandalone)
 		printf("Shutdown...\n");
 	

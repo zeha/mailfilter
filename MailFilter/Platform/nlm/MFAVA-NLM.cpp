@@ -151,6 +151,7 @@ int MailFilter_AV_ScanFile(const char* szFileName, char* szVirusName, size_t iVi
 	
 //	printf("  File: \"%s\"\n",szFileName);
 	
+	ThreadSwitch();
 	scanRc = MailFilter_AVA_ScanFile_sym(ghAgent, szFileName, szVirusName, iVirusNameLength, iVirusType);
 //	printf("%X ScanFile rc: %d\n",hAgent,scanRc);
 	MFD_Out(MFD_SOURCE_VSCAN,"AVA Scan: rc=%d, \"%s\" (size=%d); type=%d\n", scanRc, szVirusName, iVirusNameLength, iVirusType);

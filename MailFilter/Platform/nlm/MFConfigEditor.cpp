@@ -16,7 +16,7 @@
 #include "MFConfig.h++"
 #include "MFConfig-Filter.h++"
 #include "MFConfig-defines.h"
-#include <pcreposix45.h>
+//#include <pcreposix45.h>
 #include "MFVersion.h"
 
 int MFC_CurrentList = 0;
@@ -25,34 +25,7 @@ int MFC_CurrentList = 0;
 #define NUT_SEVERITY_FATAL 2
 #endif
 
-
 static void MFConfig_Util_Sort(void* nutHandle);
-
-
-static void MF_RegError(int errcode, const regex_t *preg)
-{
-	char szErrBuf[3500];
-	if (!errcode)
-		return;
-		
-	regerror(errcode, preg, szErrBuf, sizeof(szErrBuf));
-
-	char szTemp[4000];
-	
-	sprintf(szTemp,"Regular Expression Error:\n%s\n",szErrBuf);
-	
-	NWSDisplayInformation (
-	
-		NULL,
-		1,
-		0,
-		0,
-		ERROR_PALETTE,
-		VREVERSE,
-		(_MF_NUTCHAR) szTemp,
-		MF_NutInfo
-		);
-}
 
 static void MFConfig_ImportLicenseKey(void *)
 {
@@ -541,8 +514,6 @@ static int MFConfig_EditFilterDialog_MenuActionMatchfield(int option, void *para
 }
 int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 {
-
-	regex_t re;
 	MFCONTROL	*ctlMatchfield;
 	MFCONTROL	*ctlMatchaction;
 	MFCONTROL	*ctlMatchtype;
@@ -734,8 +705,37 @@ int MFConfig_EditFilterDialog(MailFilter_Configuration::Filter *flt)
 			(newMatchfield != MailFilter_Configuration::blacklist) || (newMatchfield != MailFilter_Configuration::ipUnresolvable) 
 		)
 	{
-		MF_RegError(regcomp(&re,flt->expression.c_str(),0),&re);
-		regfree(&re);
+
+		int rc = -99;
+		pcre *re;
+		const char *error;
+		int erroffset;
+
+		re = pcre_compile(
+		  flt->expression.c_str(), /* the pattern */
+		  0,                    /* default options */
+		  &error,               /* for error message */
+		  &erroffset,           /* for error offset */
+		  NULL);                /* use default character tables */
+
+		if (re == NULL)
+		{
+			char szErrBuf[3500];
+			sprintf(szErrBuf,"Regular Expression Error: %s\n",error);
+			
+			NWSDisplayInformation (
+				MSG_PROGRAM_NAME,
+				1,
+				0,
+				0,
+				ERROR_PALETTE,
+				VREVERSE,
+				(_MF_NUTCHAR) szErrBuf,
+				MF_NutInfo
+				);
+		} else
+			pcre_free(re);
+
 	}
 
 	NWSDestroyForm (MF_NutInfo);

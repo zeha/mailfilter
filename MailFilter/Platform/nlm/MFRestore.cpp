@@ -50,6 +50,8 @@ int MFRestore_RestoreFile(std::string szInFile, std::string szOutFile)
 										bWroteXRestore = true; \
 									}
 
+	ThreadSwitch();
+
 	while(!feof(inputFile) )
 	{
 		szScanBuffer[0]=0;
@@ -68,6 +70,8 @@ int MFRestore_RestoreFile(std::string szInFile, std::string szOutFile)
 				{ 	_MF_NRM_RestoreFile_WriteRestoreHeader(); break; }
 		}
 		fwrite(szScanBuffer,sizeof(char),strlen(szScanBuffer),outputFile);
+
+		ThreadSwitch();
 	}
 	
 	fclose(inputFile);
@@ -408,6 +412,8 @@ void NLM_Main(void)
 //	char scanDir[MAX_PATH];
 	char scanPath[MAX_PATH];
 	
+	ThreadSwitch();
+
 	// Init Lists
 	NWSPushList(MF_NutInfo);
 	NWSInitList(MF_NutInfo, _mfr_free);

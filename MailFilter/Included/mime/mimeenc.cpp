@@ -1,6 +1,7 @@
 
 #define _MFD_MODULE "mimeenc.cpp"
 #include <MailFilter.h>
+#include "MFVersion.h"
 
 //#include <stdio.h>
 #include "modmimee.h"
@@ -561,7 +562,7 @@ MimeB64DecoderInit (int (*output_fn) (const char *, int, void *),
 {
   return mime_decoder_init (mime_Base64, output_fn, closure);
 }
-
+#ifndef MAILFILTER_VERSION_YESITCRASHES
 MimeDecoderData *
 MimeQPDecoderInit (int (*output_fn) (const char *, int, void *),
 				   void *closure)
@@ -578,7 +579,7 @@ MimeUUDecoderInit (int (*output_fn) (const char *, int, void *),
     tmp->uue_state = UUE_BODY;
   return tmp;
 }
-
+#endif
 int
 MimeDecoderWrite (MimeDecoderData *data, const char *buffer, int size)
 {
@@ -588,10 +589,12 @@ MimeDecoderWrite (MimeDecoderData *data, const char *buffer, int size)
 	{
 	case mime_Base64:
 	  return mime_decode_base64_buffer (data, buffer, size);
+#ifndef MAILFILTER_VERSION_YESITCRASHES
 	case mime_QuotedPrintable:
 	  return mime_decode_qp_buffer (data, buffer, size);
 	case mime_uuencode:
 	  return mime_decode_uue_buffer (data, buffer, size);
+#endif
 	default:
 		MFD_Out(MFD_SOURCE_VSCAN,"assert! no mimeDecoder selected!\n");
 //	  NS_ASSERTION(0, "1.1 <rhp@netscape.com> 19 Mar 1999 12:00");
@@ -1076,7 +1079,7 @@ MimeB64EncoderInit (int (*output_fn) (const char *, int, void *),
 {
   return mime_encoder_init (mime_Base64, output_fn, closure);
 }
-
+#ifndef MAILFILTER_VERSION_YESITCRASHES
 MimeEncoderData *
 MimeQPEncoderInit (int (*output_fn) (const char *, int, void *),
 				   void *closure)
@@ -1096,7 +1099,7 @@ MimeUUEncoderInit (char *filename,
 	  
   return enc;
 }
-
+#endif
 int
 MimeEncoderWrite (MimeEncoderData *data, const char *buffer, int size)
 {
@@ -1106,10 +1109,12 @@ MimeEncoderWrite (MimeEncoderData *data, const char *buffer, int size)
 	{
 	case mime_Base64:
 	  return mime_encode_base64_buffer (data, buffer, size);
+#ifndef MAILFILTER_VERSION_YESITCRASHES
 	case mime_QuotedPrintable:
 	  return mime_encode_qp_buffer (data, buffer, size);
 	case mime_uuencode:
 	  return mime_uuencode_buffer(data, buffer, size);
+#endif
 	default:
 //	  NS_ASSERTION(0, "1.1 <rhp@netscape.com> 19 Mar 1999 12:00");
 	  return -1;

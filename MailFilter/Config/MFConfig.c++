@@ -10,9 +10,10 @@
  +		
 +*/
 
+#define _MSL_NO_LOCALE
 #include <string>
 #include <fstream>
-#include <ostream>
+//#include <ostream>
 
 #define _MFD_MODULE			"MFCONFIG.C++"
 #include "MailFilter.h"
@@ -328,6 +329,7 @@ bool Configuration::ReadFilterList(std::string filterFile, long startAt)
 			}
 			
 			fgetc(fFile);
+			ThreadSwitch();
 		}
 
 		fclose(fFile);
@@ -805,9 +807,9 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 
 							// Strings
 							if (param == "home-gwia")
-								this->GWIARoot = value;
+								this->GWIARoot = MF_MakeValidPath(value);
 							if (param == "home-mailfilter")
-								this->MFLTRoot = value;
+								this->MFLTRoot = MF_MakeValidPath(value);
 
 							if (param == "login-username")
 								this->LoginUserName = value;
@@ -898,6 +900,7 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 							if (param == "nrm-enablerestore")
 								this->EnableNRMRestore = mkBoolFromStr(value);
 								
+							ThreadSwitch();
 						}
 					}
 				}
@@ -1081,6 +1084,8 @@ class PrintFilter{
 			fputc(0,m_fFile);
 			fprintf(m_fFile,"%s",filter.name.c_str());
 			fputc(0,m_fFile);
+			
+			ThreadSwitch();
 		}
 };
 
@@ -1176,6 +1181,8 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 	fprintf(cfgFile,"/nrm-enablerestore=%s\n",this->EnableNRMRestore == 0 ? "0" : "1");
 
 	fclose(cfgFile);
+
+	ThreadSwitch();
 
 	if (!this->WriteFilterList(this->config_directory + "\\FILTERS.BIN"))
 		return false;

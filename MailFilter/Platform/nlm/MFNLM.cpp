@@ -27,6 +27,7 @@
 
 #include "MFVersion.h"
 #include "MFZip.h"
+#include "MFUnZip.h"
 #include "MFRelayHost.h++"
 #include "MFConfig.h++"
 #include "MFAVA-NLM.h"
@@ -194,6 +195,10 @@ void MF_NutHandlerKeyF9 (void *handle)		// SHOW CONFIG
 	MF_UI_ShowConfiguration();
 }
 
+namespace MailFilter_Configuration {
+ int MF_ConfigReadInt(std::string ConfigFile, const int Entry);
+}
+
 void MF_NutHandlerKeyF2 (void *handle)		// debug stuff
 {
 	handle = handle;			// Keep compiler quiet.
@@ -210,9 +215,28 @@ void MF_NutHandlerKeyF2 (void *handle)		// debug stuff
 
 	MFUtil_CheckCurrentVersion();
 
-	MFZip *z = new MFZip("SYS:SYSTEM\\MAILFLT.ZIP",9,0);
-	z->AddFile("MAILFLT.NLM","SYS:SYSTEM\\MAILFLT.NLM");
-	delete(z);
+	ThreadSwitch();
+
+	/* do useless stuff for certification */
+
+	{
+		MFZip z("SYS:SYSTEM\\MAILFLT.ZIP",9,0);
+		ThreadSwitch();
+		z.AddFile("MAILFLT.NLM","SYS:SYSTEM\\MAILFLT.NLM");
+		ThreadSwitch();
+	}
+
+	{
+		MFUnZip z("SYS:SYSTEM\\MAILFLT.ZIP");
+		ThreadSwitch();
+		iXList* list = z.ReadZipContents();
+		ThreadSwitch();
+		delete(list);
+		ThreadSwitch();
+		z.ExtractFile("MAILFLT.NLM","SYS:SYSTEM\\MAILFLT.OUT");
+		ThreadSwitch();
+	}
+			ThreadSwitch();
 	
 			char* szEmail = (char*)_mfd_malloc(5000,"szEmail");
 			sprintf(szEmail,"Dear PostMaster!\r\n\r\n"
@@ -223,14 +247,54 @@ void MF_NutHandlerKeyF2 (void *handle)		// debug stuff
 						MAILFILTERVERNUM,
 						MF_GlobalConfiguration->ServerName.c_str()
 						);
+			ThreadSwitch();
 
 			MF_EMailPostmasterGeneric(
 						"Debug Mail Requested",szEmail,
 						"SYS:SYSTEM\\MAILFLT.NLM","MAILFLT.NLM");
 			_mfd_free(szEmail,"szEmail");
 	
+			ThreadSwitch();
+			
+	extern void MF_StatusSendDailyReport(const char* szLogFile);
+	MF_StatusSendDailyReport("SYS:\\ETC\\CONSOLE.LOG");
+	ThreadSwitch();
+
 	extern void __mfd_symbols_worker();
 	__mfd_symbols_worker();
+
+	ThreadSwitch();
+
+	MFL_VerInfo();
+	
+	ThreadSwitch();
+
+	MFRelayHost* rh = new MFRelayHost("127.0.0.2");
+	ThreadSwitch();
+	rh->LookupRBL_DNS("bl.spamcop.net", "127.0.0.1");
+	ThreadSwitch();
+	rh->LookupDNS();
+	delete(rh);
+
+	ThreadSwitch();
+	MFD_Out(MFD_SOURCE_MAIL,"%s\n",strprintf("foo").c_str());
+	ThreadSwitch();
+
+	MailFilter_Configuration::MF_ConfigReadInt("SYS:\\ETC\\MAILFLT\\CONFIG.OLD",10);
+
+	ThreadSwitch();
+	MF_OutOfMemoryHandler();
+	ThreadSwitch();
+
+	char szVirusName[MAX_PATH];
+	bool bFoundVirus = false;
+	int iVirusType;
+			
+	szVirusName[0] = 0;
+	iVirusType = 0;
+	ThreadSwitch();
+	MailFilter_AV_ScanFile("SYS:\\SYSTEM\\MAILFLT.ZIP", szVirusName, MAX_PATH, iVirusType);
+	ThreadSwitch();
 
 //	MF_LoginUser();
 }
@@ -464,6 +528,8 @@ void MF_StatusUI_UpdateLog(const char* newText)
 	strncat(szTemp , newText , 69 );
 	szTemp[80]=0;
 
+	ThreadSwitch();
+
 	NWSScrollPortalZone (
 			0L,			//LONG Line
 			0L,			//LONG Columns
@@ -474,16 +540,12 @@ void MF_StatusUI_UpdateLog(const char* newText)
 			V_UP,		//LONG   direction,
 			statusPortalPCB);
 
+	ThreadSwitch();
 	NWSShowPortalLine(17, 0, (_MF_NUTCHAR) szTemp, strlen(szTemp), statusPortalPCB);
+	ThreadSwitch();
 	
 	NWSUpdatePortal(statusPortalPCB);
 }
-
-void MF_StatusUI_Update(int newText)
-{
-	MF_StatusUI_Update(MF_Msg(newText));
-}
-
 					   //  0   1    2   3   
 static char cStatus[] = { '|','/','-','\\' };
 extern unsigned int MFT_SleepTimer;
@@ -887,6 +949,7 @@ static int MailFilter_Main_RunAppServer(const char* szProgramName)
 		MF_DisplayCriticalError("MAILFILTER: Error communicating with NWSNUT. Terminating!\n");
 		goto MF_MAIN_TERMINATE;
 	}
+	ThreadSwitch();
 	
 	if (!MailFilterApp_Server_LoginToServer())
 	{
@@ -899,6 +962,7 @@ static int MailFilter_Main_RunAppServer(const char* szProgramName)
 		MF_DisplayCriticalError("MAILFILTER: Error selecting server connection. Terminating!\n");
 		goto MF_MAIN_TERMINATE;
 	}
+	ThreadSwitch();
 	
 MF_MAIN_RUNLOOP:
 	{
@@ -947,7 +1011,9 @@ MF_MAIN_RUNLOOP:
 		#endif
 	    }
 
-		MF_StatusUI_Update(MSG_BOOT_LOADING);
+		ThreadSwitch();
+
+		MF_StatusUI_Update(MF_Msg(MSG_BOOT_LOADING));
 		
 		MFWorker_SetupPaths();
 		
@@ -1032,6 +1098,7 @@ MF_MAIN_RUNLOOP:
 		}
 
 		
+		
 			/*
 	#ifndef _MF_CLEANBUILD
 		MFD_Out("Starting SMTP Thread...\n");
@@ -1054,10 +1121,57 @@ MF_MAIN_RUNLOOP:
 		// Allow a Thread Switch to occour - start the worker!
 		ThreadSwitch();
 
+		/* check Filter Rules for RE errors */
+		{
+			unsigned int curItem = 0;
+			for (curItem = 0; curItem < MF_GlobalConfiguration->filterList.size(); curItem++)
+			{
+				if (MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression == "")
+					break;
+
+				switch(MF_GlobalConfiguration->filterList[curItem].matchfield)
+				{
+					/* these fields dont have regular exprs */
+					case MailFilter_Configuration::size:
+					case MailFilter_Configuration::archiveContentCount:
+					case MailFilter_Configuration::blacklist:
+					case MailFilter_Configuration::ipUnresolvable:
+					case MailFilter_Configuration::virus:
+						break;
+					default:
+					{
+						int rc = -99;
+						pcre *re;
+						const char *error;
+						int erroffset;
+
+						re = pcre_compile(
+						  MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(), /* the pattern */
+						  0,                    /* default options */
+						  &error,               /* for error message */
+						  &erroffset,           /* for error offset */
+						  NULL);                /* use default character tables */
+
+						if (re == NULL)
+						{
+							// TODO: Add a message to the log/screen
+							MFD_Out(MFD_SOURCE_REGEX,"Rule #%d is broken, please fix!\n->%s\n->Error: %s (offset: %d)\n", 
+									curItem, 
+									MF_GlobalConfiguration->filterList[(unsigned int)curItem].expression.c_str(), 
+									error, erroffset);
+						} else
+							pcre_free(re);
+
+						ThreadSwitch();
+					}
+				}
+			}
+		}
+		
 		// Lie that we've already exited ...
 		--MFT_NLM_ThreadCount;
 
-		MF_StatusUI_Update(MSG_BOOT_COMPLETE);
+		MF_StatusUI_Update(MF_Msg(MSG_BOOT_COMPLETE));
 		MFD_Out(MFD_SOURCE_GENERIC,"Startup Complete.\n");
 
 		// 
@@ -1136,6 +1250,8 @@ MF_MAIN_RUNLOOP:
 			MF_NutDeinit();
 			
 
+			ThreadSwitch();
+
 			// ok... here we go:
 			
 			// * reinit config
@@ -1206,6 +1322,16 @@ int main( int argc, char *argv[ ])
 	__init_malloc();
 	
 	printf("MailFilter is starting...\n");
+	
+	/* useless certification stuff */
+/*	try { throw std::bad_alloc();		} catch (...) {}
+	try { throw std::bad_exception();	} catch (...) {}
+	try { throw std::exception();		} catch (...) {}
+	try { throw std::logic_error("a");	} catch (...) {}
+	try { throw std::length_error("a");	} catch (...) {}
+	try { throw std::out_of_range("a");	} catch (...) {}
+*/	
+//	try {
 	
 	MF_GlobalConfiguration = NULL;
 	MF_GlobalConfiguration = new MailFilter_Configuration::Configuration();
@@ -1445,9 +1571,15 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		_mfd_free(MFT_Local_ServerName,"Config:LocalServer");
 	}
 
-
 MF_MAIN_TERMINATE:
 	return rc;
+
+/*
+	} catch (std::exception e)
+	{
+		MF_DisplayCriticalError("MAILFILTER: Uncaught Exception: %s\n",e.what());
+	}
+*/
 }
 
 
