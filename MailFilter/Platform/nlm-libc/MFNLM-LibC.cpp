@@ -52,14 +52,15 @@ int DL_OpenCustomScreen (const char *name, rtag_t rTag, scr_t *newScrID, int mod
 
 bool MF_NLM_OpenDebugScreen()
 {
-	int rc;
+//	int rc;
 	MFD_ScreenTag = AllocateResourceTag( (void*)MF_NLMHandle, "MailFilter Debug Screen", ScreenSignature);
-	if ((rc = DL_OpenCustomScreen ( "MailFilter Debug", MFD_ScreenTag, &MFD_ScreenID, SCREEN_MODE_80X25|SCREEN_MODE_SCROLLABLE )) != 0)
-	{
-		MF_DisplayCriticalError("MAILFILTER Notice: OpenCustomScreen failed with %d.\n",rc);
+//	if ((rc = DL_OpenCustomScreen ( "MailFilter Debug", MFD_ScreenTag, &MFD_ScreenID, SCREEN_MODE_80X25|SCREEN_MODE_SCROLLABLE )) != 0)
+//	{
 		if (OpenScreen ( "MailFilter Debug Screen", MFD_ScreenTag, &MFD_ScreenID ) )
 			return false;
-	}
+//	}
+//	MF_DisplayCriticalError("MAILFILTER Notice: OpenCustomScreen returned %d.\n",rc);
+
 	return true;
 }
 

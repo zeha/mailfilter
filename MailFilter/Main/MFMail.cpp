@@ -828,8 +828,8 @@ MFD_Out(MFD_SOURCE_MAIL,"UU Attachment: '%s'\n",szCmpBuffer);
 										m->bFilterMatched = true;
 										break;
 									}			
-									
-									if ((szCmpBuffer[curCmpPos] == '\r') || (szCmpBuffer[curCmpPos] == '\n') || ( szCmpBuffer[curCmpPos] == '=' ) || ( szCmpBuffer[curCmpPos] == '\0' ))
+									//  || ( szCmpBuffer[curCmpPos] == '=' )
+									if ((szCmpBuffer[curCmpPos] == '\r') || (szCmpBuffer[curCmpPos] == '\n') || ( szCmpBuffer[curCmpPos] == '\0' ))
 										break;
 
 									curCmpPos++;
@@ -839,7 +839,8 @@ MFD_Out(MFD_SOURCE_MAIL,"UU Attachment: '%s'\n",szCmpBuffer);
 									szCmpBuffer[curCmpPos+1] = 0;
 
 								}
-								while ((szCmpBuffer[curCmpPos] != '\n') && (szCmpBuffer[curCmpPos] != '\r') && (szCmpBuffer[curCmpPos] != '=') && (curPos < 2000) && (szCmpBuffer[curCmpPos] != '\0'));
+								while ((szCmpBuffer[curCmpPos] != '\n') && (szCmpBuffer[curCmpPos] != '\r')  && (curPos < 2000) && (szCmpBuffer[curCmpPos] != '\0'));
+								// && (szCmpBuffer[curCmpPos] != '=')
 
 								if (curCmpPos > 0)
 								{
@@ -855,10 +856,15 @@ MFD_Out(MFD_SOURCE_MAIL,"UU Attachment: '%s'\n",szCmpBuffer);
 	MFD_Out(MFD_SOURCE_MAIL,"--> ATT '%s'\n",szCmpBuffer);
 									strncpy(szThisAttachment,szCmpBuffer,250);
 									szThisAttachment[250] = 0;
-	//DEBUG
 
-									m->lstAttachments->AddValueChar("Base64", szCmpBuffer);
-									//_EXAMINEFILE_DOFILTERCHECK(szCmpBuffer,"Attachment Name",MAILFILTER_MATCHFIELD_ATTACHMENT);
+									_EXAMINEFILE_DOMIMEHDRDECODE(szThisAttachment,249);
+	MFD_Out(MFD_SOURCE_MAIL,"-=> ATT '%s'\n",szThisAttachment);
+									if (strlen(szThisAttachment) > 0)
+										m->lstAttachments->AddValueChar("Base64", szThisAttachment);
+										else
+										m->lstAttachments->AddValueChar("Base64", szCmpBuffer);
+
+
 
 	/*
 		MFVS_WriteOutAttachment
@@ -942,7 +948,11 @@ MFD_Out(MFD_SOURCE_MAIL,"--> TYPE '%s'\n",szCmpBuffer);
 								szThisAttachment[250] = 0;
 								_EXAMINEFILE_DOMIMEHDRDECODE(szThisAttachment,249);
 MFD_Out(MFD_SOURCE_MAIL,"-=> TYPE '%s'\n",szThisAttachment);
-								m->lstAttachments->AddValueChar("Base64", szCmpBuffer);
+								if (strlen(szThisAttachment) > 0)
+									m->lstAttachments->AddValueChar("Base64", szThisAttachment);
+									else
+									m->lstAttachments->AddValueChar("Base64", szCmpBuffer);
+									
 
 								bInMimeAttachment = true;
 								
