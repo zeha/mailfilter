@@ -45,6 +45,8 @@ public:
 	std::string config_file;
 	std::string config_file_backup;
 	std::string config_file_void;
+	bool config_mode_strict;
+	
 	unsigned int config_build;
 	std::string ServerName;
 	std::string GWIARoot;
@@ -71,6 +73,7 @@ public:
 	bool EnableAttachmentDecoder;
 	bool EnablePFAFunctionality;
 	bool EnableNRMThread;
+	bool EnableNRMRestore;
 	std::string MessageFooter;
 	std::string BWLScheduleTime;
 	std::string Multi2One;

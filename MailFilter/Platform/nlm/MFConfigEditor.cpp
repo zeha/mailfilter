@@ -1367,6 +1367,7 @@ static void MFConfig_EditConfig()
   	BOOL	newEnableAttachmentDecoder = (BOOL)MF_GlobalConfiguration.EnableAttachmentDecoder;
   	BOOL	newEnablePFA = (BOOL)MF_GlobalConfiguration.EnablePFAFunctionality;
   	BOOL	newEnableNRMThread = (BOOL)MF_GlobalConfiguration.EnableNRMThread;
+  	BOOL	newEnableNRMRestore = (BOOL)MF_GlobalConfiguration.EnableNRMRestore;
 
 	NWSPushList(MF_NutInfo);
 	NWSInitForm(MF_NutInfo);
@@ -1440,6 +1441,10 @@ static void MFConfig_EditConfig()
 	
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable NRM on load (OS address space only):", MF_NutInfo);
 	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newEnableNRMThread, NULL, MF_NutInfo);
+	line++;
+	
+	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"Enable Mail Restore in NRM:", MF_NutInfo);
+	NWSAppendBoolField (line, 40, NORMAL_FIELD, &newEnableNRMRestore, NULL, MF_NutInfo);
 	line++;
 	
 	line++;
@@ -1565,6 +1570,7 @@ static void MFConfig_EditConfig()
 		MF_GlobalConfiguration.EnableAttachmentDecoder		=(bool)newEnableAttachmentDecoder;
 		MF_GlobalConfiguration.EnablePFAFunctionality		=(bool)newEnablePFA;
 		MF_GlobalConfiguration.EnableNRMThread				=(bool)newEnableNRMThread;
+		MF_GlobalConfiguration.EnableNRMRestore				=(bool)newEnableNRMRestore;
 
 		MF_GlobalConfiguration.GWIAVersion					=(unsigned int)newGwiaVersion;
 		

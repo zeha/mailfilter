@@ -183,6 +183,7 @@ Configuration::Configuration()
 {
 	this->NRMInitialized = false;
 	this->ApplicationMode = SERVER;
+	this->config_mode_strict = true;
 }
 
 Configuration::~Configuration()
@@ -539,7 +540,6 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 	//
 	///////////////////////////
 	// place definitions here!
-	std::string ConfigVersion;
 
 	std::string pConfigFile = (alternateFilename == "" ? this->config_file : alternateFilename);
 
@@ -554,20 +554,34 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 		rc = 98;
 	if (rc != 0)	goto MF_ConfigRead_ERR;
 
-
-	if (statInfo.st_size < 3999)
-		rc = 97;	
-	if (rc != 0)	goto MF_ConfigRead_ERR;
-	
-	ConfigVersion = MF_ConfigReadString(pConfigFile, 0);
-	if (ConfigVersion != MAILFILTER_CONFIGURATION_SIGNATURE)
+	if (this->config_mode_strict)
 	{
-		rc = 99;
-		goto MF_ConfigRead_ERR;	
+		if (statInfo.st_size < 3999)
+			rc = 97;	
+		if (rc != 0)	goto MF_ConfigRead_ERR;
 	}
-
+			
+	std::string ConfigVersion;
+	ConfigVersion = MF_ConfigReadString(pConfigFile, 0);
+	if (this->config_mode_strict)
+	{
+		if (ConfigVersion != MAILFILTER_CONFIGURATION_SIGNATURE)
+		{
+			rc = 99;
+			goto MF_ConfigRead_ERR;	
+		}
+	} else {
+		if (strncmp(ConfigVersion.c_str(),MAILFILTER_CONFIGURATION_BASESIGNATURE,sizeof(MAILFILTER_CONFIGURATION_BASESIGNATURE)-1) != 0)
+		{
+			// eek
+			rc = 99;
+			goto MF_ConfigRead_ERR;	
+		} else {
+			this->config_build = (unsigned int)atoi(ConfigVersion.c_str()+sizeof(MAILFILTER_CONFIGURATION_BASESIGNATURE));
+		}
+	}
+	
 	// get servername
-
 	unsigned long iServerNameSize = 512;
 	char* szServerName = (char*)_mfd_malloc(iServerNameSize,"Config:Server");
 	
@@ -575,7 +589,6 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 	this->ServerName = szServerName;
 	
 	_mfd_free( szServerName , "Config:Server" );
-	
 	
 	// compatiblity for MFAX Licensing
 	if (MFT_Local_ServerName == NULL)
@@ -592,10 +605,10 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 
 
 	this->GWIARoot = MF_MakeValidPath(MF_ConfigReadString(pConfigFile, 1));
-	if (this->GWIARoot == "") {	rc = 303;	goto MF_ConfigRead_ERR;	}
+	if (this->config_mode_strict && (this->GWIARoot == "")) {	rc = 303;	goto MF_ConfigRead_ERR;	}
 
 	this->MFLTRoot = MF_MakeValidPath(MF_ConfigReadString(pConfigFile, 2));
-	if (this->MFLTRoot == "") {	rc = 304;	goto MF_ConfigRead_ERR;	}
+	if (this->config_mode_strict && (this->MFLTRoot == "")) {	rc = 304;	goto MF_ConfigRead_ERR;	}
 
 /*#ifndef WIN32
 	MFT_InOutSameServerVolume = (MF_CheckPathSameVolume( MFC_GWIA_ROOT , MFC_MFLT_ROOT ) == 1);
@@ -669,10 +682,10 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 	this->EnableNRMThread = (bool)
 		MF_ConfigReadInt(pConfigFile, 3545);
 
-//	MFC_DropUnresolvableRelayHosts = 
-//		MF_ConfigReadInt(pConfigFile, 3545);
+	this->EnableNRMRestore = (bool)
+		MF_ConfigReadInt(pConfigFile, 3547);
 
-	// Next start at 3547
+	// Next start at 3549
 	
 	// require at least 10 dirs
 	if (this->MailscanDirNum < 10) this->MailscanDirNum = 10;
@@ -684,7 +697,7 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 	MFC_Message_FooterText = (char*)malloc(4000);
 	MF_ConfigReadFile(szTemp,MFC_Message_FooterText,3999);
 */	
-	if (!MFT_RemoteDirectories)
+	if (this->config_mode_strict && (!MFT_RemoteDirectories))
 	{
 		// Check for existence of directories ...
 		if (chdir(this->MFLTRoot.c_str())) {	rc=301; goto MF_ConfigRead_ERR;	}
@@ -920,13 +933,17 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 	doNull(3543);
 	fprintf(cfgFile, this->EnablePFAFunctionality == 0 ? "0" : "1");
 
-	// version 8
+	// version 10
 	doNull(3545);
 	fprintf(cfgFile, this->EnableNRMThread == 0 ? "0" : "1");
+	
 	//removed in a later v8
 	//fprintf(cfgFile, MFC_DropUnresolvableRelayHosts == 0 ? "0" : "1");
 
-	// Next start at 3547
+	doNull(3547);
+	fprintf(cfgFile, this->EnableNRMRestore == 0 ? "0" : "1");
+
+	// Next start at 3549
 
 	// version 9
 	doNull(4000);

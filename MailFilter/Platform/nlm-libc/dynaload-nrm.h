@@ -16,6 +16,10 @@ extern "C" {
 //
 extern int DL_HttpSendData (HINTERNET hrequest, const char *szData);
 //
+extern int DL_HttpSendErrorResponse(HINTERNET hrequest, UINT32 HTTP_ERROR_CODE);
+//
+extern BOOL DL_HttpReturnRequestMethod(HINTERNET hndl, UINT32_PTR httpRequestMethodType);
+//
 extern int DL_HttpSendSuccessfulResponse (HINTERNET hrequest, void *pzContentType);
 //
 extern int DL_HttpEndDataResponse (HINTERNET hRequest);

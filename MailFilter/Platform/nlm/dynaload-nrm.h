@@ -1,6 +1,7 @@
 //
 // (C) Copyright 2004 Christian Hofstaedtler
 //
+// NLM: CLib
 
 #include <unistd.h>
 #include <stdio.h>
@@ -17,6 +18,10 @@ extern "C" {
 #include "nrm.h"
 //
 extern int DL_HttpSendData (HINTERNET hrequest, const char *szData);
+//
+extern int DL_HttpSendErrorResponse(HINTERNET hrequest, UINT32 HTTP_ERROR_CODE);
+//
+extern BOOL DL_HttpReturnRequestMethod(HINTERNET hndl, UINT32_PTR httpRequestMethodType);
 //
 extern int DL_HttpSendSuccessfulResponse (HINTERNET hrequest, void *pzContentType);
 //

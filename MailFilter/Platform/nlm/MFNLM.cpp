@@ -91,6 +91,17 @@ void _NonAppStop ( void )
 }
 #endif
 
+extern "C" { 
+	extern bool NWIsNLMLoadedProtected(void);
+}
+
+bool mf_nlmisloadedprotected()
+{
+	return NWIsNLMLoadedProtected();
+}
+
+
+
 //
 //  Event Handler For NLM ShutDown
 //
@@ -1043,6 +1054,8 @@ static void _mfd_tellallocccountonexit()
 
 static void LoadNRMThreadStartup(void *dummy)
 {
+#pragma unused(dummy)
+
 	MF_GlobalConfiguration.NRMInitialized = true;
 	MailFilter_Main_RunAppNRM();
 }
@@ -1132,7 +1145,7 @@ MF_MAIN_RUNLOOP:
 		
 		if (MF_GlobalConfiguration.EnableNRMThread == true)
 		{
-			if (!nlmisloadedprotected())
+			if (!mf_nlmisloadedprotected())
 			{
 				MFD_Out(MFD_SOURCE_CONFIG,"NRM thread will be started.\n");
 			
@@ -1298,6 +1311,7 @@ MF_MAIN_TERMINATE:
 	return 0;
 }
 
+
 //
 //  Main NLM Function
 //
@@ -1372,14 +1386,6 @@ int main( int argc, char *argv[ ])
 	}
 #endif
 
-/*	// Get handle to sysConsole
-#ifdef __NOVELL_LIBC__
-	scr_t SystemConsole = getconsolehandle();
-#else
-	long SystemConsole = CreateScreen("System Console",0);
-#endif
-*/
-
 extern int MF_ParseCommandLine( int argc, char **argv );
 
 	// Parse Command Line and build some vars...
@@ -1426,21 +1432,13 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 	SetAutoScreenDestructionMode(true);
 #endif
 
-	// Read Configuration from File
-	printf(MF_Msg(MSG_BOOT_CONFIGURATION));
-
-	if (!MF_GlobalConfiguration.ReadFromFile(""))
-		goto MF_MAIN_TERMINATE;
-
-	printf(MF_Msg(MSG_BOOT_DONE));
-
 	// Register Exit Proc ...
 #ifndef __NOVELL_LIBC__
 	atexit(MF_ExitProc);
 #endif
 	signal(	SIGTERM	, NLM_SignalHandler	);
 	signal(	SIGINT	, NLM_SignalHandler	);
-	
+
 
 	int rc = 0;
 
@@ -1451,6 +1449,12 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		#ifdef __NOVELL_LIBC__
 		NXContextSetName(NXContextGet(),"MailFilterServer");
 		#endif
+
+		// Read Configuration from File
+		printf(MF_Msg(MSG_BOOT_CONFIGURATION));
+		MF_GlobalConfiguration.config_mode_strict = true;
+		if (!MF_GlobalConfiguration.ReadFromFile(""))	goto MF_MAIN_TERMINATE;
+
 		rc = MailFilter_Main_RunAppServer();
 		
 		break;
@@ -1460,6 +1464,12 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		#ifdef __NOVELL_LIBC__
 		NXContextSetName(NXContextGet(),"MailFilterConfig");
 		#endif
+
+		// Read Configuration from File
+		printf(MF_Msg(MSG_BOOT_CONFIGURATION));
+		MF_GlobalConfiguration.config_mode_strict = false;
+		if (!MF_GlobalConfiguration.ReadFromFile(""))	goto MF_MAIN_TERMINATE;
+
 		--MFT_NLM_ThreadCount;
 		rc = MailFilter_Main_RunAppConfig(true);
 
@@ -1477,6 +1487,12 @@ extern int MF_ParseCommandLine( int argc, char **argv );
 		#ifdef __NOVELL_LIBC__
 		NXContextSetName(NXContextGet(),"MailFilterNRM");
 		#endif
+
+		// Read Configuration from File
+		printf(MF_Msg(MSG_BOOT_CONFIGURATION));
+		MF_GlobalConfiguration.config_mode_strict = true;
+		if (!MF_GlobalConfiguration.ReadFromFile(""))	goto MF_MAIN_TERMINATE;
+
 		rc = MailFilter_Main_RunAppNRM();
 		
 		break;

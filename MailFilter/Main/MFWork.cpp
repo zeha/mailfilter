@@ -3941,7 +3941,7 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 #if defined( N_PLAT_NLM ) && (!defined(__NOVELL_LIBC__))
 	RenameThread(GetThreadID(),programMesgTable[THREADNAME_WORK]);		// 15 (16?) Chars max.
 #endif
-#ifdef __NOVELL_LIBC__
+#if defined( N_PLAT_NLM ) && (defined(__NOVELL_LIBC__))
 	NXContextSetName(NXContextGet(),"MailFilterWorker");
 #endif
 

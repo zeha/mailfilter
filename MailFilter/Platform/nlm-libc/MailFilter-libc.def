@@ -16,8 +16,7 @@ MODULE libc.nlm nwsnut.nlm threads.nlm
 #
 
 #
-# No special imports ...
-# IMPORT UnloadModule
+IMPORT NWSSetFormRepaintFlag NWIsNLMLoadedProtected
 #
 
 #
