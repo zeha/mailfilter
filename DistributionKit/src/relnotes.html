@@ -12,6 +12,7 @@
 	body { padding-left: 10px; padding-right: 10px; padding-top: 0px; border: 0 0 0 0; margin: 0 0 0 0; }
 	pre { border: 1px solid red; padding: 4px 4px 4px 4px; margin-left: 10px; margin-right: 40px; }
 	li { padding-bottom: 7px; }
+	A { color: blue; }
 	</style>
 </head>
 <body>
@@ -26,11 +27,13 @@
 	If you are running eTrust 7.1 on your NetWare Server, MailFilter can now use it without waiting for the real-time scanner.<br>
 	Make sure eTrust is loaded and running before starting MailFilter.<br>
 	(Not available with the legacy MailFilter.)<br>
+	Please have a look <a href="#avsetup">below for configuration details</a>.<br>
 	</li>
 
 	<li>ZIP files will be unpacked<br>
 	If you have the AV module licensed, MailFilter will try to unpack any .ZIP attachments and scan the archive contents.<br>
 	You can also drop encrypted ZIPs or ZIPs that contain special file names (works the same as with normal e-mail attachments).<br>
+	See below for <a href="#ziprules">correct configuration</a>.
 	</li>
 
 	<li>Configuration Editor (MFConfig.nlm) has been merged into MailFilter.<br>
@@ -70,33 +73,66 @@
 
 </ul>
 
+<a name="ziprules"></a>
+<h4>Recommended .ZIP match rules</h4>
+<blockquote>
+<code>
+	<b>Field:</b>		Archive Content: Filename<br>
+	<b>Action:</b>		Drop Mail<br>
+	<b>Matchtype:</b>	Match<br>
+	<b>Expression:</b>	&lt;encrypted file&gt;<br>
+	<b>Description:</b>	ZIP encrypted file <br>
+	<b>Rule Enabled Incoming:</b> Yes<br>
+	<b>Rule Enabled Outgoing:</b> No <br>
+</code>
+	<hr noshade>
+<code>
+	<b>Field:</b>		Archive Content: Filename<br>
+	<b>Action:</b>		Drop Mail<br>
+	<b>Matchtype:</b> 	Match<br>
+	<b>Expression:</b>	\.(exe|scr|pif|com|vbs|lnk)<br>
+	<b>Description:</b> 	ZIP with executables <br>
+	<b>Rule Enabled Incoming:</b> Yes<br>
+	<b>Rule Enabled Outgoing:</b> No <br>
+</code>
+</blockquote>
 
-<h4>Version 1.5.5 (1123)</h4>
-<ul>
-	<li>Added MailCopy module - this module requires an approaite license.</li>
-	<li>Added paging to MFNRM.NLM</li>
-	<li>Created new FilterICE - can read/write CSV, TAB and binary filter files.</li>
-	<li>PFA mode now check the second Received header, as the first one will always be "PFAgent"</li>
-	<li>Bugfix: Virus Scanning module would send mails always to all parties.</li>
-	<li>Removed Filter2CSV</li>
-</ul>
+<a name="avsetup"></a>
+<h4>Computer Associates eTrust AV Setup</h4>
+<blockquote>
+	eTrust 7.1 must be loaded and running before MailFilter starts. 
+	While MailFilter is running, you cannot unload eTrust completely.
+	<br><br>
+	<b>MailFilter configuration:</b><br>
+	<ul>
+	<li>Enable "Unpack Mails for Virus Scanner"</li>
+	<li>Remove your "Login as Username/Password" settings</li>
+	<li>Add the following rule:<br>
+		<b>Field:</b>	Virus Scan<br>
+		<b>Action:</b>	Drop Mail<br>
+		<b>Matchtype:</b> Match<br>
+		<b>Expression:</b> - (this is filled in automatically)<br>
+		<b>Description:</b> Virus Scan failed. (gets overridden if AV NLM returns a Virus Name)<br>
+		<b>Rule Enabled Incoming:</b> Yes<br>
+		<b>Rule Enabled Outgoing:</b> Yes<br>
+	</ul>
+	<br>
+	<b>eTrust Configuration:</b><br>
+	<ul>
+	<li>Exclude the GWIAHOME\MF\MFSCAN directories from the Real Time Scanner.</li>
+	<li>Make sure eTrust 7.1 is loaded and running before MailFilter gets loaded.</li>
+	</ul>
+</blockquote>
 
-<h4>Version 1.5.4 (1119)</h4>
-<ul>
-	<li>Spam DNS Blacklist feature is now a normal filter rule. <b>Your old setting does not get converted automatically.</b></li>
-	<li>Daily Admin Message now includes log file.</li>
-	<li>Filter2CSV: Updated.</li>
-	<li>MailFilter Core: Fixed a bug where MFN files were left in the MFSCAN directory tree.</li>
-	<li>MailFilter Core: Fixed an abend in the attachment decoder.</li>
-	<li>MailFilter Core: Internal Configuration System rewrite.</li>
-	<li>Local Installer: Updated, should cause less problems.</li>
-</ul>
+<blockquote>
 	<br>
 	If you have any questions, please contact <a href="mailto:support@mailfilter.cc">MailFilter Support!</a><br>
 	<br>
 	<br>
 	&copy; 2004 Christian Hofst&auml;dtler.<br>
 	<br>
+</blockquote>
+
 </td>
 </tr>
 </table>
