@@ -290,7 +290,7 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 
 	std::string pConfigFile = (alternateFilename == "" ? this->config_file : alternateFilename);
 
-	consoleprintf("MFC: Starting with %s.\n",pConfigFile.c_str());
+	consoleprintf("MAILFILTER: Configuration: %s\n",this->config_directory.c_str());
 	MFD_Out(MFD_SOURCE_CONFIG,"MFC: Starting with %s.\n",pConfigFile.c_str());
 
 	// compatiblity for MF Licensing Stages

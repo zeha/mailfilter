@@ -1018,7 +1018,7 @@ int main( int argc, char *argv[ ])
 #ifdef MF_WITH_I18N
 	if (LoadLanguageMessageTable(&programMesgTable, &MFT_I18N_MessageCount, &MFT_I18N_LanguageID))
 	{
-		ConsolePrintf("MailFilter: CRITICAL ERROR:\n  Can't load Message Tables.\n");
+		ConsolePrintf("MailFilter: CRITICAL ERROR:\n\tCan't load Message Tables.\n");
 		exit(0); 
 	}
 #ifndef _MF_CLEANBUILD
@@ -1179,6 +1179,7 @@ MF_MAIN_RUNLOOP:
 			//NETWARE_PRODUCT_VERSION version;
 	//		NWCONN connnum;
 			
+			MF_StatusLog("MailFilter CLIB Version "MAILFILTERVERNUM);
 			MF_StatusText("MailFilter for NetWare 5.0, 5.1 SP5, 6.0 SP2");
 
 	//		MFT_NLM_Connection_HandleCLIB = GetCurrentConnection();
@@ -1197,7 +1198,7 @@ MF_MAIN_RUNLOOP:
 			
 	#else
 //			MFD_Out(MFD_SOURCE_GENERIC,"This is LIBC MailFilter/ax!\n");
-			MF_StatusLog("MailFilter LIBC Version MAILFILTERVERNUM");
+			MF_StatusLog("MailFilter LIBC Version "MAILFILTERVERNUM);
 
 			struct utsname u;
 			uname(&u);
@@ -1298,7 +1299,7 @@ MF_MAIN_RUNLOOP:
 		if (MFT_NLM_Exiting == 254)
 		{
 MFD_Out(MFD_SOURCE_GENERIC,"MFNLM: MF Restart detected");
-			MF_StatusText("Stopping Threads...");
+			MF_StatusText("  Unloading for restart...");
 
 #ifndef __NOVELL_LIBC__
 			if (MF_Thread_Work > 0)
@@ -1328,7 +1329,7 @@ MFD_Out(MFD_SOURCE_GENERIC,"MFNLM: MF Restart detected");
 			if (!MF_GlobalConfiguration.ReadFromFile(""))
 			{
 				consoleprintf("MAILFILTER: Restart failed\n");
-				consoleprintf("            Configuration Module reported an unrecoverable error.\n");
+				consoleprintf("\tConfiguration Module reported an unrecoverable error.\n");
 				goto MF_MAIN_TERMINATE;
 			}
 				
