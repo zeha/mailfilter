@@ -55,10 +55,9 @@ bool MF_StatusInit()
 
 	MF_Status_Initialized = true;
 
-	char szTemp[80];
-	//programMesgTable[MSG_BOOT_MAILFILTERVERSION]
-	sprintf(szTemp,"This is MailFilter/ax professional Version %s/%s.",MAILFILTERVER_MAJOR,MAILFILTERVERNUM);
-	MF_StatusText(szTemp);
+//	char szTemp[80];
+//	sprintf(szTemp,"This is MailFilter professional Version %s.",MAILFILTERVERNUM);
+//	MF_StatusText(szTemp);
 
 #ifdef MAILFILTER_VERSION_BETA
 	sprintf(szTemp,"__WARNING: This is a BETA version! Use at your own risk. (%s)__",MAILFILTER_VERSION_BETA);

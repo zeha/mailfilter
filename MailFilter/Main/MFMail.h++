@@ -4,7 +4,7 @@
  +		
  +		Mail Data Structures
  +
- +		This is MailFilter/ax!
+ +		This is MailFilter!
  +		www.mailfilter.cc
  +		
  +		Copyright 2002 Christian Hofstädtler.

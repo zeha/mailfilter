@@ -99,6 +99,29 @@ int MFRelayHost::LookupRBL_DNS(std::string holeZone, std::string validResult)
 			host_ipaddress.S_un.S_un_b.s_b2,
 			host_ipaddress.S_un.S_un_b.s_b1,
 			holeZone.c_str());
+			
+	if (
+		 
+		(	// 192.168.x.x
+			(host_ipaddress.S_un.S_un_b.s_b1 == 192) && 
+			(host_ipaddress.S_un.S_un_b.s_b2 == 168)
+			) ||
+
+		(	// 172.16.0.0      -   172.31.255.255
+			(host_ipaddress.S_un.S_un_b.s_b1 == 172) && 
+			(host_ipaddress.S_un.S_un_b.s_b2 >= 16) &&
+			(host_ipaddress.S_un.S_un_b.s_b2 <= 31)
+			) ||
+			
+		(	// 10.x.x.x
+			(host_ipaddress.S_un.S_un_b.s_b1 == 10)
+			)
+		
+		)
+		{
+			// do not send "private ips" to rbl name servers
+			return 0;
+		}
 
 	he = gethostbyname(fullHost);
 	if (!he)

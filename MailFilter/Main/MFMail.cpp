@@ -4,7 +4,7 @@
  +		
  +		Mail Data Structure Functions
  +
- +		This is MailFilter/ax!
+ +		This is MailFilter!
  +		www.mailfilter.cc
  +		
  +		Copyright 2002 Christian Hofstädtler.
@@ -93,11 +93,17 @@ MailFilter_MailData* MailFilter_MailRead(char* szInFile) {
 	if (fp == NULL) return NULL;
 
 	MailFilter_MailData* m = MailFilter_MailInit(NULL,0);
+	if (m == NULL)
+	{
+		consoleprintf("MAILFILTER: EEEK! MailInit returned NULL! TRACECHECK 4001\n");
+		fclose(fp);
+		return NULL;
+	}
 
-#define _MFMW_READ_STRING(szString,iSize)	fgets(m->szString,iSize-2,fp);	m->szString[iSize-1]=0; ilen=strlen(m->szString)-1; if (m->szString[ilen] == '\n') { m->szString[ilen]=0; ilen--; } if (m->szString[ilen] == '\r') m->szString[ilen]=0;
-#define _MFMW_READ_INT(iInt)				szTemp[0]=0; fgets(szTemp,80,fp); m->iInt=atol(szTemp);
-#define _MFMW_READ_UL(ulULong)				szTemp[0]=0; fgets(szTemp,80,fp); m->ulULong=(unsigned long)atol(szTemp);
-#define _MFMW_READ_BOOL(bBool)				szTemp[0]=0; fgets(szTemp,10,fp); atoi(szTemp) == 0 ? m->bBool = false : m->bBool = true;
+#define _MFMW_READ_STRING(szString,iSize)	m->szString[0]=0; if(fgets(m->szString,iSize-2,fp) != NULL) { ilen=strlen(m->szString)-1; if (m->szString[ilen] == '\n') { m->szString[ilen]=0; ilen--; } if (m->szString[ilen] == '\r') m->szString[ilen]=0; }
+#define _MFMW_READ_INT(iInt)				szTemp[0]=0; szTemp[1]=0; fgets(szTemp,80,fp); m->iInt=atol(szTemp);
+#define _MFMW_READ_UL(ulULong)				szTemp[0]=0; szTemp[1]=0; fgets(szTemp,80,fp); m->ulULong=(unsigned long)atol(szTemp);
+#define _MFMW_READ_BOOL(bBool)				szTemp[0]=0; szTemp[1]=0; fgets(szTemp,10,fp); atoi(szTemp) == 0 ? m->bBool = false : m->bBool = true;
 
 	_MFMW_READ_STRING	(	szFileName			,MAX_PATH);
 	_MFMW_READ_STRING	(	szFileIn			,MAX_PATH);
@@ -132,12 +138,10 @@ MailFilter_MailData* MailFilter_MailRead(char* szInFile) {
 	_MFMW_READ_BOOL		(	bHaveReceivedFrom	);
 	_MFMW_READ_BOOL		(	bCopy				);
 
-MFD_Out(MFD_SOURCE_MAIL,"start array read\n");
-
 	int iListCount, i;
 	
 	szTemp[0]=0; fgets(szTemp,80,fp); iListCount=atol(szTemp);				// read number of array entries
-MFD_Out(MFD_SOURCE_MAIL,"will read %d items\n",iListCount);
+MFD_Out(MFD_SOURCE_MAIL,"mfmail: will read %d items\n",iListCount);
 
 	for (i = 0; i < iListCount; i++)
 	{
@@ -150,10 +154,9 @@ MFD_Out(MFD_SOURCE_MAIL,".");
 MFD_Out(MFD_SOURCE_MAIL,".\n");
 	}
 
-MFD_Out(MFD_SOURCE_MAIL,"done reading items\n");
+MFD_Out(MFD_SOURCE_MAIL,"mfmail: done reading items\n");
 
 	iXList_Storage* ixlist_storage = m->lstCopies->GetFirst();
-MFD_Out(MFD_SOURCE_MAIL,"got first one");
 	while (ixlist_storage != NULL) { MFD_Out(MFD_SOURCE_MAIL,"read: %s %s\n",ixlist_storage->name,ixlist_storage->data); ixlist_storage = ixlist_storage->next; }
 	
 #undef _MFMW_READ_STRING
@@ -206,6 +209,27 @@ MailFilter_MailData* MailFilter_MailInit(char* szFileName, int iMailSource)
 		
 	if (szFileName != NULL)
 		strncpy(mail->szFileName,szFileName,MAX_PATH);
+		
+	if (
+		(mail->szFileName == NULL) ||
+		(mail->szFileIn == NULL) ||
+		(mail->szFileOut == NULL) ||
+		(mail->szFileWork == NULL) ||
+		(mail->szScanDirectory == NULL) ||
+		(mail->szProblemMailDestination == NULL) ||
+		(mail->szEnvelopeFrom == NULL) ||
+		(mail->szEnvelopeRcpt == NULL) ||
+		(mail->szMailFrom == NULL) ||
+		(mail->szMailRcpt == NULL) ||
+		(mail->szMailCC == NULL) ||
+		(mail->szMailSubject == NULL) ||
+		(mail->szErrorMessage == NULL) ||
+		(mail->szReceivedFrom == NULL)
+		)
+		{
+			consoleprintf("MAILFILTER: EEEEEK!\n\tMEMORY ALLOCATION ERROR!\n\tI WILL ABEND IN A FEW SECONDS...\n\tGOOD ADVICE: SAVE AND LOG OUT NOW.\n");
+			return NULL;
+		}
 		
 	mail->lstAttachments = new iXList;
 	mail->lstCopies = new iXList;

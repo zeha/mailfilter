@@ -136,7 +136,7 @@ int MF_CopyEmail_Send(const char* szAttachFileName, MailFilter_MailData* mMailIn
 	
 	_mfd_free(fileTemplate,"MailCopy (Tmpl)");
 	
-//	fprintf(fMailFile,"X-Mailer: MailFilter/ax professional "MAILFILTERVERNUM"\r\n");
+//	fprintf(fMailFile,"X-Mailer: MailFilter professional "MAILFILTERVERNUM"\r\n");
 
 	if (fTemplate == NULL)
 	{
@@ -145,8 +145,8 @@ int MF_CopyEmail_Send(const char* szAttachFileName, MailFilter_MailData* mMailIn
 		fprintf(fMailFile,"MAIL FROM:%s\r\nRCPT TO:%s\r\n",MF_GlobalConfiguration.DomainEmailMailFilter.c_str(),szDestinationEMail);
 		
 		fprintf(fMailFile,"From: %s\nTo: %s\n",MF_GlobalConfiguration.DomainEmailMailFilter.c_str(),szDestinationEMail);
-		fprintf(fMailFile,"Subject: MailFilter/ax MailCopy\r\n");
-		fprintf(fMailFile,"X-Mailer: MailFilter/ax professional "MAILFILTERVERNUM"\r\nMime-Version: 1.0\r\n");
+		fprintf(fMailFile,"Subject: MailFilter MailCopy\r\n");
+		fprintf(fMailFile,"X-Mailer: MailFilter professional "MAILFILTERVERNUM"\r\nMime-Version: 1.0\r\n");
 		fprintf(fMailFile,"Content-Type: multipart/mixed; boundary=\"==MFMFMFMFMF%s\"\r\n\r\n",szBoundary);
 		fprintf(fMailFile,"--==MFMFMFMFMF%s\r\n",szBoundary);
 		fprintf(fMailFile,"Content-Type: text/plain; charset=US-ASCII\r\nContent-Transfer-Encoding: 7bit\r\nContent-Disposition: inline\r\n\r\n");
@@ -241,7 +241,7 @@ int MF_CopyEmail_Send(const char* szAttachFileName, MailFilter_MailData* mMailIn
 							sprintf(templateString,"%.79s",MF_GlobalConfiguration.ServerName.c_str());
 							break;
 						case 'V':
-							// MailFilter/ax Product Version
+							// MailFilter Product Version
 							sprintf(templateString,"%.79s",MAILFILTERVERNUM);
 							break;
 						case 'U':
@@ -1852,13 +1852,13 @@ MFD_Out(MFD_SOURCE_MAIL,"--> ATT '%s'\n",szCmpBuffer);
 								curChr = 0;
 								curCmpPos = 0;
 
-								if ( szScanBuffer[curPos] == '"' )
+								if ( szScanBuffer[curPos] == '"' )	// "
 									curPos++;
 
 #ifdef N_PLAT_NLM
 								ThreadSwitch();
 #endif
-								while ((szCmpBuffer[curCmpPos] != '\n') && (szCmpBuffer[curCmpPos] != '\r') && (szCmpBuffer[curCmpPos] != '"')  && (szCmpBuffer[curCmpPos] != '=') && (curPos < 2000))
+								while ((szCmpBuffer[curCmpPos] != '\n') && (szCmpBuffer[curCmpPos] != '\r') && (szCmpBuffer[curCmpPos] != '"')  && (szCmpBuffer[curCmpPos] != '=') && (curPos < 2000)) //"
 								{
 									szCmpBuffer[curCmpPos] = szScanBuffer[curPos];
 									
@@ -1946,6 +1946,7 @@ MFD_Out(MFD_SOURCE_MAIL,"--> TYPE '%s'\n",szCmpBuffer);
 	m->iMailSize = ftell(mailFile);
 	fclose(mailFile);
 
+	MF_StatusLog("Applying rules.");
 	MFD_Out(MFD_SOURCE_MAIL,"Applying rules.\n");
 	MF_RuleExec(m);
 
@@ -2325,7 +2326,7 @@ int MF_ParseTemplate(const char* szTemplateName, FILE* fMailFile, MailFilter_Mai
 //	fprintf(fMailFile,"MAIL FROM:%s\r\nRCPT TO:%s\r\n",MFC_DOMAIN_EMail_MailFilter,MFC_DOMAIN_EMail_PostMaster);
 //	fprintf(fMailFile,"From: %s\r\nTo: %s\n",MFC_DOMAIN_EMail_MailFilter,MFC_DOMAIN_EMail_PostMaster);
 	
-	fprintf(fMailFile,"X-Mailer: MailFilter/ax professional "MAILFILTERVERNUM"\r\n");
+	fprintf(fMailFile,"X-Mailer: MailFilter professional "MAILFILTERVERNUM"\r\n");
 
 	if (fTemplate == NULL)
 	{
@@ -2333,7 +2334,7 @@ int MF_ParseTemplate(const char* szTemplateName, FILE* fMailFile, MailFilter_Mai
 
 		fprintf(fMailFile,"Subject: MailFilter/ax Problem Report\r\n\r\n");
 
-		fprintf(fMailFile,"MailFilter/ax Verification failed on the mail specified below.\r\n");
+		fprintf(fMailFile,"MailFilter Verification failed on the mail specified below.\r\n");
 		fprintf(fMailFile,"%s\r\n\r\n",mMailInfo->szErrorMessage);
 		fprintf(fMailFile,"From: \"%s\"\r\nRecipient: \"%s\"\r\nSubject: \"%s\"\r\n\r\n",mMailInfo->szMailFrom,mMailInfo->szMailRcpt,mMailInfo->szMailSubject);
 //		fprintf(fMailFile,"Probably you are the only one, who has been notified! Please take approaite actions,\r\ne.g. inform the sender and/or the recipient of the original mail.\r\n\r\n");
@@ -2406,7 +2407,7 @@ int MF_ParseTemplate(const char* szTemplateName, FILE* fMailFile, MailFilter_Mai
 							sprintf(templateString,"%.79s",MF_GlobalConfiguration.ServerName.c_str());
 							break;
 						case 'V':
-							// MailFilter/ax Product Version
+							// MailFilter Product Version
 							sprintf(templateString,"%.79s",MAILFILTERVERNUM);
 							break;
 						default:
@@ -2447,7 +2448,7 @@ int MF_ParseTemplate(const char* szTemplateName, FILE* fMailFile, MailFilter_Mai
 //
 // * bounceRcpt:		User who will get the bounce mail
 // * fileIn:			input mail name
-// * mMailInfo:			the MailFilter/ax Mail Info container
+// * mMailInfo:			the MailFilter Mail Info container
 //
 int MF_Notification_Send2(const char messageType, const char* bounceRcpt, MailFilter_MailData* mMailInfo)
 {
@@ -2838,7 +2839,7 @@ MFD_Out(MFD_SOURCE_GENERIC,"MailAtt: %s -> %s\n",szAttachFileName,szB64File);
 		
 		fprintf(mail,"From: %s\nTo: %s\n",MF_GlobalConfiguration.DomainEmailMailFilter.c_str(),MF_GlobalConfiguration.DomainEmailPostmaster.c_str());
 		fprintf(mail,"Subject: MailFilter Notification - %s\r\n",Subject);
-		fprintf(mail,"X-Mailer: MailFilter/ax professional "MAILFILTERVERNUM"\r\nMime-Version: 1.0\r\n");
+		fprintf(mail,"X-Mailer: MailFilter professional "MAILFILTERVERNUM"\r\nMime-Version: 1.0\r\n");
 		fprintf(mail,"Content-Type: multipart/mixed; boundary=\"==MFMFMFMFMF%s\"\r\n\r\n",szBoundary);
 		fprintf(mail,"--==MFMFMFMFMF%s\r\n",szBoundary);
 		fprintf(mail,"Content-Type: text/plain; charset=US-ASCII\r\nContent-Transfer-Encoding: 7bit\r\nContent-Disposition: inline\r\n\r\n");
@@ -2947,7 +2948,7 @@ int MF_PostScan_Modify( MailFilter_MailData* m )
 									{	\
 										time_t currentTime = time(NULL); \
 										strftime  (szTemp, 1999, "%a, %d %b %Y %T UTC", gmtime(&currentTime)); \
-										fprintf(fOutput,"X-Sieve: (MailFilter/ax "MAILFILTERVERNUM") PASS at %s\r\n",szTemp); \
+										fprintf(fOutput,"X-Sieve: (MailFilter "MAILFILTERVERNUM") PASS at %s\r\n",szTemp); \
 										bWroteXSieve = true; \
 									}
 

@@ -294,6 +294,7 @@ void main (int argc, char *argv[])
 	// Pretend that we've already exited.
 	--NLM_threadCnt;
 
+	SetThreadGroupID(0);
 	ExitThread(TSR_THREAD,0);
 
 	return;	

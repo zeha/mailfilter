@@ -1,7 +1,7 @@
 /*
  *		MailFilter.h
  *		
- *		MailFilter/ax Master Include File
+ *		MailFilter Master Include File
  *		
  *		Copyright 2001-2004 Christian Hofstädtler.
  *		
@@ -324,7 +324,7 @@ int __cdecl ConsolePrintf(const char* format, ... );
 		 static LONG allocTag;
 	#endif // N_PLAT_NLM
 
-	char	MF_ProductName[]	= "MailFilter/ax professional "MAILFILTERVERNUM" ["MAILFILTERPLATFORM"]";
+	char	MF_ProductName[]	= "MailFilter professional "MAILFILTERVERNUM" ["MAILFILTERPLATFORM"]";
 
 	#ifdef __cplusplus
 		#include "MFConfig.h++"

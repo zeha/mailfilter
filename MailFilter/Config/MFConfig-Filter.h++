@@ -1,7 +1,7 @@
 /*+
  +		MFConfig-Filter.h++
  +		
- +		MailFilter/ax Configuration C++ Interface
+ +		MailFilter Configuration C++ Interface
  +		
  +		Copyright 2001-2003 Christian Hofstädtler
  +		

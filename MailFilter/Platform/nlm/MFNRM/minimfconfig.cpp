@@ -109,8 +109,6 @@ int MF_ConfigRead()
 	MFC_GWIA_ROOT = NULL;
 	MFC_MFLT_ROOT = NULL;
 	
-	printf("MFNRM: Reading Configuration ...\n");
-
 	if (stat(MAILFILTER_CONFIGURATION_MAILFILTER,&statInfo))
 		rc = 99;
 	if (rc != 0)	goto MF_ConfigRead_ERR;
