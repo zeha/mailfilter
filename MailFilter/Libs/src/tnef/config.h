@@ -23,6 +23,11 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H 1
 
+// for a static lib:
+#define LIB_EXPORT
+// for a standalone lib:
+// #define LIB_EXPORT __declspec(export)
+
 /***************************************************************************/
 /* The following are system specific settings */
 /***************************************************************************/

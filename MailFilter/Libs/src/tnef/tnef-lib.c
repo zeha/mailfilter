@@ -20,7 +20,7 @@
 #include "tnef-lib.h"
 #include "mapitags.h"
 
-#define VERSION "tnef-lib 0.1 (based on tnef2txt/1.3)"
+//#define VERSION "tnef-lib 0.1 (based on tnef2txt/1.3)"
 
 /* Some systems don't like to read unaligned data */
 static uint32 read_32(uint8 *tsp, uint8* streamsize)
@@ -168,8 +168,8 @@ static int handle_props(uint8 *tsp, uint8* streamsize)
 
   return 0;
 }
-
-__declspec(export) int LibTNEF_SaveAttachmentData(struct LibTNEF_ClientData* data, char* szDestinationFilename)
+//__declspec(export) 
+LIB_EXPORT int LibTNEF_SaveAttachmentData(struct LibTNEF_ClientData* data, char* szDestinationFilename)
 {
   FILE *out;
 
@@ -218,8 +218,8 @@ int default_handler(uint32 attribute, uint8 *tsp, uint32 size)
   return 0;
 }
 */
-
-__declspec(export) int LibTNEF_Decode(char* szFilename, struct LibTNEF_ClientData* data /* out */)
+//__declspec(export) 
+LIB_EXPORT int LibTNEF_Decode(char* szFilename, struct LibTNEF_ClientData* data /* out */)
 {
   FILE *fp;
   struct stat sb;
@@ -273,7 +273,7 @@ __declspec(export) int LibTNEF_Decode(char* szFilename, struct LibTNEF_ClientDat
   return 0;
 }
 
-__declspec(export) int LibTNEF_Free(struct LibTNEF_ClientData* data /* in/out */)
+LIB_EXPORT int LibTNEF_Free(struct LibTNEF_ClientData* data /* in/out */)
 {
 	if (data->tnef_stream != NULL)	{ free(data->tnef_stream); }
 	data->STRUCTSIZE = NULL;		/* invalidate */
@@ -283,7 +283,7 @@ __declspec(export) int LibTNEF_Free(struct LibTNEF_ClientData* data /* in/out */
 	return 0;
 }
  
-__declspec(export) int LibTNEF_ReadNextAttribute(struct LibTNEF_ClientData* data /* in/out */)
+LIB_EXPORT int LibTNEF_ReadNextAttribute(struct LibTNEF_ClientData* data /* in/out */)
 {
 	int bytes = 0, header = 0;
 	uint32 attribute;
