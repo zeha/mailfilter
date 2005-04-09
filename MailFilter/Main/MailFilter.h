@@ -18,9 +18,9 @@
 #define _MAILFILTER_H_
 #define _MAILFILTER_
 
-#include "ix.h"			// include crossplatform library header
+#include "iX.h"			// include crossplatform library header
 
-#include "MFApp.h"		// compile switches
+#include "mfapp.h"		// compile switches
 
 #include "../Licensing/MFLic.h"
 
@@ -107,6 +107,7 @@
 
 	typedef int BOOL;
 
+#include <limits.h>
 #include <nks/thread.h>
 #include <netware.h>
 #include <library.h>
@@ -286,7 +287,7 @@ typedef LONG rtag_t;
 #include "../Libs/mime/comi18n.h"
 
 // Include String Table
-#include "mailflt.mlh"
+#include "MAILFLT.MLH"
 
 // Define _MAILFILTER_MAIN_ to get host file of global variables ...
 #ifdef _MAILFILTER_MAIN_		// MailFilter Global Storage

@@ -22,7 +22,7 @@ int MailFilter_AV_Init()
 int MailFilter_AV_ScanFile(const char* szFileName, char* szVirusName, size_t iVirusNameLength, int &iVirusType)
 {
 #pragma unused(szFileName,szVirusName,iVirusNameLength,iVirusType)
-	return ENOTSUP;
+	return ENOCONTEXT;
 }
 
 int MailFilter_AV_DeInit()

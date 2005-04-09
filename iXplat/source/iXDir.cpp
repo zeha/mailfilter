@@ -3,9 +3,9 @@
 #include <string.h>
 #include <malloc.h>
 #include <errno.h>
+#include <sys/stat.h>
 #include "iX.h"
 #include "iXDir.h"
-#include <sys/stat.h>
 #include <nwconio.h>
 
 #ifdef IXPLAT_NETWARE_LIBC
@@ -24,13 +24,13 @@ iXDir::iXDir(const char* DirectoryName)
 	else
 		strcat(szFull,"\\*.*");
 		
-	m_DirectoryName = szFull;
 	m_Directory = opendir(szFull);
-//	free(szFull);
+	free(szFull);
 #else
-	m_DirectoryName = strdup(DirectoryName);
 	m_Directory = opendir(DirectoryName);
 #endif
+
+	m_DirectoryName = strdup(DirectoryName);
 
 	m_Entry = NULL;
 	SkipDotFiles = false;
@@ -148,17 +148,28 @@ time_t iXDir::GetCurrentEntryModificationTime()
 {
 	if (m_Entry != NULL)
 	{
+		int rc;
 		struct stat st;
 		const char* e = this->GetCurrentEntryName();
 		char* fullE = (char*)malloc(strlen(e) + strlen(m_DirectoryName) + strlen(IX_DIRECTORY_SEPARATOR_STR)*2 + 1);
 		
 		strcpy(fullE,m_DirectoryName);
-		strcat(fullE,IX_DIRECTORY_SEPARATOR_STR);
+		if (
+			(fullE[strlen(fullE)-1] != IX_DIRECTORY_SEPARATOR) && 
+			(fullE[strlen(fullE)-1] != '/') &&
+			(fullE[strlen(fullE)-1] != '\\')
+			)
+		{
+			strcat(fullE,IX_DIRECTORY_SEPARATOR_STR);
+		}
 		strcat(fullE,e);
 		
-		stat(fullE,&st);
+		rc = stat(fullE,&st);
 		free(fullE);
 		
+		if (rc != 0)
+			return 0;	// stat error
+			
 #ifdef IXPLAT_NETWARE_LIBC
 		return st.st_mtime.tv_sec;
 #else

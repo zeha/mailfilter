@@ -733,7 +733,6 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 
 	struct stat statInfo;
 	std::string ConfigVersion = "";
-	
 	if (stat(pConfigFile.c_str(),&statInfo))
 	{
 		rc = 98;
@@ -1011,6 +1010,10 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 			this->RequireAVA = false;
 		}
 		
+#if defined(N_PLAT_NLM) && !defined(__NOVELL_LIBC__)
+		this->RequireAVA = false;
+		this->EnableAttachmentDecoder = false;
+#endif
 
 		// fixups and stuff.
 		if (this->config_mode_strict)
@@ -1117,7 +1120,7 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 		MF_DisplayCriticalError("mailfilter: unable to close database file. %d\n",rc);
 	}
 #endif
-	
+
 	// done! success!
 	return true;
 }

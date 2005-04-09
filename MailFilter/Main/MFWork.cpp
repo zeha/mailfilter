@@ -329,8 +329,8 @@ int MFAPI_FilterCheck( char *szScan , int mailSource, int matchfield )
 								
 								if (rc)	break;
 							}
-				    	}
-				    	else
+				    }
+				    else
 				    	MFD_Out(MFD_SOURCE_REGEX,"API: RegExp Matching error %d\n", rc); /* error... */
 				    	
 				} else {
@@ -3178,16 +3178,17 @@ static bool HandleGwiaDirectory(const char* szDirectoryName, const char* szDirec
 	char fileIn[MAX_PATH];
 	char fileOut[MAX_PATH];
 	
-	#ifdef _TRACE
-	MFD_Out(MFD_SOURCE_WORKER,"Check %s\n", szDirectoryName);
-	#endif
-	
 	iXDir dir(szDirectoryName);
 	dir.SkipDotFiles = true;
+	
+	#ifdef _TRACE
+	MFD_Out(MFD_SOURCE_WORKER,"Check %s\n", dir.GetOSDirectoryName());
+	#endif
 	
 	while ( dir.ReadNextEntry() )
 	{
 		const char* e = dir.GetCurrentEntryName();
+		MFD_Out(MFD_SOURCE_WORKER,"  %s\n", e);
 		
 		if (MFT_NLM_Exiting > 0)
 			break;
@@ -3280,7 +3281,6 @@ DWORD WINAPI MF_Work_Startup(void *dummy)
 #if defined( N_PLAT_NLM ) && (defined(__NOVELL_LIBC__))
 	NXContextSetName(NXContextGet(),"MailFilterWorker");
 #endif
-
 
 	WinSockStartup();
 

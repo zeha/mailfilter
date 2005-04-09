@@ -412,7 +412,7 @@ static void _mfr_free(void* foo)
 	_mfd_free(foo,"mfrfree");
 }
 
-class ListItem {
+class RestoreListItem {
 	public:
 	 std::string filename;
 	 time_t mtime;
@@ -421,8 +421,8 @@ class ListItem {
 class CompareItems {
 public:
 	bool operator() 
-			(const ListItem& f1, 
-			 const ListItem& f2)
+			(const RestoreListItem& f1, 
+			 const RestoreListItem& f2)
 	{
 		if (f1.mtime > f2.mtime)
 			return true;
@@ -430,7 +430,7 @@ public:
 	}
 };
 
-void listAddItem (const ListItem item)
+void listAddItem (const RestoreListItem item)
 {
 	
 	char*						cI = NULL;
@@ -449,11 +449,12 @@ void listAddItem (const ListItem item)
 	{
 		sprintf ( szDate, "% 12s","- no datetime -");
 	} else {
-
 		time = localtime(&item.mtime);
 
-		sprintf ( szDate, "%04d/%02d/%02d %02d:%02d", time->tm_year+1900 , time->tm_mon+1 , time->tm_mday ,
-														time->tm_hour , time->tm_min );
+		sprintf ( szDate, "%04d/%02d/%02d %02d:%02d", 
+				time->tm_year+1900 ,
+				time->tm_mon+1 , time->tm_mday ,
+				time->tm_hour , time->tm_min );
 	}
 	
 	sprintf ( szList, " %s | %s | %s | %6d kB ", (szFile[0] == 'S') ? "Out" : " In",
@@ -501,7 +502,7 @@ void NLM_Main(void)
 	sprintf(scanPath,"%s\\MFPROB\\DROP",MF_GlobalConfiguration->MFLTRoot.c_str());
 	chdir(scanPath);
 	
-	std::vector<ListItem> list;
+	std::vector<RestoreListItem> list;
 	list.clear();
 	
 	iXDir dir(scanPath);
@@ -510,7 +511,7 @@ void NLM_Main(void)
 	{
 		if (MFT_NLM_Exiting > 0)	break;
 		
-		ListItem item;
+		RestoreListItem item;
 
 		item.filename = dir.GetCurrentEntryName();
 		item.mtime = dir.GetCurrentEntryModificationTime();
@@ -519,6 +520,7 @@ void NLM_Main(void)
 		list.push_back(item);
 
 		ThreadSwitch();
+		
 		MFD_Out(MFD_SOURCE_MAIL,"%d:%s ",++i,item.filename.c_str());	
 	}
 	sort(list.begin(),list.end(),CompareItems());

@@ -782,9 +782,9 @@ void MFD_Out_func(int source, const char* fmt, ...) {
 
 	// MF_UseMainScreen() support
 	if (MFD_ScreenID)
-		OutputToScreenWithAttribute(MFD_ScreenID,attr,buffer);
+		OutputToScreenWithAttribute(MFD_ScreenID,attr,"%s",buffer);
 		else
-		OutputToScreenWithAttribute(MF_ScreenID,attr,buffer);
+		OutputToScreenWithAttribute(MF_ScreenID,attr,"%s",buffer);
 
 #endif
 

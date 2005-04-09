@@ -1,12 +1,10 @@
 DEBUG=1
 TARGET=MAILFLT.NLM
 
-CROSSPATH=/opt/cross/bin
 NDK=/mnt/slickdata/Tools
 
-
-CC=$(CROSSPATH)/i586-netware-gcc
-LD=$(CROSSPATH)/i586-netware-nlmconv
+CC=i586-netware-gcc
+LD=/usr/local/i586-netware/bin/nwld
 CXX=$(CC)
 MAKE=make
 #MAKE=make -j4
@@ -79,7 +77,7 @@ MFSYM.NLM: $(OBJS) output.def
 
 %.o : %.cpp
 	@echo "  CXX      $<"
-	@$(CXX) -c $(CXXFLAGS) $< -o $@
+	$(CXX) -c $(CXXFLAGS) $< -o $@
 
 %.o : %.c
 	@echo "  CC       $<"
