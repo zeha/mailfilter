@@ -6,7 +6,6 @@
 #include <sys/stat.h>
 #include "iX.h"
 #include "iXDir.h"
-#include <nwconio.h>
 
 #ifdef IXPLAT_NETWARE_LIBC
 #include <screen.h>
