@@ -35,7 +35,7 @@ extern int MFL_Init(int runLevel);
 
 #ifndef _MAILFILTER_
 
-#include "..\Main\MFVersion.h"
+#include "../Main/MFVersion.h"
 
 union keyA_chkSumB_u
 {

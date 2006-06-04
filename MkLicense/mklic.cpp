@@ -5,9 +5,11 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <time.h>
+#ifdef WIN32
 #include <conio.h>
+#endif
 
-#include "..\MailFilter\Licensing\MFLic.h"
+#include "../MailFilter/Licensing/MFLic.h"
 
 extern "C"
 {					// (uLong adler, const Bytef *buf, uInt len)
@@ -54,7 +56,7 @@ bool getYesNo()
 	return ret;
 }
 
-void main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
 	unsigned int p = 0;
 	unsigned int cp = 0;
@@ -110,7 +112,7 @@ void main(int argc, char* argv[])
 		useParameters = true;
 	} else {
 		if (useParameters)
-			return;
+			return 1;
 	}
 
 	if (!useParameters)
@@ -407,4 +409,7 @@ printf("\n");
 //    const Bytef *buf;
 //    uInt len;
 
+	return 0;
 }
+
+

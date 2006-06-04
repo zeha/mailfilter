@@ -54,8 +54,6 @@
 #include <string>
 #include <sstream>
 
-
-
 #ifdef IXPLAT_NETWARE_LIBC
 #include <stdio.h>
 #include <screen.h>
@@ -70,6 +68,11 @@
 #define assertmsg(exp,msg)	if (!(exp)) printf( "MAILFILTER ASSERT: %s\n",msg)
 #endif
 
+#ifdef IXPLAT_LINUX
+#define assertmsg(exp,msg)	if (!(exp)) printf( "MAILFILTER ASSERT: %s\n",msg)
+typedef long long int64_t;
+typedef unsigned long long uint64_t;
+#endif
 
 #define PRINTF_TYPE(n) n
 
@@ -94,12 +97,12 @@ public:
 	Printf& operator<<(short n)                { Do(PRINTF_TYPE(Short| Int), n); return *this; }
 	Printf& operator<<(int n)                  { Do(PRINTF_TYPE(None | Int), n); return *this; }
 	Printf& operator<<(long n)                 { Do(PRINTF_TYPE(Long | Int), n); return *this; }
-	Printf& operator<<(__int64 n)              { Do(PRINTF_TYPE(Int64| Int), n); return *this; }
+	Printf& operator<<(int64_t n)              { Do(PRINTF_TYPE(Int64| Int), n); return *this; }
 
 	Printf& operator<<(unsigned short u)       { Do(PRINTF_TYPE(Short| Unsigned), u); return *this; }
 	Printf& operator<<(unsigned int u)         { Do(PRINTF_TYPE(None | Unsigned), u); return *this; }
 	Printf& operator<<(unsigned long u)        { Do(PRINTF_TYPE(Long | Unsigned), u); return *this; }
-	Printf& operator<<(unsigned __int64 u)     { Do(PRINTF_TYPE(Int64| Unsigned), u); return *this; }
+	Printf& operator<<(uint64_t u)             { Do(PRINTF_TYPE(Int64| Unsigned), u); return *this; }
 
 	Printf& operator<<(float f)                { Do(PRINTF_TYPE(None | Float), f); return *this; }
 	Printf& operator<<(double f)               { Do(PRINTF_TYPE(None | Float), f); return *this; }
@@ -559,7 +562,7 @@ public:
 		*(Base*)this = o.str();
 	}
 
-	operator const CharT* () { return c_str(); }
+	operator const CharT* () { return this.c_str(); }
 };
 
 typedef strprintfT<char> strprintf;
