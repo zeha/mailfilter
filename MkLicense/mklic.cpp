@@ -11,10 +11,10 @@
 
 #include "../MailFilter/Licensing/MFLic.h"
 
-extern "C"
-{					// (uLong adler, const Bytef *buf, uInt len)
+//extern "C"
+//{					// (uLong adler, const Bytef *buf, uInt len)
 unsigned long adler32 (unsigned long adler, const unsigned char *buf, unsigned int len);
-}
+//}
 
 #ifdef N_PLAT_NLM
 #include <nwbitops.h>
@@ -31,7 +31,11 @@ bool getYesNo()
 	bool ret = false; 
 	do
 	{
+#ifdef WIN32
 		ch = _getch();
+#else
+		ch = getchar();
+#endif
 		ch = toupper( ch );
 		switch (ch)
 		{
@@ -100,7 +104,7 @@ int main(int argc, char* argv[])
 
 	if (argc > 1)
 	{
-		if (memicmp( "-nocon",argv[1], 6 ) == 0)
+		if (strcasecmp("-nocon",argv[1]) == 0)
 		{
 			useParameters = true;
 			parametersStartAt++;
@@ -129,9 +133,28 @@ int main(int argc, char* argv[])
 	else
 	{
 		printf(" ->Enter Server Name: ");
-		gets(in);
+		fgets(in, 80, stdin);
 	}
 	in[15]=0;
+
+	{
+		char* p = in;
+		while(true)
+		{
+			if ((*p == '\0') || (*p == '\r') || (*p == '\n'))
+			{
+				*p = '\0';
+				break;
+			}
+			
+			if (isalpha(*p))
+			{
+				*p = toupper(*p);
+			}
+			++p;
+		}
+	}
+
 	
 	strncpy(fs,in,15);
 	in[15]=0;
@@ -139,7 +162,7 @@ int main(int argc, char* argv[])
 	in[16]=0;
 
 	memcpy(keyA,fs,strlen(fs));
-	_strupr((char*)keyA);
+	//_strupr((char*)keyA);
 
 	fOffset = fOffset & 0x0F;
 
@@ -180,7 +203,7 @@ int main(int argc, char* argv[])
 
 	enable_M_Reserved4	 = useParameters ? (toupper(argv[parametersStartAt+4][0]) == 'Y') : getYesNo();
 	if (enable_M_Reserved4)
-		fFlags = fFlags & MAILFILTER_MC_M_RESV4;
+		fFlags = fFlags & MAILFILTER_MC_M_BWTHCNTRL;
 
 	
 	if (!useParameters)
