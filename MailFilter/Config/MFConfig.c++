@@ -187,6 +187,8 @@ int Configuration::setDefaults(std::string directory, std::string domainname)
 	this->Multi2One = "";
 	this->BWLScheduleTime = "";
 	
+	this->Multi2OneRewriteMailHeader = false;
+	
 	return 0;
 }
 
@@ -838,6 +840,9 @@ bool Configuration::ReadFromFile(std::string alternateFilename)
 
 							if (param == "multi2one")
 								this->Multi2One = value;
+								
+							if (param == "multi2one-rewrite-mail-header")
+								this->Multi2OneRewriteMailHeader = mkBoolFromStr(value);
 
 							if (param == "schedule-time")
 								this->BWLScheduleTime = value;
@@ -1225,6 +1230,7 @@ bool Configuration::WriteToFile(std::string alternateFilename)
 	fprintf(cfgFile,"/email-postmaster=%s\n",this->DomainEmailPostmaster.c_str());
 	fprintf(cfgFile,"/hostname=%s\n",this->DomainHostname.c_str());
 	fprintf(cfgFile,"/multi2one=%s\n",this->Multi2One.c_str());
+	fprintf(cfgFile,"/multi2one-rewrite-mail-header=%s\n",this->Multi2OneRewriteMailHeader == 0 ? "0" : "1");
 	fprintf(cfgFile,"/schedule-time=%s\n",this->BWLScheduleTime.c_str());
 	
 	fprintf(cfgFile,"/defaultnotify-adminincoming=%s\n",this->DefaultNotification_AdminIncoming == 0 ? "0" : "1");

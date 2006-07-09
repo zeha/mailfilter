@@ -1001,7 +1001,8 @@ static void MFConfig_EditConfig()
 	char	newScheduleTime[MAILFILTER_CONFIGURATION_LENGTH];
 	char	newLoginUsername[MAILFILTER_CONFIGURATION_LENGTH];
 	char	newLoginPassword[MAILFILTER_CONFIGURATION_LENGTH];
-	char	newEmailOffice[50];
+	char	newMulti2One[50];
+	BOOL	newMulti2One_RewriteMailHeader = (BOOL)MF_GlobalConfiguration->Multi2OneRewriteMailHeader;
 	BOOL	newNotification_InternalRcpt = (BOOL)MF_GlobalConfiguration->DefaultNotification_InternalRecipient;
 	BOOL	newNotification_InternalSndr = (BOOL)MF_GlobalConfiguration->DefaultNotification_InternalSender;
 	BOOL	newNotification_ExternalRcpt = (BOOL)MF_GlobalConfiguration->DefaultNotification_ExternalRecipient;
@@ -1071,9 +1072,13 @@ static void MFConfig_EditConfig()
 
 	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"General E-Mail Address without Domain Names:", MF_NutInfo);
 	NWSAppendCommentField (line, 61, (_MF_NUTCHAR)"(blank=disabled)", MF_NutInfo);
-	strcpy (newEmailOffice, MF_GlobalConfiguration->Multi2One.c_str());
-	NWSAppendStringField (line+1, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newEmailOffice, (_MF_NUTCHAR)"A..Za..z_-+!.0..9", EF_SET, MF_NutInfo);
+	strcpy (newMulti2One, MF_GlobalConfiguration->Multi2One.c_str());
+	NWSAppendStringField (line+1, 20, 55, NORMAL_FIELD, (_MF_NUTCHAR)newMulti2One, (_MF_NUTCHAR)"A..Za..z_-+!.0..9", EF_SET, MF_NutInfo);
 	line += 2;
+	
+	NWSAppendCommentField (line, 1, (_MF_NUTCHAR)"  Also rewrite Mail Header:", MF_NutInfo);
+	NWSAppendBoolField (line, 50, NORMAL_FIELD, &newMulti2One_RewriteMailHeader, 0, MF_NutInfo);
+	line++;
 	
 	line++;
 	
@@ -1231,14 +1236,15 @@ static void MFConfig_EditConfig()
 	{
 		MF_GlobalConfiguration->GWIARoot					= newPathGwia;
 		MF_GlobalConfiguration->MFLTRoot					= newPathMflt;
-		MF_GlobalConfiguration->DomainName				= newDomainName;
-		MF_GlobalConfiguration->DomainHostname			= newDomainHostname;
-		MF_GlobalConfiguration->DomainEmailPostmaster	= newEmailPostMaster;
-		MF_GlobalConfiguration->DomainEmailMailFilter	= newEmailMailFilter;
-		MF_GlobalConfiguration->BWLScheduleTime			= newScheduleTime;
-		MF_GlobalConfiguration->Multi2One				= newEmailOffice;
-		MF_GlobalConfiguration->LoginUserName			= newLoginUsername;
-		MF_GlobalConfiguration->LoginUserPassword		= newLoginPassword;
+		MF_GlobalConfiguration->DomainName					= newDomainName;
+		MF_GlobalConfiguration->DomainHostname				= newDomainHostname;
+		MF_GlobalConfiguration->DomainEmailPostmaster		= newEmailPostMaster;
+		MF_GlobalConfiguration->DomainEmailMailFilter		= newEmailMailFilter;
+		MF_GlobalConfiguration->BWLScheduleTime				= newScheduleTime;
+		MF_GlobalConfiguration->Multi2One					= newMulti2One;
+		MF_GlobalConfiguration->Multi2OneRewriteMailHeader	= (bool)newMulti2One_RewriteMailHeader;
+		MF_GlobalConfiguration->LoginUserName				= newLoginUsername;
+		MF_GlobalConfiguration->LoginUserPassword			= newLoginPassword;
 
 		// check if pass has changed, if yes encrypt ...
 		if (strcmp(MF_GlobalConfiguration->ControlPassword.c_str(),newControlPassword) != 0)

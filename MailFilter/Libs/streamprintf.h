@@ -562,7 +562,8 @@ public:
 		*(Base*)this = o.str();
 	}
 
-	operator const CharT* () { return this.c_str(); }
+//	operator const CharT* () { return this.c_str(); }
+	operator const CharT* () { return c_str(); }
 };
 
 typedef strprintfT<char> strprintf;

@@ -2098,8 +2098,10 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 	char completeFileName[MAX_PATH];
 	int addVal = 2;
 	
+	bool bModifiedMailFromAddress = false;
 	bool bModifiedFromAddress = false;
 	bool bModifiedReturnPathAddress = false;
+	bool bModifiedReplyToAddress = false;
 	bool bWroteXSieve = false;
 	bool bWroteFooter = false;
 	bool bWroteZip	  = false;
@@ -2309,6 +2311,142 @@ static int MF_PostScan_Modify( MailFilter_MailData* m )
 							}
 						}
 						bModifiedReturnPathAddress = true;
+					}
+				}
+				if ( memicmp(szScanBuffer,"reply-to:",9) == 0 )
+				{
+					/* Multi2One stuff */
+					if ((m->iMailSource == 0) && (bModifiedReplyToAddress == false) && (MF_GlobalConfiguration->Multi2One != ""))
+					{
+						szTemp[0]=0;
+						strncpy( szTemp , szScanBuffer+9, 2000 );
+						szTemp[2000]=0;
+						strlwr(szTemp);
+
+						for (curPos = 0; curPos <= strlen(szTemp);curPos++)
+						{
+							if (szTemp[curPos]=='@')
+								{	szTemp[curPos] = 0;
+									break;
+								}
+						}
+						
+						curCmpPos = (int)strlen(MF_GlobalConfiguration->Multi2One.c_str());
+						
+						szCmpBuffer[0]=szTemp[strlen(szTemp)-1];
+						szCmpBuffer[1]=szTemp[strlen(szTemp)-0];
+						szCmpBuffer[2]=0;
+						curChr = atoi(szCmpBuffer);
+						if (curChr != 0)
+						{
+							szCmpBuffer[0]=0;
+							
+							if (memicmp(MF_GlobalConfiguration->Multi2One.c_str(),szTemp+strlen(szTemp)-strlen(MF_GlobalConfiguration->Multi2One.c_str()),strlen(MF_GlobalConfiguration->Multi2One.c_str())-2)==0)
+							{
+								szScanBuffer[curPos-2+9] = MF_GlobalConfiguration->Multi2One[(unsigned int)(curCmpPos-2)];
+								szScanBuffer[curPos-1+9] = MF_GlobalConfiguration->Multi2One[(unsigned int)(curCmpPos-1)];
+							}
+						}
+						bModifiedReplyToAddress = true;
+					}
+				}
+				break;
+			case 'm':
+			case 'M':
+				if ( memicmp(szScanBuffer,"mail from:",10) == 0 )
+				{
+					/* Multi2One stuff */
+					if (
+						(m->iMailSource == 0) && 
+						(bModifiedMailFromAddress == false) && 
+						(MF_GlobalConfiguration->Multi2One != "") && 
+						(MF_GlobalConfiguration->Multi2OneRewriteMailHeader == true)
+						)
+					{
+						szTemp[0]=0;
+						strncpy( szTemp , szScanBuffer+10, 2000 );
+						szTemp[2000]=0;
+						strlwr(szTemp);
+
+						for (curPos = 0; curPos <= strlen(szTemp);curPos++)
+						{
+							if (szTemp[curPos]=='@')
+								{	szTemp[curPos] = 0;
+									break;
+								}
+						}
+						
+						curCmpPos = (int)strlen(MF_GlobalConfiguration->Multi2One.c_str());
+						
+						szCmpBuffer[0]=szTemp[strlen(szTemp)-1];
+						szCmpBuffer[1]=szTemp[strlen(szTemp)-0];
+						szCmpBuffer[2]=0;
+						curChr = atoi(szCmpBuffer);
+						if (curChr != 0)
+						{
+							szCmpBuffer[0]=0;
+							
+							if (memicmp(MF_GlobalConfiguration->Multi2One.c_str(),szTemp+strlen(szTemp)-strlen(MF_GlobalConfiguration->Multi2One.c_str()),strlen(MF_GlobalConfiguration->Multi2One.c_str())-2)==0)
+							{
+								szScanBuffer[curPos-2+10] = MF_GlobalConfiguration->Multi2One[(unsigned int)(curCmpPos-2)];
+								szScanBuffer[curPos-1+10] = MF_GlobalConfiguration->Multi2One[(unsigned int)(curCmpPos-1)];
+							}
+						}
+						bModifiedMailFromAddress = true;
+					}
+				}
+				break;
+			case '*':
+				if ( memicmp(szScanBuffer,"*S",2) == 0 )
+				{
+					char* p;
+					char* szCmp = "* MAIL FROM:";
+					p = strstr(szScanBuffer, szCmp);
+					if (p != NULL) {
+
+						/* Multi2One stuff for GW65, hack hack */
+						if (
+							(m->iMailSource == 0) && 
+							(bModifiedMailFromAddress == false) && 
+							(MF_GlobalConfiguration->Multi2One != "") && 
+							(MF_GlobalConfiguration->Multi2OneRewriteMailHeader == true)
+							)
+						{
+							const char* needle = MF_GlobalConfiguration->Multi2One.c_str();
+							
+							p = p+strlen(szCmp);
+
+							szTemp[0]=0;
+							strncpy( szTemp , p, 2000 );
+							szTemp[2000]=0;
+							strlwr(szTemp);
+
+							for (curPos = 0; curPos <= strlen(szTemp);curPos++)
+							{
+								if (szTemp[curPos]=='@')
+									{	szTemp[curPos] = 0;
+										break;
+									}
+							}
+							
+							curCmpPos = (int)strlen(needle);
+							
+							szCmpBuffer[0]=szTemp[strlen(szTemp)-1];
+							szCmpBuffer[1]=szTemp[strlen(szTemp)-0];
+							szCmpBuffer[2]=0;
+							curChr = atoi(szCmpBuffer);
+							if (curChr != 0)
+							{
+								szCmpBuffer[0]=0;
+								
+								if (memicmp(needle,szTemp+strlen(szTemp)-strlen(needle),strlen(needle)-2)==0)
+								{
+									*(p+curPos-2) = needle[(unsigned int)(curCmpPos-2)];
+									*(p+curPos-1) = needle[(unsigned int)(curCmpPos-1)];
+								}
+							}
+							bModifiedMailFromAddress = true;
+						}
 					}
 				}
 				break;

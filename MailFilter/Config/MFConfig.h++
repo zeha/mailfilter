@@ -80,6 +80,7 @@ public:
 	std::string MessageFooter;
 	std::string BWLScheduleTime;
 	std::string Multi2One;
+	bool Multi2OneRewriteMailHeader;
 	std::string LogDirectory;
 
  	std::string LoginUserName;
