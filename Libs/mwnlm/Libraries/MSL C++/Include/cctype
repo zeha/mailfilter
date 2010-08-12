@@ -1,0 +1,5 @@
+#ifndef __CCTYPE__
+#define __CCTYPE__
+#include <ctype.h>
+#endif
+

@@ -1,0 +1,7 @@
+
+#ifndef _MSL_CWCHAR
+#define _MSL_CWCHAR
+
+#include <wchar.h>
+
+#endif /*_MSL_CWCHAR*/

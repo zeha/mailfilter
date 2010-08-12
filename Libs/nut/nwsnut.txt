@@ -1,0 +1,64 @@
+NLM User Interface Developer Components (NWSNUT) 
+June 2003
+
+Table of Contents
+     1.0  Support Status
+     2.0  Additional Information
+     3.0  Legal Notices
+
+
+1.0  Support Status
+
+     NLM User Interface Developer Components (NWSNUT) is
+     peer supported.
+
+
+2.0  Additional Information
+
+     For specific details about this component, 
+     please refer to any readme or documentation that
+     is included in the component download. 
+
+
+3.0  Legal Notices
+
+     Novell, Inc. makes no representations or warranties
+     with respect to the contents or use of this
+     documentation, and specifically disclaims any express
+     or implied warranties of merchantability or fitness
+     for any particular purpose. Further, Novell, Inc.
+     reserves the right to revise this publication and to
+     make changes to its content, at any time, without
+     obligation to notify any person or entity of such
+     revisions or changes.
+
+     Further, Novell, Inc. makes no representations or
+     warranties with respect to any software, and
+     specifically disclaims any express or implied
+     warranties of merchantability or fitness for any
+     particular purpose. Further, Novell, Inc. reserves the
+     right to make changes to any and all parts of Novell
+     software, at any time, without any obligation to
+     notify any person or entity of such changes.
+
+     You may not export or re-export this product in
+     violation of any applicable laws or regulations
+     including, without limitation, U.S. export regulations
+     or the laws of the country in which you reside.
+
+     All files provided in this release are subject to the
+     Novell Developer Kit license Agreement and Separate
+     Limited Warranty, which can be found in the
+     license.txt file provided in this download.
+
+     Copyright © 2003 Novell, Inc. All rights
+     reserved. No part of this publication may be
+     reproduced, photocopied, stored on a retrieval system,
+     or transmitted without the express written consent of
+     the publisher.
+
+     Novell is a registered trademark of Novell, Inc. in
+     the United States and other countries.
+
+     All third-party products are the property of their
+     respective owners.

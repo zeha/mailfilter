@@ -1,0 +1,5 @@
+#ifndef __CLOCALE__
+#define __CLOCALE__
+#include <locale.h>
+#endif
+

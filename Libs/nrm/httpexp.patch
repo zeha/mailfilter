@@ -1,0 +1,62 @@
+--- httpexp.h.novell	2003-08-27 10:47:00.000000000 +0200
++++ httpexp.h	2004-06-10 22:06:38.484375000 +0200
+@@ -10,6 +10,10 @@
+ #ifndef __HTTPEXP_H__
+ #define __HTTPEXP_H__
+ 
++#ifdef __cplusplus
++extern "C" {
++#endif
++
+ #ifndef IN
+ #define IN
+ #endif
+@@ -257,7 +261,7 @@
+ 
+ extern int HttpSendDataSprintf(
+ 				IN HINTERNET hrequest,
+-				IN void *controlString,
++				IN const char *controlString,
+ 				...);
+ 
+ extern BOOL HttpReturnHeaderVersion(
+@@ -347,8 +351,8 @@
+ 
+ 
+ extern BOOL RegisterServiceMethod(
+-			IN void *pzServiceName,
+-			IN void *pServiceTag,
++			IN const char *pzServiceName,
++			IN const char *pServiceTag,
+ 			IN int serviceTagLength,
+ 			IN UINT32 (*pServiceMethodCheck)(
+ 						IN HINTERNET,
+@@ -359,8 +363,8 @@
+ 			OUT UINT32 *pReturnCode);
+ 
+ extern BOOL RegisterServiceMethodEx(
+-			IN void *pzServiceName,
+-			IN void *pServiceTag,
++			IN const char *pzServiceName,
++			IN const char *pServiceTag,
+ 			IN int serviceTagLength,
+ 			IN void *tableOfContentsStruc,	// NULL or ptr to struct TOCregistration
+ 			IN UINT32 requestedRights,
+@@ -383,8 +387,8 @@
+ 
+ 
+ extern BOOL DeRegisterServiceMethod(
+-			IN void *pzServiceName,
+-			IN void *pServiceTag,
++			IN const char *pzServiceName,
++			IN const char *pServiceTag,
+ 			IN int serviceTagLength,
+ 			IN UINT32 (*pServiceMethodCheck)(
+ 						IN HINTERNET,
+@@ -774,3 +778,6 @@
+ extern void HttpReleasePingResult(
+ 	HttpPingResult *pingResult);
+ 
++#ifdef __cplusplus
++}
++#endif
